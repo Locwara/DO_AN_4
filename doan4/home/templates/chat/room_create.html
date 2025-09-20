@@ -1,0 +1,343 @@
+{% extends 'dashboard/index.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Header -->
+    <div class="welcome-card">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h3 mb-2">
+                    <i class="fas fa-plus"></i> Tạo Phòng Chat Mới
+                </h1>
+                <p class="mb-0 opacity-90">
+                    Tạo không gian thảo luận cho bạn và cộng đồng sinh viên
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'chat_rooms_list' %}" class="btn btn-light">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Room Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="stats-card">
+                <form method="post" id="createRoomForm">
+                    {% csrf_token %}
+                    
+                    <!-- Room Name -->
+                    <div class="mb-4">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-tag text-primary"></i> Tên phòng <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               placeholder="Nhập tên phòng chat..." required maxlength="255">
+                        <div class="form-text">Tên phòng nên rõ ràng và dễ hiểu</div>
+                    </div>
+
+                    <!-- Room Description -->
+                    <div class="mb-4">
+                        <label for="description" class="form-label">
+                            <i class="fas fa-align-left text-primary"></i> Mô tả phòng
+                        </label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                                  placeholder="Mô tả ngắn về mục đích và nội dung thảo luận..."></textarea>
+                        <div class="form-text">Giúp người khác hiểu rõ phòng chat này dành cho gì</div>
+                    </div>
+
+                    <!-- Room Type -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-shield-alt text-primary"></i> Loại phòng <span class="text-danger">*</span>
+                        </label>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-check room-type-card">
+                                    <input class="form-check-input" type="radio" name="room_type" id="public" value="public" checked>
+                                    <label class="form-check-label w-100" for="public">
+                                        <div class="text-center p-3">
+                                            <i class="fas fa-globe fa-2x text-success mb-2"></i>
+                                            <div class="fw-bold">Công khai</div>
+                                            <small class="text-muted">Ai cũng có thể tham gia</small>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check room-type-card">
+                                    <input class="form-check-input" type="radio" name="room_type" id="private" value="private">
+                                    <label class="form-check-label w-100" for="private">
+                                        <div class="text-center p-3">
+                                            <i class="fas fa-lock fa-2x text-warning mb-2"></i>
+                                            <div class="fw-bold">Riêng tư</div>
+                                            <small class="text-muted">Cần mật khẩu để vào</small>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check room-type-card">
+                                    <input class="form-check-input" type="radio" name="room_type" id="group" value="group">
+                                    <label class="form-check-label w-100" for="group">
+                                        <div class="text-center p-3">
+                                            <i class="fas fa-users fa-2x text-info mb-2"></i>
+                                            <div class="fw-bold">Nhóm</div>
+                                            <small class="text-muted">Dành cho nhóm học tập</small>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password Field (only for private) -->
+                    <div class="mb-4" id="passwordField" style="display: none;">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-key text-primary"></i> Mật khẩu <span class="text-danger">*</span>
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               placeholder="Nhập mật khẩu cho phòng...">
+                        <div class="form-text">Mật khẩu sẽ được yêu cầu khi người khác muốn tham gia</div>
+                    </div>
+
+                    <!-- Max Members -->
+                    <div class="mb-4">
+                        <label for="max_members" class="form-label">
+                            <i class="fas fa-users text-primary"></i> Số thành viên tối đa
+                        </label>
+                        <select class="form-select" id="max_members" name="max_members">
+                            <option value="25">25 thành viên</option>
+                            <option value="50">50 thành viên</option>
+                            <option value="100" selected>100 thành viên</option>
+                            <option value="200">200 thành viên</option>
+                            <option value="500">500 thành viên</option>
+                        </select>
+                    </div>
+
+                    <!-- University Selection -->
+                    <div class="mb-4">
+                        <label for="university" class="form-label">
+                            <i class="fas fa-university text-primary"></i> Trường đại học (tùy chọn)
+                        </label>
+                        <select class="form-select" id="university" name="university">
+                            <option value="">-- Chọn trường --</option>
+                            {% for university in universities %}
+                                <option value="{{ university.id }}">{{ university.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Liên kết phòng với một trường cụ thể</div>
+                    </div>
+
+                    <!-- Course Selection -->
+                    <div class="mb-4">
+                        <label for="course" class="form-label">
+                            <i class="fas fa-book text-primary"></i> Môn học (tùy chọn)
+                        </label>
+                        <select class="form-select" id="course" name="course">
+                            <option value="">-- Chọn môn học --</option>
+                        </select>
+                        <div class="form-text">Liên kết phòng với một môn học cụ thể</div>
+                    </div>
+
+                    <!-- Room Preview -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-eye text-primary"></i> Xem trước
+                        </label>
+                        <div class="border rounded p-3 bg-light" id="roomPreview">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-1" id="previewName">Tên phòng sẽ hiển thị ở đây</h6>
+                                    <small class="text-muted">Bởi {{ user.get_full_name|default:user.username }}</small>
+                                </div>
+                                <span class="badge bg-success" id="previewType">Công khai</span>
+                            </div>
+                            <p class="text-muted small mb-2" id="previewDesc">Mô tả phòng sẽ hiển thị ở đây</p>
+                            <div class="d-flex gap-3">
+                                <small><i class="fas fa-users"></i> <span id="previewMembers">100</span> thành viên tối đa</small>
+                                <small id="previewUniversity" style="display: none;"><i class="fas fa-university"></i> <span></span></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="fas fa-plus"></i> Tạo phòng chat
+                        </button>
+                        <a href="{% url 'chat_rooms_list' %}" class="btn btn-outline-secondary">
+                            Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.room-type-card {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.room-type-card:hover {
+    border-color: #6366f1;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.room-type-card .form-check-input:checked + .form-check-label {
+    border-color: #6366f1;
+    background: linear-gradient(135deg, #f8faff, #eef2ff);
+}
+
+.room-type-card .form-check-input {
+    display: none;
+}
+
+.room-type-card .form-check-label {
+    border: 2px solid transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#roomPreview {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border: 2px dashed #cbd5e1;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('createRoomForm');
+    const roomTypeInputs = document.querySelectorAll('input[name="room_type"]');
+    const passwordField = document.getElementById('passwordField');
+    const passwordInput = document.getElementById('password');
+    const universitySelect = document.getElementById('university');
+    const courseSelect = document.getElementById('course');
+    
+    // Preview elements
+    const previewName = document.getElementById('previewName');
+    const previewDesc = document.getElementById('previewDesc');
+    const previewType = document.getElementById('previewType');
+    const previewMembers = document.getElementById('previewMembers');
+    const previewUniversity = document.getElementById('previewUniversity');
+    
+    // Room type change handler
+    roomTypeInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.value === 'private') {
+                passwordField.style.display = 'block';
+                passwordInput.required = true;
+                previewType.textContent = 'Riêng tư';
+                previewType.className = 'badge bg-warning';
+            } else {
+                passwordField.style.display = 'none';
+                passwordInput.required = false;
+                passwordInput.value = '';
+                
+                if (this.value === 'public') {
+                    previewType.textContent = 'Công khai';
+                    previewType.className = 'badge bg-success';
+                } else {
+                    previewType.textContent = 'Nhóm';
+                    previewType.className = 'badge bg-info';
+                }
+            }
+        });
+    });
+    
+    // University change handler - load courses
+    universitySelect.addEventListener('change', function() {
+        const universityId = this.value;
+        courseSelect.innerHTML = '<option value="">-- Chọn môn học --</option>';
+        
+        if (universityId) {
+            // Load courses for selected university
+            fetch(`/api/university/${universityId}/courses/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.courses) {
+                        data.courses.forEach(course => {
+                            const option = document.createElement('option');
+                            option.value = course.id;
+                            option.textContent = `${course.code} - ${course.name}`;
+                            courseSelect.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error loading courses:', error));
+            
+            // Update preview
+            const selectedUniversity = this.options[this.selectedIndex].text;
+            previewUniversity.querySelector('span').textContent = selectedUniversity;
+            previewUniversity.style.display = 'inline-block';
+        } else {
+            previewUniversity.style.display = 'none';
+        }
+    });
+    
+    // Preview update handlers
+    document.getElementById('name').addEventListener('input', function() {
+        previewName.textContent = this.value || 'Tên phòng sẽ hiển thị ở đây';
+    });
+    
+    document.getElementById('description').addEventListener('input', function() {
+        previewDesc.textContent = this.value || 'Mô tả phòng sẽ hiển thị ở đây';
+    });
+    
+    document.getElementById('max_members').addEventListener('change', function() {
+        previewMembers.textContent = this.value;
+    });
+    
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        const name = document.getElementById('name').value.trim();
+        const roomType = document.querySelector('input[name="room_type"]:checked').value;
+        const password = document.getElementById('password').value.trim();
+        
+        if (!name) {
+            e.preventDefault();
+            alert('Vui lòng nhập tên phòng!');
+            return;
+        }
+        
+        if (roomType === 'private' && !password) {
+            e.preventDefault();
+            alert('Phòng riêng tư cần có mật khẩu!');
+            return;
+        }
+        
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo...';
+        submitBtn.disabled = true;
+        
+        // Re-enable on error (if form doesn't submit)
+        setTimeout(() => {
+            if (submitBtn.disabled) {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}

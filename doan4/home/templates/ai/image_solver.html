@@ -1,0 +1,977 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block title %}AI Giải Bài Tập | StudyShare{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --dark: #1f2937;
+  --light: #f9fafb;
+  --border: #e5e7eb;
+}
+
+.ai-container {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 24px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 24px;
+}
+
+.ai-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+.upload-zone {
+  border: 3px dashed var(--border);
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: white;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-zone:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.15);
+}
+
+.upload-zone.dragover {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.upload-icon {
+  font-size: 3rem;
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.upload-text {
+  font-size: 1.1rem;
+  color: var(--dark);
+  margin-bottom: 0.5rem;
+}
+
+.upload-hint {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.image-preview {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  margin: 1rem 0;
+}
+
+.chat-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.chat-header {
+  background: var(--primary);
+  color: white;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chat-messages {
+  height: 400px;
+  overflow-y: auto;
+  padding: 1rem;
+  background: #f8fafc;
+}
+
+.message {
+  margin-bottom: 1rem;
+  display: flex;
+  animation: fadeInUp 0.3s ease;
+}
+
+.message.user {
+  justify-content: flex-end;
+}
+
+.message.assistant {
+  justify-content: flex-start;
+}
+
+.message-content {
+  max-width: 70%;
+  padding: 1rem 1.5rem;
+  border-radius: 20px;
+  position: relative;
+}
+
+.message.user .message-content {
+  background: var(--primary);
+  color: white;
+  border-bottom-right-radius: 8px;
+}
+
+.message.assistant .message-content {
+  background: white;
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 8px;
+}
+
+.chat-input-container {
+  padding: 1rem 1.5rem;
+  background: white;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.chat-input {
+  flex: 1;
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  resize: none;
+  min-height: 40px;
+  max-height: 120px;
+  transition: border-color 0.3s ease;
+}
+
+.chat-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.send-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.send-btn:hover {
+  background: var(--primary-dark);
+  transform: scale(1.05);
+}
+
+.send-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.history-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.history-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  text-align: center;
+}
+
+.spinner {
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.btn-primary {
+  background: var(--primary);
+  border: none;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+  color: white;
+  text-decoration: none;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-outline:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.btn-success {
+  background: var(--success);
+  border: none;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-success:hover {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+  color: white;
+  text-decoration: none;
+}
+
+.solution-content {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-top: 2rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.solution-content h3 {
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.solution-text {
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.quick-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  background: #f3f4f6;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.action-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.welcome-options {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.option-card {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.option-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  border-color: var(--primary);
+}
+
+.chat-mode-indicator {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.mode-image {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.mode-text {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+@media (max-width: 768px) {
+  .ai-container {
+    padding: 1rem;
+    border-radius: 16px;
+  }
+  
+  .upload-zone {
+    padding: 2rem 1rem;
+  }
+  
+  .message-content {
+    max-width: 85%;
+  }
+  
+  .quick-actions {
+    justify-content: center;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+  <!-- Header Section -->
+  <div class="ai-container">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="h2 mb-3">
+          <i class="fas fa-robot me-2"></i>
+          AI Trợ Lý Thông Minh
+        </h1>
+        <p class="mb-0 opacity-90">
+          Giải bài tập từ hình ảnh hoặc trò chuyện trực tiếp với AI. 
+          Hỗ trợ tiếng Việt và có thể giải thích chi tiết mọi câu hỏi!
+        </p>
+      </div>
+      <div class="col-md-4 text-end">
+        <a href="{% url 'ai_solutions_history' %}" class="btn btn-outline">
+          <i class="fas fa-history me-2"></i>
+          Xem Lịch Sử
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Left Column - Options -->
+    <div class="col-lg-6">
+      <!-- Mode Selection -->
+      <div class="welcome-options mb-4">
+        <h4 class="mb-4">
+          <i class="fas fa-magic text-primary me-2"></i>
+          Chọn Cách Thức Sử Dụng
+        </h4>
+        
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <div class="option-card" onclick="selectImageMode()">
+              <i class="fas fa-image text-primary" style="font-size: 2.5rem;"></i>
+              <h5 class="mt-3 mb-2">Giải Từ Hình Ảnh</h5>
+              <p class="text-muted mb-0">Upload hình ảnh chứa bài tập để AI đọc và giải</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="option-card" onclick="selectTextMode()">
+              <i class="fas fa-comments text-success" style="font-size: 2.5rem;"></i>
+              <h5 class="mt-3 mb-2">Trò Chuyện Trực Tiếp</h5>
+              <p class="text-muted mb-0">Hỏi bất kỳ câu hỏi nào bằng text</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Zone (Hidden initially) -->
+      <div class="card border-0 shadow-sm" id="uploadCard" style="display: none;">
+        <div class="card-body p-4">
+          <h4 class="card-title mb-4">
+            <i class="fas fa-upload text-primary me-2"></i>
+            Tải Ảnh Lên
+          </h4>
+          
+          <!-- Upload Zone -->
+          <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">
+              <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <div class="upload-text">
+              Kéo thả hình ảnh vào đây hoặc click để chọn
+            </div>
+            <div class="upload-hint">
+              Hỗ trợ JPG, PNG, GIF (tối đa 10MB)
+            </div>
+            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+          </div>
+
+          <!-- Image Preview -->
+          <div id="imagePreview" style="display: none;">
+            <img id="previewImage" class="image-preview" alt="Preview">
+            <div class="mt-3">
+              <input type="text" id="userQuestion" class="form-control mb-3" 
+                     placeholder="Có câu hỏi cụ thể không? (tùy chọn)">
+              <button class="btn btn-primary w-100" id="solveBtn">
+                <i class="fas fa-magic me-2"></i>
+                Giải Bài Tập
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent History -->
+      <div class="card border-0 shadow-sm mt-4">
+        <div class="card-body p-4">
+          <h5 class="card-title mb-3">
+            <i class="fas fa-clock text-primary me-2"></i>
+            Lịch Sử Gần Đây
+          </h5>
+          
+          {% if recent_solutions %}
+            {% for solution in recent_solutions %}
+            <div class="history-card mb-3" onclick="viewSolution({{ solution.id }})">
+              <div class="d-flex align-items-center">
+                <img src="{{ solution.image_url.url }}" alt="Thumbnail" 
+                     style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                <div class="ms-3 flex-grow-1">
+                  <h6 class="mb-1">{{ solution.title }}</h6>
+                  <small class="text-muted">
+                    {{ solution.created_at|date:"d/m/Y H:i" }} • 
+                    <i class="fas fa-eye me-1"></i>{{ solution.view_count }}
+                  </small>
+                </div>
+                <i class="fas fa-chevron-right text-muted"></i>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-muted text-center py-3">
+              <i class="fas fa-info-circle me-2"></i>
+              Chưa có lịch sử
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Chat -->
+    <div class="col-lg-6">
+      <div class="chat-container">
+        <div class="chat-header">
+          <div>
+            <h5 class="mb-0">
+              <i class="fas fa-robot me-2"></i>
+              AI Trợ Lý
+              <span class="chat-mode-indicator mode-text" id="chatModeIndicator">
+                Sẵn sàng
+              </span>
+            </h5>
+            <small class="opacity-75" id="chatStatus">Chọn chế độ để bắt đầu</small>
+          </div>
+          <button class="btn btn-sm btn-outline-light" id="newChatBtn">
+            <i class="fas fa-plus me-1"></i>Chat Mới
+          </button>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+          <div class="text-center py-5">
+            <i class="fas fa-robot text-primary mb-3" style="font-size: 3rem;"></i>
+            <h5>Xin chào! Tôi là AI trợ lý</h5>
+            <p class="text-muted">
+              Chọn "Giải từ hình ảnh" để upload ảnh bài tập<br>
+              hoặc "Trò chuyện trực tiếp" để hỏi câu hỏi bằng text
+            </p>
+          </div>
+        </div>
+
+        <div class="chat-input-container">
+          <textarea id="chatInput" class="chat-input" 
+                    placeholder="Nhập câu hỏi của bạn..."
+                    rows="1" disabled></textarea>
+          <button class="send-btn" id="sendBtn" disabled>
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay" style="display: none;">
+  <div class="loading-content">
+    <div class="spinner"></div>
+    <h5 id="loadingText">AI đang xử lý...</h5>
+    <p class="text-muted mb-0">Vui lòng đợi trong giây lát</p>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+let currentConversationId = null;
+let currentSolutionId = null;
+let chatMode = 'none'; // 'image', 'text', 'none'
+
+document.addEventListener('DOMContentLoaded', function() {
+  initializeUpload();
+  initializeChat();
+});
+
+function selectImageMode() {
+  chatMode = 'image';
+  document.getElementById('uploadCard').style.display = 'block';
+  document.getElementById('chatInput').disabled = true;
+  document.getElementById('chatInput').placeholder = 'Upload hình ảnh để bắt đầu trò chuyện...';
+  document.getElementById('chatModeIndicator').textContent = 'Chế độ hình ảnh';
+  document.getElementById('chatModeIndicator').className = 'chat-mode-indicator mode-image';
+  document.getElementById('chatStatus').textContent = 'Upload hình ảnh để bắt đầu';
+  
+  // Clear welcome message
+  document.getElementById('chatMessages').innerHTML = `
+    <div class="text-center py-4">
+      <i class="fas fa-image text-primary mb-3" style="font-size: 2.5rem;"></i>
+      <h6>Chế độ giải bài từ hình ảnh</h6>
+      <p class="text-muted mb-0">Upload hình ảnh chứa bài tập để bắt đầu</p>
+    </div>
+  `;
+}
+
+function selectTextMode() {
+  chatMode = 'text';
+  document.getElementById('uploadCard').style.display = 'none';
+  document.getElementById('chatInput').disabled = false;
+  document.getElementById('chatInput').placeholder = 'Hỏi bất kỳ câu hỏi nào...';
+  document.getElementById('chatInput').focus();
+  document.getElementById('chatModeIndicator').textContent = 'Chat text';
+  document.getElementById('chatModeIndicator').className = 'chat-mode-indicator mode-text';
+  document.getElementById('chatStatus').textContent = 'Sẵn sàng trả lời câu hỏi';
+  
+  // Clear welcome message and start new conversation
+  document.getElementById('chatMessages').innerHTML = `
+    <div class="message assistant">
+      <div class="message-content">
+        Xin chào! Tôi có thể giúp bạn trả lời các câu hỏi về học tập, giải bài tập, giải thích kiến thức và nhiều chủ đề khác. 
+        Hãy hỏi tôi bất kỳ điều gì bạn muốn biết!
+      </div>
+    </div>
+  `;
+  
+  // Create new text conversation
+  startTextConversation();
+}
+
+function startTextConversation() {
+  // Create a new conversation for text chat
+  fetch('{% url "ai_text_chat" %}', {
+    method: 'POST',
+    body: new FormData(),
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      currentConversationId = data.conversation_id;
+      console.log('Text conversation started:', currentConversationId);
+    }
+  })
+  .catch(error => {
+    console.error('Error starting text conversation:', error);
+  });
+}
+
+function initializeUpload() {
+  const uploadZone = document.getElementById('uploadZone');
+  const imageInput = document.getElementById('imageInput');
+  const imagePreview = document.getElementById('imagePreview');
+  const previewImage = document.getElementById('previewImage');
+  const solveBtn = document.getElementById('solveBtn');
+
+  // Click to upload
+  uploadZone.addEventListener('click', () => imageInput.click());
+
+  // Drag and drop
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('dragover');
+  });
+
+  uploadZone.addEventListener('dragleave', () => {
+    uploadZone.classList.remove('dragover');
+  });
+
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleImageSelect(files[0]);
+    }
+  });
+
+  // File input change
+  imageInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      handleImageSelect(e.target.files[0]);
+    }
+  });
+
+  // Solve button
+  solveBtn.addEventListener('click', solveImage);
+}
+
+function handleImageSelect(file) {
+  // Validate file
+  if (!file.type.startsWith('image/')) {
+    alert('Vui lòng chọn file hình ảnh!');
+    return;
+  }
+
+  if (file.size > 10 * 1024 * 1024) {
+    alert('File quá lớn! Vui lòng chọn file nhỏ hơn 10MB.');
+    return;
+  }
+
+  // Store file globally
+  window.selectedFile = file;
+
+  // Show preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('previewImage').src = e.target.result;
+    document.getElementById('uploadZone').style.display = 'none';
+    document.getElementById('imagePreview').style.display = 'block';
+    
+    // Enable chat input for image mode
+    document.getElementById('chatInput').disabled = false;
+    document.getElementById('chatInput').placeholder = 'Hỏi thêm về hình ảnh...';
+    document.getElementById('chatStatus').textContent = 'Hình ảnh đã sẵn sàng để phân tích';
+  };
+  reader.readAsDataURL(file);
+}
+
+function solveImage() {
+  const imageInput = document.getElementById('imageInput');
+  const userQuestion = document.getElementById('userQuestion').value;
+  
+  if (!imageInput.files[0] && !window.selectedFile) {
+    alert('Vui lòng chọn hình ảnh!');
+    return;
+  }
+
+  const fileToUpload = imageInput.files[0] || window.selectedFile;
+  
+  const formData = new FormData();
+  formData.append('image', fileToUpload);
+  
+  if (userQuestion) {
+    formData.append('question', userQuestion);
+  }
+  
+  if (currentConversationId) {
+    formData.append('conversation_id', currentConversationId);
+  }
+
+  // Show loading
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  document.getElementById('loadingText').textContent = 'AI đang phân tích hình ảnh...';
+
+  fetch('{% url "ai_solve_image" %}', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    
+    if (data.success) {
+      currentSolutionId = data.solution.id;
+      currentConversationId = data.conversation.id;
+      
+      addMessage('user', getUserMessage(userQuestion));
+      addMessage('assistant', data.solution.ai_solution);
+      
+      document.getElementById('chatStatus').textContent = 
+        `Phân tích hoàn tất trong ${data.solution.processing_time}ms`;
+    } else {
+      alert('Lỗi: ' + data.error);
+    }
+  })
+  .catch(error => {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    alert('Có lỗi xảy ra: ' + error.message);
+  });
+}
+
+function getUserMessage(question) {
+  let message = 'Hãy phân tích hình ảnh này và giải các bài tập/câu hỏi trong đó.';
+  if (question) {
+    message += ` Câu hỏi cụ thể: ${question}`;
+  }
+  return message;
+}
+
+function initializeChat() {
+  const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const newChatBtn = document.getElementById('newChatBtn');
+
+  chatInput.addEventListener('input', function() {
+    sendBtn.disabled = !this.value.trim() || this.disabled;
+    
+    // Auto resize textarea
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  });
+
+  chatInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  sendBtn.addEventListener('click', sendMessage);
+  newChatBtn.addEventListener('click', startNewChat);
+}
+
+function sendMessage() {
+  const chatInput = document.getElementById('chatInput');
+  const message = chatInput.value.trim();
+  
+  if (!message) return;
+
+  addMessage('user', message);
+  chatInput.value = '';
+  chatInput.style.height = 'auto';
+  document.getElementById('sendBtn').disabled = true;
+
+  // Show typing indicator
+  const typingDiv = addMessage('assistant', 'AI đang trả lời...', true);
+
+  let endpoint, formData;
+  
+  if (chatMode === 'text') {
+    // Text chat endpoint
+    endpoint = '{% url "ai_text_chat" %}';
+    formData = new FormData();
+    formData.append('message', message);
+    if (currentConversationId) {
+      formData.append('conversation_id', currentConversationId);
+    }
+  } else {
+    // Continue image conversation
+    endpoint = '{% url "ai_continue_conversation" %}';
+    formData = new FormData();
+    formData.append('conversation_id', currentConversationId);
+    formData.append('message', message);
+  }
+
+  fetch(endpoint, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    // Remove typing indicator
+    typingDiv.remove();
+    
+    if (data.success) {
+      if (chatMode === 'text' && !currentConversationId) {
+        currentConversationId = data.conversation_id;
+      }
+      
+      addMessage('assistant', data.response.content || data.solution?.ai_solution);
+      document.getElementById('chatStatus').textContent = 
+        `Phản hồi trong ${data.response?.processing_time || data.solution?.processing_time}ms`;
+    } else {
+      addMessage('assistant', 'Xin lỗi, có lỗi xảy ra: ' + data.error);
+    }
+  })
+  .catch(error => {
+    // Remove typing indicator
+    typingDiv.remove();
+    addMessage('assistant', 'Có lỗi kết nối: ' + error.message);
+  });
+}
+
+function addMessage(role, content, isTemporary = false) {
+  const chatMessages = document.getElementById('chatMessages');
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${role}`;
+  
+  if (isTemporary) {
+    messageDiv.setAttribute('data-temporary', 'true');
+  }
+  
+  const messageContent = document.createElement('div');
+  messageContent.className = 'message-content';
+  messageContent.innerHTML = formatMessage(content);
+  
+  messageDiv.appendChild(messageContent);
+  chatMessages.appendChild(messageDiv);
+  
+  // Scroll to bottom
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  
+  return messageDiv; // Return for removal if needed
+}
+
+function formatMessage(content) {
+  // Format markdown-like content
+  return content
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br>');
+}
+
+function startNewChat() {
+  // Reset interface
+  const chatMessages = document.getElementById('chatMessages');
+  chatMessages.innerHTML = `
+    <div class="text-center py-5">
+      <i class="fas fa-robot text-primary mb-3" style="font-size: 3rem;"></i>
+      <h5>Xin chào! Tôi là AI trợ lý</h5>
+      <p class="text-muted">
+        Chọn "Giải từ hình ảnh" để upload ảnh bài tập<br>
+        hoặc "Trò chuyện trực tiếp" để hỏi câu hỏi bằng text
+      </p>
+    </div>
+  `;
+  
+  document.getElementById('uploadZone').style.display = 'block';
+  document.getElementById('imagePreview').style.display = 'none';
+  document.getElementById('uploadCard').style.display = 'none';
+  document.getElementById('imageInput').value = '';
+  document.getElementById('userQuestion').value = '';
+  document.getElementById('chatInput').value = '';
+  document.getElementById('chatInput').disabled = true;
+  document.getElementById('chatInput').placeholder = 'Nhập câu hỏi của bạn...';
+  
+  document.getElementById('chatModeIndicator').textContent = 'Sẵn sàng';
+  document.getElementById('chatModeIndicator').className = 'chat-mode-indicator mode-text';
+  document.getElementById('chatStatus').textContent = 'Chọn chế độ để bắt đầu';
+  
+  currentConversationId = null;
+  currentSolutionId = null;
+  chatMode = 'none';
+}
+
+function viewSolution(solutionId) {
+  window.location.href = `{% url 'ai_solution_detail' 0 %}`.replace('0', solutionId);
+}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
+{% endblock %}

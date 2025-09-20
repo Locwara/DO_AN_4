@@ -1,0 +1,430 @@
+{% extends 'dashboard/index.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Header -->
+    <div class="welcome-card">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h3 mb-2">
+                    <i class="fas fa-edit"></i> Chỉnh sửa phòng chat
+                </h1>
+                <p class="mb-0 opacity-90">
+                    Cập nhật thông tin và cài đặt phòng "{{ room.name }}"
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'chat_room_detail' room.id %}" class="btn btn-light">
+                    <i class="fas fa-arrow-left"></i> Quay lại phòng
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Room Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="stats-card">
+                <form method="post" id="editRoomForm">
+                    {% csrf_token %}
+                    
+                    <!-- Room Name -->
+                    <div class="mb-4">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-tag text-primary"></i> Tên phòng <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               placeholder="Nhập tên phòng chat..." required maxlength="255"
+                               value="{{ room.name }}">
+                        <div class="form-text">Tên phòng nên rõ ràng và dễ hiểu</div>
+                    </div>
+
+                    <!-- Room Description -->
+                    <div class="mb-4">
+                        <label for="description" class="form-label">
+                            <i class="fas fa-align-left text-primary"></i> Mô tả phòng
+                        </label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                                  placeholder="Mô tả ngắn về mục đích và nội dung thảo luận...">{{ room.description|default_if_none:"" }}</textarea>
+                        <div class="form-text">Giúp người khác hiểu rõ phòng chat này dành cho gì</div>
+                    </div>
+
+                    <!-- Room Type -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-shield-alt text-primary"></i> Loại phòng <span class="text-danger">*</span>
+                        </label>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-check room-type-card">
+                                    <input class="form-check-input" type="radio" name="room_type" id="public" value="public" 
+                                           {% if room.room_type == 'public' %}checked{% endif %}>
+                                    <label class="form-check-label w-100" for="public">
+                                        <div class="text-center p-3">
+                                            <i class="fas fa-globe fa-2x text-success mb-2"></i>
+                                            <div class="fw-bold">Công khai</div>
+                                            <small class="text-muted">Ai cũng có thể tham gia</small>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check room-type-card">
+                                    <input class="form-check-input" type="radio" name="room_type" id="private" value="private"
+                                           {% if room.room_type == 'private' %}checked{% endif %}>
+                                    <label class="form-check-label w-100" for="private">
+                                        <div class="text-center p-3">
+                                            <i class="fas fa-lock fa-2x text-warning mb-2"></i>
+                                            <div class="fw-bold">Riêng tư</div>
+                                            <small class="text-muted">Cần mật khẩu để vào</small>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check room-type-card">
+                                    <input class="form-check-input" type="radio" name="room_type" id="group" value="group"
+                                           {% if room.room_type == 'group' %}checked{% endif %}>
+                                    <label class="form-check-label w-100" for="group">
+                                        <div class="text-center p-3">
+                                            <i class="fas fa-users fa-2x text-info mb-2"></i>
+                                            <div class="fw-bold">Nhóm</div>
+                                            <small class="text-muted">Dành cho nhóm học tập</small>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="mb-4" id="passwordField" {% if room.room_type != 'private' %}style="display: none;"{% endif %}>
+                        <label for="password" class="form-label">
+                            <i class="fas fa-key text-primary"></i> Mật khẩu 
+                            <span class="text-danger" id="passwordRequired">*</span>
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               placeholder="{% if room.password %}Để trống nếu không đổi mật khẩu{% else %}Nhập mật khẩu mới...{% endif %}">
+                        <div class="form-text">
+                            {% if room.password %}
+                                Để trống nếu không muốn thay đổi mật khẩu hiện tại
+                            {% else %}
+                                Mật khẩu sẽ được yêu cầu khi người khác muốn tham gia
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Max Members -->
+                    <div class="mb-4">
+                        <label for="max_members" class="form-label">
+                            <i class="fas fa-users text-primary"></i> Số thành viên tối đa
+                        </label>
+                        <select class="form-select" id="max_members" name="max_members">
+                            <option value="25" {% if room.max_members == 25 %}selected{% endif %}>25 thành viên</option>
+                            <option value="50" {% if room.max_members == 50 %}selected{% endif %}>50 thành viên</option>
+                            <option value="100" {% if room.max_members == 100 %}selected{% endif %}>100 thành viên</option>
+                            <option value="200" {% if room.max_members == 200 %}selected{% endif %}>200 thành viên</option>
+                            <option value="500" {% if room.max_members == 500 %}selected{% endif %}>500 thành viên</option>
+                        </select>
+                        <div class="form-text">
+                            <strong>Hiện tại:</strong> {{ room.members_count|default:0 }} thành viên
+                        </div>
+                    </div>
+
+                    <!-- University Selection -->
+                    <div class="mb-4">
+                        <label for="university" class="form-label">
+                            <i class="fas fa-university text-primary"></i> Trường đại học (tùy chọn)
+                        </label>
+                        <select class="form-select" id="university" name="university">
+                            <option value="">-- Chọn trường --</option>
+                            {% for university in universities %}
+                                <option value="{{ university.id }}" {% if room.university_id == university.id %}selected{% endif %}>
+                                    {{ university.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Liên kết phòng với một trường cụ thể</div>
+                    </div>
+
+                    <!-- Course Selection -->
+                    <div class="mb-4">
+                        <label for="course" class="form-label">
+                            <i class="fas fa-book text-primary"></i> Môn học (tùy chọn)
+                        </label>
+                        <select class="form-select" id="course" name="course">
+                            <option value="">-- Chọn môn học --</option>
+                            {% for course in courses %}
+                                <option value="{{ course.id }}" data-university="{{ course.university.id }}"
+                                        {% if room.course_id == course.id %}selected{% endif %}>
+                                    {{ course.code }} - {{ course.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Liên kết phòng với một môn học cụ thể</div>
+                    </div>
+
+                    <!-- Current Stats -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-chart-bar text-primary"></i> Thống kê phòng
+                        </label>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <div class="stat-box text-center">
+                                    <i class="fas fa-users text-primary"></i>
+                                    <div class="stat-number">{{ room.members_count|default:0 }}</div>
+                                    <div class="stat-label">Thành viên</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-box text-center">
+                                    <i class="fas fa-comments text-info"></i>
+                                    <div class="stat-number">{{ room.messages_count|default:0 }}</div>
+                                    <div class="stat-label">Tin nhắn</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-box text-center">
+                                    <i class="fas fa-calendar text-success"></i>
+                                    <div class="stat-number">{{ room.created_at|timesince }}</div>
+                                    <div class="stat-label">Tuổi phòng</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-box text-center">
+                                    <i class="fas fa-clock text-warning"></i>
+                                    <div class="stat-number">{{ room.updated_at|timesince }}</div>
+                                    <div class="stat-label">Cập nhật</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="fas fa-save"></i> Lưu thay đổi
+                        </button>
+                        <a href="{% url 'chat_room_detail' room.id %}" class="btn btn-outline-secondary">
+                            Hủy
+                        </a>
+                        {% if room.created_by == user %}
+                            <button type="button" class="btn btn-outline-danger" onclick="confirmDelete()">
+                                <i class="fas fa-trash"></i> Xóa phòng
+                            </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.room-type-card {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.room-type-card:hover {
+    border-color: #6366f1;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.room-type-card .form-check-input:checked + .form-check-label {
+    border-color: #6366f1;
+    background: linear-gradient(135deg, #f8faff, #eef2ff);
+}
+
+.room-type-card .form-check-input {
+    display: none;
+}
+
+.room-type-card .form-check-label {
+    border: 2px solid transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.stat-box {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.stat-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.stat-box i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1f2937;
+}
+
+.stat-label {
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('editRoomForm');
+    const roomTypeInputs = document.querySelectorAll('input[name="room_type"]');
+    const passwordField = document.getElementById('passwordField');
+    const passwordInput = document.getElementById('password');
+    const passwordRequired = document.getElementById('passwordRequired');
+    const universitySelect = document.getElementById('university');
+    const courseSelect = document.getElementById('course');
+    
+    // Room type change handler
+    roomTypeInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.value === 'private') {
+                passwordField.style.display = 'block';
+                {% if not room.password %}
+                    passwordInput.required = true;
+                    passwordRequired.style.display = 'inline';
+                {% else %}
+                    passwordInput.required = false;
+                    passwordRequired.style.display = 'none';
+                {% endif %}
+            } else {
+                passwordField.style.display = 'none';
+                passwordInput.required = false;
+                passwordRequired.style.display = 'none';
+            }
+        });
+    });
+    
+    // University change handler - filter courses
+    universitySelect.addEventListener('change', function() {
+        const universityId = this.value;
+        const courseOptions = courseSelect.querySelectorAll('option');
+        
+        // Reset course selection
+        courseSelect.value = '';
+        
+        // Show/hide course options based on university
+        courseOptions.forEach(option => {
+            if (option.value === '') {
+                option.style.display = 'block';
+            } else {
+                const courseUniversityId = option.dataset.university;
+                if (!universityId || courseUniversityId === universityId) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            }
+        });
+    });
+    
+    // Trigger university filter on load
+    if (universitySelect.value) {
+        universitySelect.dispatchEvent(new Event('change'));
+        // Restore course selection if it matches the university
+        {% if room.course_id %}
+            courseSelect.value = '{{ room.course_id }}';
+        {% endif %}
+    }
+    
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        const name = document.getElementById('name').value.trim();
+        const roomType = document.querySelector('input[name="room_type"]:checked').value;
+        const password = passwordInput.value.trim();
+        const maxMembers = parseInt(document.getElementById('max_members').value);
+        const currentMembers = {{ room.members_count|default:0 }};
+        
+        if (!name) {
+            e.preventDefault();
+            alert('Vui lòng nhập tên phòng!');
+            return;
+        }
+        
+        if (roomType === 'private' && !password && !{% if room.password %}true{% else %}false{% endif %}) {
+            e.preventDefault();
+            alert('Phòng riêng tư cần có mật khẩu!');
+            return;
+        }
+        
+        if (maxMembers < currentMembers) {
+            e.preventDefault();
+            alert(`Không thể giảm số thành viên tối đa xuống ${maxMembers} khi hiện tại có ${currentMembers} thành viên!`);
+            return;
+        }
+        
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+        submitBtn.disabled = true;
+        
+        // Re-enable on error
+        setTimeout(() => {
+            if (submitBtn.disabled) {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }, 5000);
+    });
+});
+
+function confirmDelete() {
+    if (confirm('Bạn có chắc muốn xóa phòng này?\n\nHành động này sẽ:\n- Xóa vĩnh viễn phòng chat\n- Xóa tất cả tin nhắn\n- Loại bỏ tất cả thành viên\n\nHành động này KHÔNG THỂ HOÀN TÁC!')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "chat_room_delete" room.id %}';
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = getCookie('csrftoken');
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

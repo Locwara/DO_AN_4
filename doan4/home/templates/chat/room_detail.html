@@ -1,0 +1,945 @@
+{% extends 'dashboard/index.html' %}
+{% load chat_extras %}
+{% block content %}
+<div class="container-fluid mt-4 px-0">
+    <!-- Messages -->
+
+
+    <!-- Chat Interface -->
+    <div class="row g-0 chat-container">
+        <!-- Chat Messages Area -->
+        <div class="col-lg-9">
+            <div class="chat-main">
+                <!-- Chat Header -->
+                <div class="chat-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <a href="{% url 'chat_rooms_list' %}" class="btn btn-outline-secondary btn-sm me-3">
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                            <div>
+                                <h5 class="mb-0 d-flex align-items-center">
+                                    {% if room.room_type == 'public' %}
+                                        <i class="fas fa-globe text-success me-2"></i>
+                                    {% elif room.room_type == 'private' %}
+                                        <i class="fas fa-lock text-warning me-2"></i>
+                                    {% else %}
+                                        <i class="fas fa-users text-info me-2"></i>
+                                    {% endif %}
+                                    {{ room.name }}
+                                </h5>
+                                <small class="text-muted">
+                                    {% if room.university %}{{ room.university.short_name|default:room.university.name }}{% endif %}
+                                    {% if room.course %} - {{ room.course.code }}{% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary" id="membersCount">{{ members|length }} thành viên</span>
+                            {% if is_admin %}
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-cog"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{% url 'chat_room_edit' room.id %}">
+                                            <i class="fas fa-edit"></i> Chỉnh sửa phòng
+                                        </a></li>
+                                        {% if room.created_by == user %}
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteRoom()">
+                                                <i class="fas fa-trash"></i> Xóa phòng
+                                            </a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                            {% if room.created_by != user %}
+                                <button class="btn btn-outline-danger btn-sm" onclick="leaveRoom()">
+                                    <i class="fas fa-sign-out-alt"></i> Rời phòng
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Messages -->
+                <div class="chat-messages" id="chatMessages">
+                    <div id="messagesContainer">
+                        {% for msg in messages %}
+                            <div class="message-item {% if msg.user == user %}own-message{% endif %}" data-message-id="{{ msg.id }}">
+                                {% if msg.message_type == 'system' %}
+                                    <div class="system-message">
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle"></i> {{ msg.message }}
+                                        </small>
+                                    </div>
+                                {% else %}
+                                    <div class="message-bubble">
+                                        {% if msg.user != user %}
+                                            <div class="message-avatar">
+                                                {% if msg.user.avatar %}
+                                                    <img src="{{ msg.user.avatar.url }}" alt="{{ msg.user.get_full_name|default:msg.user.username }}" class="rounded-circle">
+                                                {% else %}
+                                                    <div class="avatar-placeholder">
+                                                        {{ msg.user.get_full_name|default:msg.user.username|first|upper }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="message-content">
+                                            {% if msg.user != user %}
+                                                <div class="message-sender">{{ msg.user.get_full_name|default:msg.user.username }}</div>
+                                            {% endif %}
+                                            {% if msg.reply_to %}
+                                                <div class="reply-to">
+                                                    <i class="fas fa-reply"></i>
+                                                    <strong>{{ msg.reply_to.user.get_full_name|default:msg.reply_to.user.username }}:</strong>
+                                                    {{ msg.reply_to.message|truncatewords:10 }}
+                                                </div>
+                                            {% endif %}
+                                            <div class="message-text">{{ msg.message }}</div>
+                                            <div class="message-time">
+                                                {{ msg.created_at|date:"H:i" }}
+                                                {% if msg.is_edited %}
+                                                    <small class="text-muted">(đã chỉnh sửa)</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="message-actions">
+                                            <button class="btn btn-sm btn-outline-secondary" onclick="replyToMessage({{ msg.id }}, '{{ msg.user.get_full_name|default:msg.user.username }}', '{{ msg.message|truncatewords:10 }}')">
+                                                <i class="fas fa-reply"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Typing indicator -->
+                    <div id="typingIndicator" class="typing-indicator" style="display: none;">
+                        <div class="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <small class="text-muted">Ai đó đang gõ...</small>
+                    </div>
+                </div>
+
+                <!-- Message Input -->
+                <div class="chat-input">
+                    <!-- Reply Preview -->
+                    <div id="replyPreview" class="reply-preview" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-reply text-primary"></i>
+                                <strong id="replyToUser"></strong>: <span id="replyToMessage"></span>
+                            </div>
+                            <button type="button" class="btn-close" onclick="cancelReply()"></button>
+                        </div>
+                    </div>
+                    
+                    <form id="messageForm" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <input type="hidden" id="replyToId" value="">
+                        <div class="flex-grow-1">
+                            <input type="text" class="form-control" id="messageInput" 
+                                   placeholder="Nhập tin nhắn..." maxlength="1000" 
+                                   {% if membership.is_muted %}disabled{% endif %}>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="sendButton" 
+                                {% if membership.is_muted %}disabled{% endif %}>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                    
+                    {% if membership.is_muted %}
+                        <div class="text-center mt-2">
+                            <small class="text-warning">
+                                <i class="fas fa-volume-mute"></i> Bạn đã bị cấm gửi tin nhắn trong phòng này
+                            </small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="chat-sidebar">
+                <!-- Room Info -->
+                <div class="sidebar-section">
+                    <h6><i class="fas fa-info-circle"></i> Thông tin phòng</h6>
+                    {% if room.description %}
+                        <p class="small text-muted">{{ room.description }}</p>
+                    {% endif %}
+                    <div class="room-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Tạo bởi {{ room.created_by.get_full_name|default:room.created_by.username }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>{{ room.created_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-users"></i>
+                            <span>{{ members|length }}/{{ room.max_members }} thành viên</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Members List -->
+                <div class="sidebar-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6><i class="fas fa-users"></i> Thành viên</h6>
+                        {% if membership.role in 'admin,moderator' %}
+                            <button class="btn btn-sm btn-outline-primary" onclick="showInviteModal()">
+                                <i class="fas fa-user-plus"></i>
+                            </button>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="members-list" id="membersList">
+                        {% for member in members %}
+                            <div class="member-item" data-user-id="{{ member.user.id }}">
+                                <div class="d-flex align-items-center">
+                                    <div class="member-avatar">
+                                        {% if member.user.avatar %}
+                                            <img src="{{ member.user.avatar.url }}" alt="{{ member.user.get_full_name|default:member.user.username }}" class="rounded-circle">
+                                        {% else %}
+                                            <div class="avatar-placeholder small">
+                                                {{ member.user.get_full_name|default:member.user.username|first|upper }}
+                                            </div>
+                                        {% endif %}
+                                        <div class="online-indicator {% if member.last_seen and member.last_seen|timesince < '5 minutes' %}online{% endif %}"></div>
+                                    </div>
+                                    <div class="member-info">
+                                        <div class="member-name">{{ member.user.get_full_name|default:member.user.username }}</div>
+                                        <div class="member-role">
+                                            {% if member.role == 'admin' %}
+                                                <span class="badge bg-danger">Quản trị</span>
+                                            {% elif member.role == 'moderator' %}
+                                                <span class="badge bg-warning">Điều hành</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Thành viên</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Invite Member Modal -->
+<div class="modal fade" id="inviteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Mời thành viên</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="inviteForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="inviteUsername" class="form-label">Tên người dùng</label>
+                        <input type="text" class="form-control" id="inviteUsername" placeholder="Nhập username...">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="sendInvite()">Mời</button>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .chat-container {
+    height: calc(100vh - 140px);
+    max-height: 800px;
+}
+
+.chat-main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-right: 1rem;
+}
+
+.chat-header {
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 15px 15px 0 0;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+}
+
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #fafafa;
+    max-height: 680px;
+}
+sdfdsfd
+.message-item {
+    margin-bottom: 20px;
+}
+
+.message-bubble {
+    display: flex;
+    gap: 12px;
+}
+
+.own-message .message-bubble {
+    flex-direction: row-reverse;
+}
+
+.own-message .message-content {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    margin-left: auto;
+}
+
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+.message-avatar img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.avatar-placeholder.small {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+}
+
+.message-content {
+    background: white;
+    padding: 12px 16px;
+    border-radius: 18px;
+    max-width: 70%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.message-sender {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #6366f1;
+    margin-bottom: 4px;
+}
+
+.message-text {
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.message-time {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.own-message .message-time {
+    color: rgba(255,255,255,0.8);
+}
+
+.system-message {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.reply-to {
+    background: rgba(0,0,0,0.05);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    border-left: 3px solid #6366f1;
+}
+
+.own-message .reply-to {
+    background: rgba(255,255,255,0.2);
+    border-left-color: rgba(255,255,255,0.5);
+}
+
+.message-actions {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: 8px;
+}
+
+.message-item:hover .message-actions {
+    display: flex;
+}
+
+.chat-input {
+    padding: 20px;
+    border-top: 1px solid #e5e7eb;
+    background: white;
+    border-radius: 0 0 15px 15px;
+}
+
+.reply-preview {
+    background: #f3f4f6;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    border-left: 3px solid #6366f1;
+}
+
+.chat-sidebar {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    height: 100%;
+    overflow-y: auto;
+}
+
+.sidebar-section {
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.sidebar-section:last-child {
+    border-bottom: none;
+}
+
+.sidebar-section h6 {
+    color: #374151;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.room-stats {
+    space-y: 8px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.stat-item i {
+    width: 16px;
+    color: #6366f1;
+}
+
+.members-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Custom scrollbar cho danh sách thành viên */
+.members-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.members-list::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.members-list::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+    border-radius: 8px;
+    border: 1px solid #f8fafc;
+}
+
+.members-list::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+}
+
+/* Firefox scrollbar cho members list */
+.members-list {
+    scrollbar-width: thin;
+    scrollbar-color: #e2e8f0 #f8fafc;
+}
+
+.member-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    align-items: center;
+}
+
+.member-item:last-child {
+    border-bottom: none;
+}
+
+/* FIX: Điều chỉnh kích thước avatar thành viên */
+.member-avatar {
+    position: relative;
+    margin-right: 12px;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.member-avatar img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e5e7eb;
+}
+
+.member-avatar .avatar-placeholder {
+    width: 36px;
+    height: 36px;
+    font-size: 0.8rem;
+    border: 2px solid #e5e7eb;
+}
+
+.online-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #dc2626;
+    border: 2px solid white;
+}
+
+.online-indicator.online {
+    background: #16a34a;
+}
+
+.member-info {
+    flex: 1;
+    min-width: 0; /* Để text có thể truncate */
+}
+
+.member-name {
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: #374151;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.member-role {
+    margin-top: 4px;
+}
+
+.member-role .badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+}
+
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+}
+
+.typing-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.typing-dots span {
+    width: 8px;
+    height: 8px;
+    background: #6b7280;
+    border-radius: 50%;
+    animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typing {
+    0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .chat-container {
+        height: auto;
+        min-height: 600px;
+    }
+    
+    .chat-main {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .message-content {
+        max-width: 85%;
+    }
+    
+    /* Giảm kích thước avatar trên mobile */
+    .member-avatar {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .member-avatar img,
+    .member-avatar .avatar-placeholder {
+        width: 32px;
+        height: 32px;
+        font-size: 0.7rem;
+    }
+    
+    .online-indicator {
+        width: 8px;
+        height: 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    .sidebar-section {
+        padding: 15px;
+    }
+    
+    .member-item {
+        padding: 10px 0;
+    }
+    
+    .member-name {
+        font-size: 0.8rem;
+    }
+}
+.chat-messages {
+    height: 0; /* Force flex item to respect container height */
+}
+
+.chat-messages {
+    height: 0; /* Force flex item to respect container height */
+}
+.chat-container {
+    min-height: 600px; /* Đảm bảo có chiều cao tối thiểu */
+}
+</style>
+{% load chat_extras %}
+<script>
+    let currentReplyTo = null;
+let lastMessageId = {{ messages|last_id }};
+let isPolling = true;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const messagesContainer = document.getElementById('chatMessages');
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+    
+    // Scroll to bottom initially
+    scrollToBottom();
+    
+    // Handle message form submission
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        sendMessage();
+    });
+    
+    // Auto-resize input and handle enter key
+    messageInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+    
+    // Focus input
+    messageInput.focus();
+    
+    // Poll for new messages every 3 seconds (tăng interval để giảm conflict)
+    setInterval(pollMessages, 3000);
+});
+
+function sendMessage() {
+    const messageInput = document.getElementById('messageInput');
+    const message = messageInput.value.trim();
+    const replyToId = document.getElementById('replyToId').value;
+    
+    if (!message) return;
+    
+    // Tạm dừng polling khi đang gửi tin nhắn
+    isPolling = false;
+    
+    // Show sending state
+    const sendButton = document.getElementById('sendButton');
+    const originalContent = sendButton.innerHTML;
+    sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    sendButton.disabled = true;
+    
+    const formData = {
+        message: message,
+        reply_to: replyToId || null
+    };
+    
+    fetch(`/api/chat/room/{{ room.id }}/send/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            messageInput.value = '';
+            cancelReply();
+            
+            // Cập nhật lastMessageId trước khi thêm message
+            lastMessageId = data.message.id;
+            addMessage(data.message);
+            scrollToBottom();
+            
+            // Tiếp tục polling sau 1 giây
+            setTimeout(() => {
+                isPolling = true;
+            }, 1000);
+        } else {
+            alert('Lỗi: ' + (data.error || 'Không thể gửi tin nhắn'));
+            // Bật lại polling nếu có lỗi
+            isPolling = true;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Lỗi kết nối!');
+        // Bật lại polling nếu có lỗi
+        isPolling = true;
+    })
+    .finally(() => {
+        sendButton.innerHTML = originalContent;
+        sendButton.disabled = false;
+        messageInput.focus();
+    });
+}
+
+function addMessage(messageData) {
+    // Kiểm tra xem tin nhắn đã tồn tại chưa
+    const existingMessage = document.querySelector(`[data-message-id="${messageData.id}"]`);
+    if (existingMessage) {
+        return; // Không thêm nếu đã tồn tại
+    }
+    
+    const messagesContainer = document.getElementById('messagesContainer');
+    const messageHtml = createMessageHTML(messageData);
+    messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
+}
+
+function createMessageHTML(msg) {
+    const isOwn = msg.user === '{{ user.get_full_name|default:user.username }}';
+    const replyHtml = msg.reply_to ? `
+        <div class="reply-to">
+            <i class="fas fa-reply"></i>
+            <strong>${msg.reply_to.user}:</strong>
+            ${msg.reply_to.message}
+        </div>
+    ` : '';
+    
+    if (msg.message_type === 'system') {
+        return `
+            <div class="message-item" data-message-id="${msg.id}">
+                <div class="system-message">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i> ${msg.message}
+                    </small>
+                </div>
+            </div>
+        `;
+    }
+    
+    return `
+        <div class="message-item ${isOwn ? 'own-message' : ''}" data-message-id="${msg.id}">
+            <div class="message-bubble">
+                ${!isOwn ? `
+                    <div class="message-avatar">
+                        ${msg.user_avatar ? 
+                            `<img src="${msg.user_avatar}" alt="${msg.user}" class="rounded-circle">` :
+                            `<div class="avatar-placeholder">${msg.user.charAt(0).toUpperCase()}</div>`
+                        }
+                    </div>
+                ` : ''}
+                <div class="message-content">
+                    ${!isOwn ? `<div class="message-sender">${msg.user}</div>` : ''}
+                    ${replyHtml}
+                    <div class="message-text">${msg.message}</div>
+                    <div class="message-time">${msg.created_at}</div>
+                </div>
+                <div class="message-actions">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="replyToMessage(${msg.id}, '${msg.user}', '${msg.message.substring(0, 50)}')">
+                        <i class="fas fa-reply"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function replyToMessage(messageId, userName, messageText) {
+    currentReplyTo = messageId;
+    document.getElementById('replyToId').value = messageId;
+    document.getElementById('replyToUser').textContent = userName;
+    document.getElementById('replyToMessage').textContent = messageText;
+    document.getElementById('replyPreview').style.display = 'block';
+    document.getElementById('messageInput').focus();
+}
+
+function cancelReply() {
+    currentReplyTo = null;
+    document.getElementById('replyToId').value = '';
+    document.getElementById('replyPreview').style.display = 'none';
+}
+
+function scrollToBottom() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function pollMessages() {
+    // Không poll nếu đang gửi tin nhắn
+    if (!isPolling) return;
+    
+    fetch(`/api/chat/room/{{ room.id }}/messages/?offset=0&limit=10`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.messages && data.messages.length > 0) {
+            // Chỉ thêm những tin nhắn mới hơn lastMessageId
+            const newMessages = data.messages.filter(msg => msg.id > lastMessageId);
+            
+            if (newMessages.length > 0) {
+                newMessages.forEach(msg => {
+                    addMessage(msg);
+                });
+                
+                // Cập nhật lastMessageId với tin nhắn mới nhất
+                const newestMessage = newMessages[newMessages.length - 1];
+                lastMessageId = newestMessage.id;
+                scrollToBottom();
+            }
+        }
+    })
+    .catch(error => console.error('Polling error:', error));
+}
+
+// Các functions khác giữ nguyên...
+function leaveRoom() {
+    if (confirm('Bạn có chắc muốn rời khỏi phòng này?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "chat_room_leave" room.id %}';
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = getCookie('csrftoken');
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function deleteRoom() {
+    if (confirm('Bạn có chắc muốn xóa phòng này? Hành động này không thể hoàn tác!')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "chat_room_delete" room.id %}';
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = getCookie('csrftoken');
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function showInviteModal() {
+    const modal = new bootstrap.Modal(document.getElementById('inviteModal'));
+    modal.show();
+}
+
+function sendInvite() {
+    const username = document.getElementById('inviteUsername').value.trim();
+    if (!username) {
+        alert('Vui lòng nhập tên người dùng!');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    
+    fetch(`/chat/room/{{ room.id }}/invite/`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            bootstrap.Modal.getInstance(document.getElementById('inviteModal')).hide();
+            document.getElementById('inviteUsername').value = '';
+            location.reload();
+        } else {
+            alert('Lỗi: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Lỗi kết nối!');
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

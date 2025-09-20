@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - StudyShare</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-card: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            --shadow-sm: 0 2px 10px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.15);
+            --border-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--gradient-bg);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .profile-container {
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        .profile-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        .profile-header {
+            background: var(--gradient-card);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-bg);
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        .profile-header > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .avatar-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            object-fit: cover;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .avatar-upload {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 35px;
+            height: 35px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 3px solid white;
+        }
+
+        .avatar-upload:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1);
+        }
+
+        .premium-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #ffd700, #ffed4a);
+            color: #8b4513;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-bg);
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.stat-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+    font-size: 1rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.stat-number {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
+}
+
+.stat-label {
+    color: #64748b;
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1.3;
+    margin: 0;
+}
+
+/* Compact layout for smaller screens */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin: 1rem 0;
+    }
+    
+    .stat-card {
+        padding: 1rem 0.75rem;
+    }
+    
+    .stat-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        gap: 0.5rem;
+    }
+    
+    .stat-card {
+        padding: 0.875rem 0.5rem;
+        border-radius: 10px;
+    }
+    
+    .stat-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+    
+    .stat-number {
+        font-size: 1.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+}
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .recent-activity {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+            border-left: 4px solid var(--primary-color);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .activity-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateX(5px);
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+
+        .btn-custom {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-custom:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+            font-size: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .profile-container {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+            
+            .avatar {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .profile-header {
+                padding: 1.5rem;
+            }
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <i class="fas fa-graduation-cap me-2"></i>StudyShare
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{% url 'dashboard' %}">
+                    <i class="fas fa-home me-1"></i>Dashboard
+                </a>
+                <a class="nav-link" href="{% url 'logout' %}">
+                    <i class="fas fa-sign-out-alt me-1"></i>Đăng xuất
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-container" style="margin-top: 80px;">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <!-- Profile Info Card -->
+                    <div class="profile-card fade-in">
+                        <div class="profile-header">
+                            <div class="avatar-container">
+                                <img src="{% if user.avatar and user.avatar.url %}{{ user.avatar.url }}{% else %}https://via.placeholder.com/120x120/6366f1/ffffff?text={{ user.username|first|upper }}{% endif %}" 
+     alt="Avatar" class="avatar" id="avatarImg">
+                                <div class="avatar-upload" onclick="document.getElementById('avatarInput').click()">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                            </div>
+                            <h3 class="mb-1">{{ user.get_full_name|default:user.username }}</h3>
+                            <p class="text-muted mb-2">@{{ user.username }}</p>
+                            {% if user.is_premium %}
+                                <span class="premium-badge">
+                                    <i class="fas fa-crown me-1"></i>Premium
+                                </span>
+                            {% endif %}
+                            {% if user.bio %}
+                                <p class="mt-3">{{ user.bio }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="p-3">
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'profile_edit' %}" class="btn btn-custom">
+                                    <i class="fas fa-edit"></i>Chỉnh sửa profile
+                                </a>
+                                <a href="{% url 'change_password' %}" class="btn btn-outline">
+                                    <i class="fas fa-key"></i>Đổi mật khẩu
+                                </a>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    Thành viên từ {{ user.date_joined|date:"d/m/Y" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <!-- Statistics -->
+                    <div class="profile-card fade-in mb-4">
+                        <div class="p-3">
+                            <h4 class="section-title">
+                                <i class="fas fa-chart-bar"></i>
+                                Thống kê hoạt động
+                            </h4>
+                            
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-icon" style="background: linear-gradient(45deg, #667eea, #764ba2);">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <div class="stat-number">{{ total_documents }}</div>
+                                    <div class="stat-label">Tài liệu đã tải</div>
+                                </div>
+                                
+                                <div class="stat-card">
+                                    <div class="stat-icon" style="background: linear-gradient(45deg, #f093fb, #f5576c);">
+                                        <i class="fas fa-download"></i>
+                                    </div>
+                                    <div class="stat-number">{{ total_downloads }}</div>
+                                    <div class="stat-label">Lượt tải xuống</div>
+                                </div>
+                                
+                                <div class="stat-card">
+                                    <div class="stat-icon" style="background: linear-gradient(45deg, #4facfe, #00f2fe);">
+                                        <i class="fas fa-heart"></i>
+                                    </div>
+                                    <div class="stat-number">{{ total_likes }}</div>
+                                    <div class="stat-label">Lượt thích</div>
+                                </div>
+                                
+                                <div class="stat-card">
+                                    <div class="stat-icon" style="background: linear-gradient(45deg, #43e97b, #38f9d7);">
+                                        <i class="fas fa-brain"></i>
+                                    </div>
+                                    <div class="stat-number">{{ total_quiz_attempts }}</div>
+                                    <div class="stat-label">Quiz hoàn thành</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Documents -->
+                    <div class="profile-card fade-in">
+                        <div class="recent-activity">
+                            <h4 class="section-title">
+                                <i class="fas fa-clock"></i>
+                                Tài liệu gần đây
+                            </h4>
+                            
+                            {% if recent_documents %}
+                                {% for doc in recent_documents %}
+                                <div class="activity-item">
+                                    <div class="activity-icon">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">{{ doc.title }}</h6>
+                                        <small class="text-muted">
+                                            {{ doc.course.name }} • {{ doc.created_at|timesince }} trước
+                                        </small>
+                                        <div class="mt-1">
+                                            <span class="badge bg-primary me-1">{{ doc.view_count }} lượt xem</span>
+                                            <span class="badge bg-success">{{ doc.download_count }} tải xuống</span>
+                                        </div>
+                                    </div>
+                                    <div class="ms-auto">
+                                        <a href="#" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <p>Bạn chưa tải lên tài liệu nào</p>
+                                    <a href="#" class="btn btn-custom">
+                                        <i class="fas fa-plus"></i>Tải lên tài liệu đầu tiên
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Avatar upload functionality
+        document.getElementById('avatarInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Vui lòng chọn file ảnh');
+                return;
+            }
+
+            // Validate file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File quá lớn (tối đa 5MB)');
+                return;
+            }
+
+            // Preview image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('avatarImg').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            // Upload file
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            // Show loading
+            document.querySelector('.avatar-upload').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            fetch('{% url "upload_avatar" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+    if (data.success) {
+        // Cập nhật avatar URL từ response
+        if (data.avatar_url) {
+            document.getElementById('avatarImg').src = data.avatar_url;
+        }
+        
+        // Success feedback
+        const avatarUpload = document.querySelector('.avatar-upload');
+        avatarUpload.innerHTML = '<i class="fas fa-check"></i>';
+        avatarUpload.style.background = '#10b981';
+        
+        setTimeout(() => {
+            avatarUpload.innerHTML = '<i class="fas fa-camera"></i>';
+            avatarUpload.style.background = '#6366f1';
+        }, 2000);
+        
+        // Hiển thị thông báo thành công
+        if (data.message) {
+            // Có thể thêm toast notification ở đây
+            console.log(data.message);
+        }
+    } else {
+        alert(data.error || 'Có lỗi xảy ra');
+        document.querySelector('.avatar-upload').innerHTML = '<i class="fas fa-camera"></i>';
+    }
+})
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi tải ảnh');
+                document.querySelector('.avatar-upload').innerHTML = '<i class="fas fa-camera"></i>';
+            });
+        });
+
+        // Animate stats on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationDelay = Math.random() * 0.3 + 's';
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all stat cards
+        document.querySelectorAll('.stat-card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

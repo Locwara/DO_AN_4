@@ -1,0 +1,835 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block title %}{{ solution.title }} | StudyShare{% endblock %}
+
+{% block extra_css %}
+<!-- Bootstrap CSS nếu chưa có trong base template -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+:root {
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --border: #e5e7eb;
+  --dark: #1f2937;
+}
+
+.solution-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 2rem;
+  color: white;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.solution-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.solution-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.solution-image {
+  max-width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  margin-bottom: 2rem;
+}
+
+.solution-content {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+.conversation-section {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.conversation-header {
+  background: var(--primary);
+  color: white;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.message-thread {
+  padding: 1rem;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.message {
+  margin-bottom: 1.5rem;
+  display: flex;
+  animation: fadeInUp 0.3s ease;
+}
+
+.message.user {
+  justify-content: flex-end;
+}
+
+.message.assistant {
+  justify-content: flex-start;
+}
+
+.message-content {
+  max-width: 70%;
+  padding: 1.5rem;
+  border-radius: 20px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.message.user .message-content {
+  background: var(--primary);
+  color: white;
+  border-bottom-right-radius: 8px;
+}
+
+.message.assistant .message-content {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 8px;
+  color: var(--dark);
+}
+
+.stats-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border: 1px solid var(--border);
+}
+
+.stats-number {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.stats-label {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.btn-action {
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.btn-primary-action {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary-action:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+  color: white;
+}
+
+.btn-outline-action {
+  background: transparent;
+  border: 2px solid var(--border);
+  color: var(--dark);
+}
+
+.btn-outline-action:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.meta-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: rgba(255,255,255,0.8);
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .solution-header {
+    padding: 1.5rem;
+    text-align: center;
+  }
+  
+  .action-buttons {
+    justify-content: center;
+  }
+  
+  .message-content {
+    max-width: 85%;
+  }
+  
+  .stats-card {
+    margin-bottom: 1rem;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+  <!-- Back Button -->
+  <div class="mb-3">
+    <a href="{% url 'ai_image_solver' %}" class="btn btn-outline-action">
+      <i class="fas fa-arrow-left"></i>
+      Quay Lại
+    </a>
+  </div>
+
+  <!-- Solution Header -->
+  <div class="solution-header">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="h2 mb-2">{{ solution.title }}</h1>
+        <div class="meta-info">
+          <div class="meta-item">
+            <i class="fas fa-calendar"></i>
+            {{ solution.created_at|date:"d/m/Y H:i" }}
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-clock"></i>
+            {{ solution.processing_time }}ms
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-eye"></i>
+            {{ solution.view_count }} lượt xem
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 text-end">
+        <div class="action-buttons">
+          <button class="btn-action btn-outline-action" onclick="shareSolution()">
+            <i class="fas fa-share"></i>
+            Chia Sẻ
+          </button>
+          <button class="btn-action btn-primary-action" onclick="continueSolution()">
+            <i class="fas fa-comments"></i>
+            Tiếp Tục Chat
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+      <!-- Original Image -->
+      <div class="solution-content">
+        <h3 class="mb-3">
+          <i class="fas fa-image text-primary me-2"></i>
+          Hình Ảnh Gốc
+        </h3>
+        <img src="{{ solution.image_url.url }}" alt="Original Image" class="solution-image">
+        {% if solution.original_filename %}
+          <p class="text-muted mt-2">
+            <i class="fas fa-file me-1"></i>
+            {{ solution.original_filename }}
+          </p>
+        {% endif %}
+      </div>
+
+      <!-- AI Solution -->
+      <div class="solution-content">
+        <h3 class="mb-3">
+          <i class="fas fa-robot text-success me-2"></i>
+          Lời Giải AI
+        </h3>
+        <div class="solution-text">{{ solution.ai_solution }}</div>
+        
+        <div class="action-buttons">
+          <button class="btn-action btn-outline-action" onclick="copyToClipboard()">
+            <i class="fas fa-copy"></i>
+            Sao Chép
+          </button>
+          <button class="btn-action btn-outline-action" onclick="downloadSolution()">
+            <i class="fas fa-download"></i>
+            Tải Xuống
+          </button>
+          <button class="btn-action btn-outline-action" onclick="reportSolution()">
+            <i class="fas fa-flag"></i>
+            Báo Cáo
+          </button>
+        </div>
+      </div>
+
+      <!-- Conversation History -->
+      {% for conv_data in conversations_with_messages %}
+        <div class="conversation-section">
+          <div class="conversation-header">
+            <h4 class="mb-0">
+              <i class="fas fa-comments me-2"></i>
+              {{ conv_data.conversation.title }}
+            </h4>
+            <small class="opacity-75">
+              Bắt đầu: {{ conv_data.conversation.created_at|date:"d/m/Y H:i" }}
+            </small>
+          </div>
+          
+          <div class="message-thread">
+            {% for message in conv_data.messages %}
+              <div class="message {{ message.role }}">
+                <div class="message-content">
+                  {{ message.content }}
+                  {% if message.image_url %}
+                    <img src="{{ message.image_url.url }}" alt="Message Image" 
+                         style="max-width: 100%; border-radius: 8px; margin-top: 0.5rem;">
+                  {% endif %}
+                  <div class="message-time mt-2" style="font-size: 0.8rem; opacity: 0.7;">
+                    {{ message.created_at|date:"H:i" }}
+                    {% if message.response_time %}
+                      • {{ message.response_time }}ms
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% empty %}
+              <div class="text-center text-muted py-3">
+                <i class="fas fa-comments me-2"></i>
+                Chưa có tin nhắn nào
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% empty %}
+        <div class="conversation-section">
+          <div class="conversation-header">
+            <h4 class="mb-0">
+              <i class="fas fa-comments me-2"></i>
+              Chưa có cuộc trò chuyện
+            </h4>
+          </div>
+          <div class="message-thread">
+            <div class="text-center text-muted py-4">
+              <i class="fas fa-comment-slash me-2" style="font-size: 2rem;"></i>
+              <p class="mt-2">Chưa có cuộc trò chuyện nào với AI về bài giải này.</p>
+              <button class="btn btn-primary" onclick="continueSolution()">
+                <i class="fas fa-comments me-2"></i>
+                Bắt Đầu Trò Chuyện
+              </button>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <!-- Statistics -->
+      <div class="row mb-4">
+        <div class="col-6">
+          <div class="stats-card">
+            <div class="stats-number">{{ solution.view_count }}</div>
+            <div class="stats-label">Lượt Xem</div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="stats-card">
+            <div class="stats-number">{{ solution.like_count|default:0 }}</div>
+            <div class="stats-label">Lượt Thích</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="card-title mb-3">
+            <i class="fas fa-bolt text-warning me-2"></i>
+            Thao Tác Nhanh
+          </h5>
+          
+          <div class="d-grid gap-2">
+            <button class="btn btn-primary" onclick="continueSolution()">
+              <i class="fas fa-comments me-2"></i>
+              Tiếp Tục Trò Chuyện
+            </button>
+            
+            <button class="btn btn-outline-primary" onclick="createNewSolution()">
+              <i class="fas fa-plus me-2"></i>
+              Giải Bài Mới
+            </button>
+            
+            <button class="btn btn-outline-success" onclick="saveTofavorites()">
+              <i class="fas fa-bookmark me-2"></i>
+              Lưu Vào Yêu Thích
+            </button>
+            
+            <button class="btn btn-outline-info" onclick="shareViaSocial()">
+              <i class="fas fa-share-alt me-2"></i>
+              Chia Sẻ MXH
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Related Solutions -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="card-title mb-3">
+            <i class="fas fa-lightbulb text-warning me-2"></i>
+            Giải Pháp Liên Quan
+          </h5>
+          
+          <!-- Placeholder for related solutions -->
+          <div class="text-center text-muted py-3">
+            <i class="fas fa-search me-2"></i>
+            Tính năng đang phát triển
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Confidence -->
+      {% if solution.confidence_score %}
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-3">
+            <i class="fas fa-chart-line text-primary me-2"></i>
+            Độ Tin Cậy AI
+          </h5>
+          
+          <div class="progress mb-2" style="height: 8px;">
+            <div class="progress-bar bg-success" role="progressbar" 
+                 style="width: {{ solution.confidence_score }}%">
+            </div>
+          </div>
+          
+          <div class="d-flex justify-content-between">
+            <small class="text-muted">Độ tin cậy</small>
+            <small class="text-success fw-bold">{{ solution.confidence_score }}%</small>
+          </div>
+          
+          <p class="mt-3 mb-0 small text-muted">
+            <i class="fas fa-info-circle me-1"></i>
+            Độ tin cậy dựa trên khả năng đọc và hiểu nội dung của AI
+          </p>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+
+<!-- Share Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-share me-2"></i>
+          Chia Sẻ Bài Giải
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Link chia sẻ:</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="shareLink" 
+                   value="{{ request.build_absolute_uri }}" readonly>
+            <button class="btn btn-outline-primary" onclick="copyShareLink()">
+              <i class="fas fa-copy"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="d-grid gap-2">
+          <button class="btn btn-primary" onclick="shareViaFacebook()">
+            <i class="fab fa-facebook-f me-2"></i>
+            Chia sẻ lên Facebook
+          </button>
+          <button class="btn btn-info text-white" onclick="shareViaTwitter()">
+            <i class="fab fa-twitter me-2"></i>
+            Chia sẻ lên Twitter
+          </button>
+          <button class="btn btn-success" onclick="shareViaWhatsApp()">
+            <i class="fab fa-whatsapp me-2"></i>
+            Chia sẻ qua WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Report Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-flag me-2"></i>
+          Báo Cáo Bài Giải
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="reportForm">
+          <div class="mb-3">
+            <label class="form-label">Lý do báo cáo:</label>
+            <select class="form-select" name="reason" required>
+              <option value="">Chọn lý do...</option>
+              <option value="inappropriate">Nội dung không phù hợp</option>
+              <option value="wrong">Bài giải sai</option>
+              <option value="spam">Spam</option>
+              <option value="copyright">Vi phạm bản quyền</option>
+              <option value="other">Khác</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Mô tả chi tiết:</label>
+            <textarea class="form-control" name="description" rows="3" 
+                      placeholder="Vui lòng mô tả cụ thể vấn đề..."></textarea>
+          </div>
+          
+          <div class="d-grid">
+            <button type="submit" class="btn btn-danger">
+              <i class="fas fa-flag me-2"></i>
+              Gửi Báo Cáo
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// Global variables
+const solutionId = {{ solution.id }};
+const conversationId = {{ conversations.0.id|default:"null" }};
+
+// Continue solution in new chat
+function continueSolution() {
+  if (conversationId) {
+    window.location.href = `{% url 'ai_image_solver' %}?conversation=${conversationId}`;
+  } else {
+    window.location.href = '{% url "ai_image_solver" %}';
+  }
+}
+
+// Create new solution
+function createNewSolution() {
+  window.location.href = '{% url "ai_image_solver" %}';
+}
+
+// Share functions
+function shareSolution() {
+  try {
+    const shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+    shareModal.show();
+  } catch (error) {
+    console.error('Bootstrap error:', error);
+    // Fallback
+    alert('Tính năng chia sẻ đang được phát triển!');
+  }
+}
+
+function copyShareLink() {
+  const shareLink = document.getElementById('shareLink');
+  
+  // Modern clipboard API
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(shareLink.value).then(() => {
+      showToast('success', 'Đã sao chép link!');
+    }).catch(() => {
+      // Fallback
+      shareLink.select();
+      document.execCommand('copy');
+      showToast('success', 'Đã sao chép link!');
+    });
+  } else {
+    // Fallback for older browsers
+    shareLink.select();
+    document.execCommand('copy');
+    showToast('success', 'Đã sao chép link!');
+  }
+}
+
+function shareViaFacebook() {
+  const url = encodeURIComponent(window.location.href);
+  const title = encodeURIComponent('{{ solution.title|escapejs }}');
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+}
+
+function shareViaTwitter() {
+  const url = encodeURIComponent(window.location.href);
+  const text = encodeURIComponent('Xem bài giải AI này: {{ solution.title|escapejs }}');
+  window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+}
+
+function shareViaWhatsApp() {
+  const url = encodeURIComponent(window.location.href);
+  const text = encodeURIComponent('Xem bài giải AI: {{ solution.title|escapejs }}');
+  window.open(`https://wa.me/?text=${text} ${url}`, '_blank');
+}
+
+// Copy solution to clipboard
+function copyToClipboard() {
+  const solutionText = `{{ solution.ai_solution|escapejs }}`;
+  
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(solutionText).then(() => {
+      showToast('success', 'Đã sao chép bài giải!');
+    });
+  } else {
+    // Fallback
+    const textArea = document.createElement('textarea');
+    textArea.value = solutionText;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    showToast('success', 'Đã sao chép bài giải!');
+  }
+}
+
+// Download solution as text file
+function downloadSolution() {
+  const content = `Tiêu đề: {{ solution.title|escapejs }}
+Ngày tạo: {{ solution.created_at|date:"d/m/Y H:i" }}
+Thời gian xử lý: {{ solution.processing_time }}ms
+
+Lời giải AI:
+{{ solution.ai_solution|escapejs }}
+
+---
+Được tạo bởi StudyShare AI`;
+
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `{{ solution.title|escapejs }}.txt`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Report solution - Fixed version
+function reportSolution() {
+  try {
+    // Check if Bootstrap is available
+    if (typeof bootstrap === 'undefined') {
+      throw new Error('Bootstrap not loaded');
+    }
+    
+    const reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
+    reportModal.show();
+  } catch (error) {
+    console.error('Bootstrap error:', error);
+    
+    // Fallback using simple prompts
+    const confirmed = confirm('Bạn có muốn báo cáo bài giải này không?');
+    if (!confirmed) return;
+    
+    const reason = prompt('Lý do báo cáo:\n1. Nội dung không phù hợp\n2. Bài giải sai\n3. Spam\n4. Vi phạm bản quyền\n5. Khác\n\nNhập số (1-5):');
+    
+    if (!reason || !['1','2','3','4','5'].includes(reason)) {
+      alert('Lý do không hợp lệ');
+      return;
+    }
+    
+    const description = prompt('Mô tả chi tiết (tùy chọn):') || '';
+    
+    // Send report
+    submitReport(['inappropriate','wrong','spam','copyright','other'][parseInt(reason)-1], description);
+  }
+}
+
+// Handle report form submission
+function submitReport(reason, description) {
+  const formData = new FormData();
+  formData.append('solution_id', solutionId);
+  formData.append('reason', reason);
+  formData.append('description', description);
+  
+  fetch('/api/user-report/', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      try {
+        if (typeof bootstrap !== 'undefined') {
+          bootstrap.Modal.getInstance(document.getElementById('reportModal'))?.hide();
+        }
+      } catch (e) {
+        console.log('Modal hide error:', e);
+      }
+      showToast('success', 'Báo cáo đã được gửi thành công!');
+      document.getElementById('reportForm')?.reset();
+    } else {
+      showToast('error', 'Có lỗi khi gửi báo cáo: ' + data.error);
+    }
+  })
+  .catch(error => {
+    showToast('error', 'Có lỗi xảy ra: ' + error.message);
+  });
+}
+
+// Save to favorites (placeholder)
+function saveTofavorites() {
+  showToast('info', 'Tính năng đang phát triển!');
+}
+
+// Share via social media (placeholder)
+function shareViaSocial() {
+  shareSolution();
+}
+
+// Utility functions
+function showToast(type, message) {
+  try {
+    // Try Bootstrap toast
+    if (typeof bootstrap !== 'undefined') {
+      const toast = document.createElement('div');
+      toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0`;
+      toast.setAttribute('role', 'alert');
+      toast.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">${message}</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      `;
+      
+      let toastContainer = document.getElementById('toast-container');
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+      }
+      
+      toastContainer.appendChild(toast);
+      
+      const bsToast = new bootstrap.Toast(toast);
+      bsToast.show();
+      
+      toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+      });
+    } else {
+      throw new Error('Bootstrap not available');
+    }
+  } catch (error) {
+    // Fallback to alert
+    console.error('Toast error:', error);
+    alert(message);
+  }
+}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-scroll to bottom of conversations on load
+  const messageThreads = document.querySelectorAll('.message-thread');
+  messageThreads.forEach(thread => {
+    thread.scrollTop = thread.scrollHeight;
+  });
+  
+  // Setup report form event listener if modal exists
+  const reportForm = document.getElementById('reportForm');
+  if (reportForm) {
+    reportForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const reason = formData.get('reason');
+      const description = formData.get('description') || '';
+      
+      if (!reason) {
+        alert('Vui lòng chọn lý do báo cáo');
+        return;
+      }
+      
+      submitReport(reason, description);
+    });
+  }
+});
+</script>
+{% endblock %}

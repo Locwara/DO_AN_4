@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tải Lên Tài Liệu - StudyShare</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --border-radius: 16px;
+            --border-radius-lg: 24px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--gradient-primary);
+            min-height: 100vh;
+            color: var(--dark-color);
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: none;
+            box-shadow: var(--shadow);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+            font-size: 1.5rem;
+        }
+
+        .main-container {
+            min-height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .upload-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .upload-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(20px, -20px) rotate(120deg); }
+            66% { transform: translate(-10px, 10px) rotate(240deg); }
+        }
+
+        .upload-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .upload-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 2;
+        }
+
+        .upload-body {
+            padding: 3rem 2rem;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-circle {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        }
+
+        .step:not(.active) .step-circle {
+            background: var(--gray-200);
+            color: var(--gray-500);
+        }
+
+        .step-divider {
+            width: 60px;
+            height: 2px;
+            background: var(--gray-200);
+            margin: 0 1rem;
+        }
+
+        .step.active + .step-divider {
+            background: var(--primary-color);
+        }
+
+        .file-upload-area {
+            border: 3px dashed var(--gray-300);
+            border-radius: var(--border-radius);
+            padding: 4rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            background: linear-gradient(45deg, transparent 49%, rgba(99, 102, 241, 0.02) 50%, transparent 51%);
+            background-size: 20px 20px;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(99, 102, 241, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--primary-color);
+            background-color: rgba(99, 102, 241, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--gray-500);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-area:hover .upload-icon {
+            color: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        .upload-text h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark-color);
+        }
+
+        .upload-text p {
+            color: var(--gray-500);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .file-types {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .file-type {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .selected-files {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--gray-100);
+            border-radius: var(--border-radius);
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: white;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+
+        .file-details h5 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--dark-color);
+        }
+
+        .file-details small {
+            color: var(--gray-500);
+        }
+
+        .remove-file {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .remove-file:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn {
+            font-weight: 500;
+            padding: 0.75rem 2rem;
+            border-radius: var(--border-radius);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--dark-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-300);
+            transform: translateY(-1px);
+            color: var(--dark-color);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 3rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .upload-tips {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .upload-tips h5 {
+            color: var(--success-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .upload-tips ul {
+            list-style: none;
+            margin: 0;
+        }
+
+        .upload-tips li {
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .upload-tips li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .upload-container {
+                margin: 0;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+
+            .upload-header h1 {
+                font-size: 2rem;
+            }
+
+            .upload-body {
+                padding: 2rem 1rem;
+            }
+
+            .file-upload-area {
+                padding: 2rem 1rem;
+            }
+
+            .progress-steps {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .step-divider {
+                width: 2px;
+                height: 30px;
+                transform: rotate(90deg);
+            }
+
+            .action-buttons {
+                flex-direction: column-reverse;
+                align-items: stretch;
+            }
+
+            .btn {
+                justify-content: center;
+            }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--gray-200);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-graduation-cap me-2"></i>StudyShare
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="#"><i class="fas fa-home me-1"></i>Trang chủ</a>
+                <a class="nav-link" href="#"><i class="fas fa-user me-1"></i>Lê Lộc</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <div class="upload-container">
+            <!-- Header -->
+            <div class="upload-header">
+                <h1><i class="fas fa-cloud-upload-alt me-3"></i>Tải Lên Tài Liệu</h1>
+                <p>Chia sẻ kiến thức và giúp đỡ cộng đồng sinh viên</p>
+            </div>
+
+            <!-- Body -->
+            <div class="upload-body">
+                <!-- Progress Steps -->
+                <div class="progress-steps">
+                    <div class="step active">
+                        <div class="step-circle">1</div>
+                        <span>Chọn Tài Liệu</span>
+                    </div>
+                    <div class="step-divider"></div>
+                    <div class="step">
+                        <div class="step-circle">2</div>
+                        <span>Điền Thông Tin</span>
+                    </div>
+                </div>
+
+                <!-- File Upload Area -->
+                <div class="file-upload-area" id="fileUploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">
+                        <h3>Kéo thả file vào đây hoặc click để chọn</h3>
+                        <p>Hỗ trợ nhiều định dạng file khác nhau</p>
+                        <!-- FIXED: Removed the button from upload area to prevent conflict -->
+                    </div>
+                    
+                    <div class="file-types">
+                        <span class="file-type">PDF</span>
+                        <span class="file-type">DOC/DOCX</span>
+                        <span class="file-type">PPT/PPTX</span>
+                        <span class="file-type">TXT</span>
+                        <span class="file-type">XLS/XLSX</span>
+                        <span class="file-type">IMAGE</span>
+                    </div>
+                </div>
+
+                <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.xls,.xlsx,.jpg,.jpeg,.png,.gif">
+
+                <!-- Selected Files -->
+                <div id="selectedFiles" class="selected-files" style="display: none;">
+                    <h5><i class="fas fa-files me-2"></i>Tài liệu đã chọn:</h5>
+                    <div id="filesList"></div>
+                </div>
+
+                <!-- Upload Tips -->
+                <div class="upload-tips">
+                    <h5><i class="fas fa-lightbulb me-2"></i>Gợi ý tải lên:</h5>
+                    <ul>
+                        <li>Chọn tài liệu có chất lượng tốt và rõ ràng</li>
+                        <li>Tên file nên mô tả nội dung (VD: "Bai-tap-toan-cao-cap-chuong-1.pdf")</li>
+                        <li>Kích thước file tối đa: 50MB mỗi file</li>
+                        <li>Có thể chọn nhiều file cùng lúc</li>
+                        <li>Đảm bảo tài liệu không vi phạm bản quyền</li>
+                    </ul>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <a href="#" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay Lại
+                    </a>
+                    <!-- FIXED: Added hardcoded URL and type="button" -->
+                    <button type="button" class="btn btn-primary" data-next-url="/upload/step2/" id="nextStepBtn" disabled>
+                        Tiếp Theo
+                        <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Đang xử lý file...</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <!-- Replace the entire <script> section in your Step 1 template with this -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    let selectedFiles = [];
+
+    const fileInput = document.getElementById('fileInput');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const selectedFilesDiv = document.getElementById('selectedFiles');
+    const filesList = document.getElementById('filesList');
+    const nextStepBtn = document.getElementById('nextStepBtn');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    if (!nextStepBtn) {
+        console.error('nextStepBtn not found!');
+        return;
+    }
+
+    // File selection events
+    if (fileUploadArea) {
+        fileUploadArea.addEventListener('click', (e) => {
+            e.preventDefault();
+            fileInput.click();
+        });
+    }
+
+    if (fileInput) {
+        fileInput.addEventListener('change', handleFiles);
+    }
+
+    // Drag and drop
+    if (fileUploadArea) {
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        });
+
+        fileUploadArea.addEventListener('dragleave', () => {
+            fileUploadArea.classList.remove('dragover');
+        });
+
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            handleFiles({ target: { files } });
+        });
+    }
+
+    function handleFiles(e) {
+        const files = Array.from(e.target.files);
+        
+        files.forEach(file => {
+            if (validateFile(file)) {
+                const exists = selectedFiles.some(f => f.name === file.name && f.size === file.size);
+                if (!exists) {
+                    selectedFiles.push(file);
+                }
+            }
+        });
+
+        displaySelectedFiles();
+        updateNextButton();
+    }
+
+    function validateFile(file) {
+        const maxSize = 50 * 1024 * 1024; // 50MB
+        const allowedTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'text/plain',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'image/jpeg',
+            'image/jpg',
+            'image/png',
+            'image/gif'
+        ];
+
+        if (file.size > maxSize) {
+            alert(`File "${file.name}" quá lớn. Kích thước tối đa: 50MB`);
+            return false;
+        }
+
+        if (!allowedTypes.includes(file.type)) {
+            alert(`File "${file.name}" không được hỗ trợ.`);
+            return false;
+        }
+
+        return true;
+    }
+
+    function displaySelectedFiles() {
+        if (selectedFiles.length === 0) {
+            if (selectedFilesDiv) selectedFilesDiv.style.display = 'none';
+            return;
+        }
+
+        if (selectedFilesDiv) selectedFilesDiv.style.display = 'block';
+        if (filesList) filesList.innerHTML = '';
+
+        selectedFiles.forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            const fileIcon = getFileIcon(fileExtension);
+
+            fileItem.innerHTML = `
+                <div class="file-info">
+                    <div class="file-icon">
+                        <i class="fas fa-${fileIcon}"></i>
+                    </div>
+                    <div class="file-details">
+                        <h5>${file.name}</h5>
+                        <small>${formatFileSize(file.size)} • ${fileExtension.toUpperCase()}</small>
+                    </div>
+                </div>
+                <button class="remove-file" onclick="removeFile(${index})">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+            if (filesList) filesList.appendChild(fileItem);
+        });
+    }
+
+    window.removeFile = function(index) {
+        selectedFiles.splice(index, 1);
+        displaySelectedFiles();
+        updateNextButton();
+    };
+
+    function updateNextButton() {
+        if (nextStepBtn) {
+            nextStepBtn.disabled = selectedFiles.length === 0;
+        }
+    }
+
+    function getFileIcon(extension) {
+        const iconMap = {
+            'pdf': 'file-pdf',
+            'doc': 'file-word',
+            'docx': 'file-word',
+            'ppt': 'file-powerpoint',
+            'pptx': 'file-powerpoint',
+            'txt': 'file-alt',
+            'xls': 'file-excel',
+            'xlsx': 'file-excel',
+            'jpg': 'file-image',
+            'jpeg': 'file-image',
+            'png': 'file-image',
+            'gif': 'file-image'
+        };
+        return iconMap[extension] || 'file';
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // FIX: Upload files to temporary storage instead of storing in session
+    nextStepBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('Next step clicked, selected files:', selectedFiles.length);
+        
+        if (selectedFiles.length > 0) {
+            if (loadingOverlay) loadingOverlay.style.display = 'flex';
+            
+            // Upload files to temporary storage
+            uploadTemporaryFiles(selectedFiles);
+        } else {
+            alert('Vui lòng chọn ít nhất một file!');
+        }
+        
+        return false;
+    });
+
+    // NEW FUNCTION: Upload files to temporary storage
+    function uploadTemporaryFiles(files) {
+        const formData = new FormData();
+        
+        files.forEach(file => {
+            formData.append('files', file);
+        });
+
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                         document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+
+        fetch('/upload/api/temporary-upload/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Files uploaded temporarily:', data);
+                // Store session key for step 2
+                sessionStorage.setItem('tempUploadSession', data.data.session_key || 'temp');
+                // Redirect to step 2
+                window.location.href = '/upload/step2/';
+            } else {
+                alert('Lỗi upload file: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Upload error:', error);
+            alert('Có lỗi xảy ra khi upload file: ' + error.message);
+        })
+        .finally(() => {
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+        });
+    }
+
+    // Reset
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    selectedFiles = [];
+});
+</script>
+</body>
+</html>
