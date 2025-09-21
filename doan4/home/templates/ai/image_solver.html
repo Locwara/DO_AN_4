@@ -14,6 +14,7 @@
   --dark: #1f2937;
   --light: #f9fafb;
   --border: #e5e7eb;
+  --file-mode: #8b5cf6;
 }
 
 .ai-container {
@@ -66,9 +67,36 @@
   background: rgba(99, 102, 241, 0.05);
 }
 
+.file-upload-zone {
+  border: 3px dashed var(--file-mode);
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: white;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.file-upload-zone:hover {
+  border-color: var(--file-mode);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(139, 92, 246, 0.15);
+}
+
+.file-upload-zone.dragover {
+  border-color: var(--file-mode);
+  background: rgba(139, 92, 246, 0.05);
+}
+
 .upload-icon {
   font-size: 3rem;
   color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.file-upload-icon {
+  font-size: 3rem;
+  color: var(--file-mode);
   margin-bottom: 1rem;
 }
 
@@ -89,6 +117,40 @@
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   margin: 1rem 0;
+}
+
+.file-preview {
+  background: #f8fafc;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.file-icon {
+  font-size: 4rem;
+  color: var(--file-mode);
+  margin-bottom: 1rem;
+}
+
+.file-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.file-details h6 {
+  margin: 0;
+  color: var(--dark);
+}
+
+.file-details small {
+  color: #6b7280;
 }
 
 .chat-container {
@@ -278,27 +340,8 @@
   text-decoration: none;
 }
 
-.btn-outline {
-  background: transparent;
-  border: 2px solid var(--primary);
-  color: var(--primary);
-  padding: 0.75rem 1.5rem;
-  border-radius: 12px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.btn-outline:hover {
-  background: var(--primary);
-  color: white;
-  transform: translateY(-2px);
-  text-decoration: none;
-}
-
-.btn-success {
-  background: var(--success);
+.btn-file {
+  background: var(--file-mode);
   border: none;
   color: white;
   padding: 0.75rem 1.5rem;
@@ -309,52 +352,12 @@
   text-decoration: none;
 }
 
-.btn-success:hover {
-  background: #059669;
+.btn-file:hover {
+  background: #7c3aed;
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
   color: white;
   text-decoration: none;
-}
-
-.solution-content {
-  background: white;
-  border-radius: 16px;
-  padding: 2rem;
-  margin-top: 2rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
-
-.solution-content h3 {
-  color: var(--primary);
-  margin-bottom: 1rem;
-}
-
-.solution-text {
-  line-height: 1.8;
-  white-space: pre-wrap;
-}
-
-.quick-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
-
-.action-btn {
-  background: #f3f4f6;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.9rem;
-}
-
-.action-btn:hover {
-  background: var(--primary);
-  color: white;
 }
 
 .welcome-options {
@@ -381,6 +384,10 @@
   border-color: var(--primary);
 }
 
+.option-card.file-option:hover {
+  border-color: var(--file-mode);
+}
+
 .chat-mode-indicator {
   display: inline-block;
   padding: 0.25rem 0.75rem;
@@ -400,13 +407,35 @@
   color: #2563eb;
 }
 
+.mode-file {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.supported-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.file-type-badge {
+  background: var(--file-mode);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
   .ai-container {
     padding: 1rem;
     border-radius: 16px;
   }
   
-  .upload-zone {
+  .upload-zone, .file-upload-zone {
     padding: 2rem 1rem;
   }
   
@@ -414,8 +443,8 @@
     max-width: 85%;
   }
   
-  .quick-actions {
-    justify-content: center;
+  .option-card {
+    margin-bottom: 1rem;
   }
 }
 </style>
@@ -432,12 +461,12 @@
           AI Trợ Lý Thông Minh
         </h1>
         <p class="mb-0 opacity-90">
-          Giải bài tập từ hình ảnh hoặc trò chuyện trực tiếp với AI. 
+          Giải bài tập từ hình ảnh, phân tích tài liệu hoặc trò chuyện trực tiếp với AI. 
           Hỗ trợ tiếng Việt và có thể giải thích chi tiết mọi câu hỏi!
         </p>
       </div>
       <div class="col-md-4 text-end">
-        <a href="{% url 'ai_solutions_history' %}" class="btn btn-outline">
+        <a href="{% url 'ai_solutions_history' %}" class="btn btn-outline-light">
           <i class="fas fa-history me-2"></i>
           Xem Lịch Sử
         </a>
@@ -456,14 +485,21 @@
         </h4>
         
         <div class="row">
-          <div class="col-md-6 mb-3">
+          <div class="col-md-4 mb-3">
             <div class="option-card" onclick="selectImageMode()">
               <i class="fas fa-image text-primary" style="font-size: 2.5rem;"></i>
               <h5 class="mt-3 mb-2">Giải Từ Hình Ảnh</h5>
               <p class="text-muted mb-0">Upload hình ảnh chứa bài tập để AI đọc và giải</p>
             </div>
           </div>
-          <div class="col-md-6 mb-3">
+          <div class="col-md-4 mb-3">
+            <div class="option-card file-option" onclick="selectFileMode()">
+              <i class="fas fa-file-alt" style="font-size: 2.5rem; color: var(--file-mode);"></i>
+              <h5 class="mt-3 mb-2">Phân Tích Tài Liệu</h5>
+              <p class="text-muted mb-0">Upload file PDF, Word, Excel, PowerPoint để AI phân tích</p>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
             <div class="option-card" onclick="selectTextMode()">
               <i class="fas fa-comments text-success" style="font-size: 2.5rem;"></i>
               <h5 class="mt-3 mb-2">Trò Chuyện Trực Tiếp</h5>
@@ -473,7 +509,7 @@
         </div>
       </div>
 
-      <!-- Upload Zone (Hidden initially) -->
+      <!-- Upload Zone for Images (Hidden initially) -->
       <div class="card border-0 shadow-sm" id="uploadCard" style="display: none;">
         <div class="card-body p-4">
           <h4 class="card-title mb-4">
@@ -510,39 +546,133 @@
         </div>
       </div>
 
-      <!-- Recent History -->
-      <div class="card border-0 shadow-sm mt-4">
+      <!-- Upload Zone for Files (Hidden initially) -->
+      <div class="card border-0 shadow-sm" id="fileUploadCard" style="display: none;">
         <div class="card-body p-4">
-          <h5 class="card-title mb-3">
-            <i class="fas fa-clock text-primary me-2"></i>
-            Lịch Sử Gần Đây
-          </h5>
+          <h4 class="card-title mb-4">
+            <i class="fas fa-file-upload me-2" style="color: var(--file-mode);"></i>
+            Tải Tài Liệu Lên
+          </h4>
           
-          {% if recent_solutions %}
-            {% for solution in recent_solutions %}
-            <div class="history-card mb-3" onclick="viewSolution({{ solution.id }})">
-              <div class="d-flex align-items-center">
-                <img src="{{ solution.image_url.url }}" alt="Thumbnail" 
-                     style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
-                <div class="ms-3 flex-grow-1">
-                  <h6 class="mb-1">{{ solution.title }}</h6>
-                  <small class="text-muted">
-                    {{ solution.created_at|date:"d/m/Y H:i" }} • 
-                    <i class="fas fa-eye me-1"></i>{{ solution.view_count }}
-                  </small>
+          <!-- File Upload Zone -->
+          <div class="file-upload-zone" id="fileUploadZone">
+            <div class="file-upload-icon">
+              <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <div class="upload-text">
+              Kéo thả tài liệu vào đây hoặc click để chọn
+            </div>
+            <div class="upload-hint">
+              Hỗ trợ PDF, Word, Excel, PowerPoint, Text (tối đa 20MB)
+            </div>
+            <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.txt,.csv" style="display: none;">
+            
+            <div class="supported-files">
+              <span class="file-type-badge">PDF</span>
+              <span class="file-type-badge">DOCX</span>
+              <span class="file-type-badge">PPTX</span>
+              <span class="file-type-badge">XLSX</span>
+              <span class="file-type-badge">TXT</span>
+              <span class="file-type-badge">CSV</span>
+            </div>
+          </div>
+
+          <!-- File Preview -->
+          <div id="filePreview" style="display: none;">
+            <div class="file-preview">
+              <div class="file-icon">
+                <i id="fileTypeIcon" class="fas fa-file"></i>
+              </div>
+              <div class="file-info">
+                <div class="file-details">
+                  <h6 id="fileName">Tên file</h6>
+                  <small id="fileSize" class="text-muted">Kích thước file</small>
                 </div>
-                <i class="fas fa-chevron-right text-muted"></i>
+                <div class="file-actions">
+                  <button class="btn btn-sm btn-outline-danger" onclick="removeFile()">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
               </div>
             </div>
-            {% endfor %}
-          {% else %}
-            <p class="text-muted text-center py-3">
-              <i class="fas fa-info-circle me-2"></i>
-              Chưa có lịch sử
-            </p>
-          {% endif %}
+            <div class="mt-3">
+              <input type="text" id="fileUserQuestion" class="form-control mb-3" 
+                     placeholder="Câu hỏi về tài liệu (tùy chọn)">
+              <button class="btn btn-file w-100" id="analyzeFileBtn">
+                <i class="fas fa-search me-2"></i>
+                Phân Tích Tài Liệu
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Recent History -->
+   <!-- Recent History - SỬA PHẦN NÀY -->
+<div class="card border-0 shadow-sm mt-4">
+  <div class="card-body p-4">
+    <h5 class="card-title mb-3">
+      <i class="fas fa-clock text-primary me-2"></i>
+      Lịch Sử Gần Đây
+    </h5>
+    
+    {% if recent_solutions %}
+      {% for solution in recent_solutions %}
+      <div class="history-card mb-3" onclick="viewSolution({{ solution.id }})">
+        <div class="d-flex align-items-center">
+          {% if solution.solution_type == 'text_chat' or solution.document_type == 'txt' and 'Text Chat' in solution.title %}
+            <!-- Icon cho text chat -->
+            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+              <i class="fas fa-comments text-white"></i>
+            </div>
+          {% elif solution.solution_type == 'document' %}
+            <!-- Icon cho document -->
+            <div style="width: 60px; height: 60px; background: var(--file-mode, #8b5cf6); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+              <i class="fas fa-file-alt text-white"></i>
+            </div>
+          {% elif solution.solution_type and solution.solution_type != 'text_chat' and solution.solution_type != 'document' and solution.image_url and solution.image_url != 'text_chat.txt' %}
+            <!-- Hình ảnh cho image solutions (check kỹ hơn) -->
+            {% load cloudinary %}
+            <img src="{% cloudinary_url solution.image_url width=60 height=60 crop='fill' %}" alt="Thumbnail" 
+                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <!-- Fallback icon nếu ảnh lỗi -->
+            <div style="width: 60px; height: 60px; background: #6c757d; border-radius: 8px; display: none; align-items: center; justify-content: center;">
+              <i class="fas fa-image text-white"></i>
+            </div>
+          {% else %}
+            <!-- Default fallback cho các trường hợp khác -->
+            <div style="width: 60px; height: 60px; background: #6c757d; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+              <i class="fas fa-question text-white"></i>
+            </div>
+          {% endif %}
+          
+          <div class="ms-3 flex-grow-1">
+            <h6 class="mb-1">{{ solution.title }}</h6>
+            <small class="text-muted">
+              {{ solution.created_at|date:"d/m/Y H:i" }} • 
+              <i class="fas fa-eye me-1"></i>{{ solution.view_count|default:0 }} •
+              {% if solution.solution_type == 'text_chat' %}
+                <i class="fas fa-comments me-1"></i>Chat AI
+              {% elif solution.solution_type == 'document' %}
+                <i class="fas fa-file-alt me-1"></i>Tài liệu
+              {% else %}
+                <i class="fas fa-image me-1"></i>Hình ảnh
+              {% endif %}
+            </small>
+          </div>
+          <i class="fas fa-chevron-right text-muted"></i>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p class="text-muted text-center py-3">
+        <i class="fas fa-info-circle me-2"></i>
+        Chưa có lịch sử
+      </p>
+    {% endif %}
+  </div>
+</div>
     </div>
 
     <!-- Right Column - Chat -->
@@ -570,6 +700,7 @@
             <h5>Xin chào! Tôi là AI trợ lý</h5>
             <p class="text-muted">
               Chọn "Giải từ hình ảnh" để upload ảnh bài tập<br>
+              "Phân tích tài liệu" để upload file PDF, Word...<br>
               hoặc "Trò chuyện trực tiếp" để hỏi câu hỏi bằng text
             </p>
           </div>
@@ -601,16 +732,18 @@
 <script>
 let currentConversationId = null;
 let currentSolutionId = null;
-let chatMode = 'none'; // 'image', 'text', 'none'
+let chatMode = 'none'; // 'image', 'text', 'file', 'none'
 
 document.addEventListener('DOMContentLoaded', function() {
   initializeUpload();
+  initializeFileUpload();
   initializeChat();
 });
 
 function selectImageMode() {
   chatMode = 'image';
   document.getElementById('uploadCard').style.display = 'block';
+  document.getElementById('fileUploadCard').style.display = 'none';
   document.getElementById('chatInput').disabled = true;
   document.getElementById('chatInput').placeholder = 'Upload hình ảnh để bắt đầu trò chuyện...';
   document.getElementById('chatModeIndicator').textContent = 'Chế độ hình ảnh';
@@ -627,9 +760,30 @@ function selectImageMode() {
   `;
 }
 
+function selectFileMode() {
+  chatMode = 'file';
+  document.getElementById('uploadCard').style.display = 'none';
+  document.getElementById('fileUploadCard').style.display = 'block';
+  document.getElementById('chatInput').disabled = true;
+  document.getElementById('chatInput').placeholder = 'Upload tài liệu để bắt đầu trò chuyện...';
+  document.getElementById('chatModeIndicator').textContent = 'Chế độ tài liệu';
+  document.getElementById('chatModeIndicator').className = 'chat-mode-indicator mode-file';
+  document.getElementById('chatStatus').textContent = 'Upload tài liệu để bắt đầu';
+  
+  // Clear welcome message
+  document.getElementById('chatMessages').innerHTML = `
+    <div class="text-center py-4">
+      <i class="fas fa-file-alt mb-3" style="font-size: 2.5rem; color: var(--file-mode);"></i>
+      <h6>Chế độ phân tích tài liệu</h6>
+      <p class="text-muted mb-0">Upload PDF, Word, Excel... để AI phân tích nội dung</p>
+    </div>
+  `;
+}
+
 function selectTextMode() {
   chatMode = 'text';
   document.getElementById('uploadCard').style.display = 'none';
+  document.getElementById('fileUploadCard').style.display = 'none';
   document.getElementById('chatInput').disabled = false;
   document.getElementById('chatInput').placeholder = 'Hỏi bất kỳ câu hỏi nào...';
   document.getElementById('chatInput').focus();
@@ -712,6 +866,45 @@ function initializeUpload() {
   solveBtn.addEventListener('click', solveImage);
 }
 
+function initializeFileUpload() {
+  const fileUploadZone = document.getElementById('fileUploadZone');
+  const fileInput = document.getElementById('fileInput');
+  const filePreview = document.getElementById('filePreview');
+  const analyzeFileBtn = document.getElementById('analyzeFileBtn');
+
+  // Click to upload
+  fileUploadZone.addEventListener('click', () => fileInput.click());
+
+  // Drag and drop
+  fileUploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    fileUploadZone.classList.add('dragover');
+  });
+
+  fileUploadZone.addEventListener('dragleave', () => {
+    fileUploadZone.classList.remove('dragover');
+  });
+
+  fileUploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    fileUploadZone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFileSelect(files[0]);
+    }
+  });
+
+  // File input change
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      handleFileSelect(e.target.files[0]);
+    }
+  });
+
+  // Analyze button
+  analyzeFileBtn.addEventListener('click', analyzeFile);
+}
+
 function handleImageSelect(file) {
   // Validate file
   if (!file.type.startsWith('image/')) {
@@ -740,6 +933,72 @@ function handleImageSelect(file) {
     document.getElementById('chatStatus').textContent = 'Hình ảnh đã sẵn sàng để phân tích';
   };
   reader.readAsDataURL(file);
+}
+
+function handleFileSelect(file) {
+  // Validate file type
+  const allowedTypes = ['.pdf', '.docx', '.doc', '.pptx', '.ppt', '.xlsx', '.xls', '.txt', '.csv'];
+  const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+  
+  if (!allowedTypes.includes(fileExtension)) {
+    alert('Loại file không được hỗ trợ! Vui lòng chọn PDF, Word, Excel, PowerPoint, hoặc Text file.');
+    return;
+  }
+
+  if (file.size > 20 * 1024 * 1024) {
+    alert('File quá lớn! Vui lòng chọn file nhỏ hơn 20MB.');
+    return;
+  }
+
+  // Store file globally
+  window.selectedFile = file;
+
+  // Get file icon based on extension
+  const fileIcons = {
+    '.pdf': 'fa-file-pdf text-danger',
+    '.docx': 'fa-file-word text-primary', 
+    '.doc': 'fa-file-word text-primary',
+    '.pptx': 'fa-file-powerpoint text-warning',
+    '.ppt': 'fa-file-powerpoint text-warning',
+    '.xlsx': 'fa-file-excel text-success',
+    '.xls': 'fa-file-excel text-success',
+    '.txt': 'fa-file-alt text-info',
+    '.csv': 'fa-file-csv text-success'
+  };
+
+  const iconClass = fileIcons[fileExtension] || 'fa-file';
+  
+  // Show file preview
+  document.getElementById('fileTypeIcon').className = `fas ${iconClass}`;
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = formatFileSize(file.size);
+  
+  document.getElementById('fileUploadZone').style.display = 'none';
+  document.getElementById('filePreview').style.display = 'block';
+  
+  // Enable chat input for file mode
+  document.getElementById('chatInput').disabled = false;
+  document.getElementById('chatInput').placeholder = 'Hỏi về nội dung tài liệu...';
+  document.getElementById('chatStatus').textContent = 'Tài liệu đã sẵn sàng để phân tích';
+}
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function removeFile() {
+  document.getElementById('fileUploadZone').style.display = 'block';
+  document.getElementById('filePreview').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+  window.selectedFile = null;
+  
+  document.getElementById('chatInput').disabled = true;
+  document.getElementById('chatInput').placeholder = 'Upload tài liệu để bắt đầu trò chuyện...';
+  document.getElementById('chatStatus').textContent = 'Upload tài liệu để bắt đầu';
 }
 
 function solveImage() {
@@ -798,10 +1057,76 @@ function solveImage() {
   });
 }
 
+function analyzeFile() {
+  const fileInput = document.getElementById('fileInput');
+  const userQuestion = document.getElementById('fileUserQuestion').value;
+  
+  if (!fileInput.files[0] && !window.selectedFile) {
+    alert('Vui lòng chọn tài liệu!');
+    return;
+  }
+
+  const fileToUpload = fileInput.files[0] || window.selectedFile;
+  
+  const formData = new FormData();
+  formData.append('file', fileToUpload);
+  
+  if (userQuestion) {
+    formData.append('question', userQuestion);
+  }
+  
+  if (currentConversationId) {
+    formData.append('conversation_id', currentConversationId);
+  }
+
+  // Show loading
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  document.getElementById('loadingText').textContent = 'AI đang phân tích tài liệu...';
+
+  fetch('/ai/solve-file/', {  // We'll need to add this URL
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    
+    if (data.success) {
+      currentSolutionId = data.solution.id;
+      currentConversationId = data.conversation.id;
+      
+      addMessage('user', getFileMessage(fileToUpload.name, userQuestion));
+      addMessage('assistant', data.solution.ai_solution);
+      
+      document.getElementById('chatStatus').textContent = 
+        `Phân tích hoàn tất trong ${data.solution.processing_time}ms`;
+    } else {
+      alert('Lỗi: ' + data.error);
+    }
+  })
+  .catch(error => {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    alert('Có lỗi xảy ra: ' + error.message);
+  });
+}
+
 function getUserMessage(question) {
   let message = 'Hãy phân tích hình ảnh này và giải các bài tập/câu hỏi trong đó.';
   if (question) {
     message += ` Câu hỏi cụ thể: ${question}`;
+  }
+  return message;
+}
+
+function getFileMessage(fileName, question) {
+  let message = `Đã upload tài liệu: ${fileName}`;
+  if (question) {
+    message += `\nCâu hỏi: ${question}`;
+  } else {
+    message += '\nVui lòng phân tích nội dung tài liệu này.';
   }
   return message;
 }
@@ -855,7 +1180,7 @@ function sendMessage() {
       formData.append('conversation_id', currentConversationId);
     }
   } else {
-    // Continue image conversation
+    // Continue image/file conversation
     endpoint = '{% url "ai_continue_conversation" %}';
     formData = new FormData();
     formData.append('conversation_id', currentConversationId);
@@ -932,6 +1257,7 @@ function startNewChat() {
       <h5>Xin chào! Tôi là AI trợ lý</h5>
       <p class="text-muted">
         Chọn "Giải từ hình ảnh" để upload ảnh bài tập<br>
+        "Phân tích tài liệu" để upload file PDF, Word...<br>
         hoặc "Trò chuyện trực tiếp" để hỏi câu hỏi bằng text
       </p>
     </div>
@@ -939,9 +1265,14 @@ function startNewChat() {
   
   document.getElementById('uploadZone').style.display = 'block';
   document.getElementById('imagePreview').style.display = 'none';
+  document.getElementById('fileUploadZone').style.display = 'block';
+  document.getElementById('filePreview').style.display = 'none';
   document.getElementById('uploadCard').style.display = 'none';
+  document.getElementById('fileUploadCard').style.display = 'none';
   document.getElementById('imageInput').value = '';
+  document.getElementById('fileInput').value = '';
   document.getElementById('userQuestion').value = '';
+  document.getElementById('fileUserQuestion').value = '';
   document.getElementById('chatInput').value = '';
   document.getElementById('chatInput').disabled = true;
   document.getElementById('chatInput').placeholder = 'Nhập câu hỏi của bạn...';
@@ -953,6 +1284,7 @@ function startNewChat() {
   currentConversationId = null;
   currentSolutionId = null;
   chatMode = 'none';
+  window.selectedFile = null;
 }
 
 function viewSolution(solutionId) {

@@ -10386,3 +10386,1900 @@ Not Found: /favicon.ico
 "POST /ai/solve/ HTTP/1.1" 200 5616
 /home/locwara/DO_AN_4/doan4/home/models.py changed, reloading.
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 29814
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12682
+"POST /authenticate/login/ HTTP/1.1" 200 119
+"GET /dashboard/ HTTP/1.1" 200 58067
+"GET /chat/room/1/ HTTP/1.1" 200 63652
+"GET /api/chat/room/1/messages/?offset=0&limit=10 HTTP/1.1" 200 4525
+"GET /api/chat/room/1/messages/?offset=0&limit=10 HTTP/1.1" 200 4525
+"GET /chat HTTP/1.1" 301 0
+"GET /chat/ HTTP/1.1" 200 40539
+"GET /ai/ HTTP/1.1" 200 34837
+"GET /ai/solution/7/ HTTP/1.1" 200 41512
+"GET /ai/ HTTP/1.1" 200 34837
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 9566
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 302 0
+"GET /dashboard/ HTTP/1.1" 200 57708
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12682
+"GET /upload/step1/ HTTP/1.1" 200 24863
+/home/locwara/DO_AN_4/doan4/home/urls.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 34837
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 302 0
+"GET /dashboard/ HTTP/1.1" 200 57710
+Internal Server Error: /ai/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column ai_image_solutions.solution_type does not exist
+LINE 1: ...s"."user_id", "ai_image_solutions"."document_id", "ai_image_...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 1741, in ai_image_solver_view
+    return render(request, 'ai/image_solver.html', context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/defaulttags.py", line 326, in render
+    if match:
+       ^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 398, in __bool__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column ai_image_solutions.solution_type does not exist
+LINE 1: ...s"."user_id", "ai_image_solutions"."document_id", "ai_image_...
+                                                             ^
+
+"GET /ai/ HTTP/1.1" 500 233246
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Watching for file changes with StatReloader
+Internal Server Error: /ai/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column ai_image_solutions.solution_type does not exist
+LINE 1: ...s"."user_id", "ai_image_solutions"."document_id", "ai_image_...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 1741, in ai_image_solver_view
+    return render(request, 'ai/image_solver.html', context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/defaulttags.py", line 326, in render
+    if match:
+       ^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 398, in __bool__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column ai_image_solutions.solution_type does not exist
+LINE 1: ...s"."user_id", "ai_image_solutions"."document_id", "ai_image_...
+                                                             ^
+
+"GET /ai/ HTTP/1.1" 500 233118
+Internal Server Error: /ai/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column ai_image_solutions.solution_type does not exist
+LINE 1: ...s"."user_id", "ai_image_solutions"."document_id", "ai_image_...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 1741, in ai_image_solver_view
+    return render(request, 'ai/image_solver.html', context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/defaulttags.py", line 326, in render
+    if match:
+       ^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 398, in __bool__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column ai_image_solutions.solution_type does not exist
+LINE 1: ...s"."user_id", "ai_image_solutions"."document_id", "ai_image_...
+                                                             ^
+
+"GET /ai/ HTTP/1.1" 500 233246
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+/home/locwara/DO_AN_4/doan4/doan4/settings.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 302 0
+"GET /dashboard/ HTTP/1.1" 200 57710
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/ HTTP/1.1" 200 45467
+"POST /ai/solve-file/ HTTP/1.1" 200 2072
+"POST /ai/solve-file/ HTTP/1.1" 200 1911
+"POST /ai/solve-file/ HTTP/1.1" 200 823
+"POST /ai/solve-file/ HTTP/1.1" 200 1225
+"POST /ai/solve-file/ HTTP/1.1" 200 1192
+"POST /ai/text-chat/ HTTP/1.1" 200 192
+"POST /ai/solve-file/ HTTP/1.1" 200 2307
+"POST /ai/text-chat/ HTTP/1.1" 200 192
+Internal Server Error: /ai/solution/7/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedTable: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+"GET /ai/solution/7/ HTTP/1.1" 500 134131
+Internal Server Error: /ai/solution/6/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedTable: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+"GET /ai/solution/6/ HTTP/1.1" 500 134131
+"GET /ai/ HTTP/1.1" 200 48061
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Internal Server Error: /ai/solution/7/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedTable: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+"GET /ai/solution/7/ HTTP/1.1" 500 134131
+"GET /ai/ HTTP/1.1" 200 48061
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Internal Server Error: /ai/solution/13/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedTable: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+"GET /ai/solution/13/ HTTP/1.1" 500 134161
+"GET /ai/history HTTP/1.1" 301 0
+"GET /ai/history/ HTTP/1.1" 200 42824
+Not Found: /dashboard/ai
+"GET /dashboard/ai HTTP/1.1" 404 12954
+"GET /ai/ HTTP/1.1" 200 48061
+Internal Server Error: /ai/solution/7/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedTable: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+"GET /ai/solution/7/ HTTP/1.1" 500 134131
+"GET /ai/ HTTP/1.1" 200 37317
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Internal Server Error: /ai/solution/7/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedTable: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+"GET /ai/solution/7/ HTTP/1.1" 500 134131
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/urls.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 37317
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12682
+Internal Server Error: /ai/solution/12/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedTable: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 1962, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+"GET /ai/solution/12/ HTTP/1.1" 500 134058
+/home/locwara/DO_AN_4/doan4/home/urls.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+Internal Server Error: /ai/solution/12/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedTable: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: relation "ai_conversations" does not exist
+LINE 1: ...created_at", "ai_conversations"."updated_at" FROM "ai_conver...
+                                                             ^
+
+"GET /ai/solution/12/ HTTP/1.1" 500 134414
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Internal Server Error: /ai/solution/12/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column ai_conversations.user_id does not exist
+LINE 1: SELECT "ai_conversations"."id", "ai_conversations"."user_id"...
+                                        ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column ai_conversations.user_id does not exist
+LINE 1: SELECT "ai_conversations"."id", "ai_conversations"."user_id"...
+                                        ^
+
+"GET /ai/solution/12/ HTTP/1.1" 500 134176
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Internal Server Error: /ai/solution/12/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column ai_conversations.user_id does not exist
+LINE 1: SELECT "ai_conversations"."id", "ai_conversations"."user_id"...
+                                        ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column ai_conversations.user_id does not exist
+LINE 1: SELECT "ai_conversations"."id", "ai_conversations"."user_id"...
+                                        ^
+
+"GET /ai/solution/12/ HTTP/1.1" 500 134176
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/ HTTP/1.1" 200 48061
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Internal Server Error: /ai/solution/12/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column ai_conversations.user_id does not exist
+LINE 1: SELECT "ai_conversations"."id", "ai_conversations"."user_id"...
+                                        ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column ai_conversations.user_id does not exist
+LINE 1: SELECT "ai_conversations"."id", "ai_conversations"."user_id"...
+                                        ^
+
+"GET /ai/solution/12/ HTTP/1.1" 500 133911
+Internal Server Error: /ai/solution/7/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column ai_conversations.user_id does not exist
+LINE 1: SELECT "ai_conversations"."id", "ai_conversations"."user_id"...
+                                        ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column ai_conversations.user_id does not exist
+LINE 1: SELECT "ai_conversations"."id", "ai_conversations"."user_id"...
+                                        ^
+
+"GET /ai/solution/7/ HTTP/1.1" 500 133893
+Internal Server Error: /ai/solution/12/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column ai_conversations.user_id does not exist
+LINE 1: SELECT "ai_conversations"."id", "ai_conversations"."user_id"...
+                                        ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column ai_conversations.user_id does not exist
+LINE 1: SELECT "ai_conversations"."id", "ai_conversations"."user_id"...
+                                        ^
+
+"GET /ai/solution/12/ HTTP/1.1" 500 133911
+Internal Server Error: /ai/solution/12/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column ai_conversations.image_solution_id does not exist
+LINE 1: ...onversations"."id", "ai_conversations"."user_id", "ai_conver...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column ai_conversations.image_solution_id does not exist
+LINE 1: ...onversations"."id", "ai_conversations"."user_id", "ai_conver...
+                                                             ^
+
+"GET /ai/solution/12/ HTTP/1.1" 500 134584
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Internal Server Error: /ai/solution/12/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column ai_conversations.image_solution_id does not exist
+LINE 1: ...onversations"."id", "ai_conversations"."user_id", "ai_conver...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column ai_conversations.image_solution_id does not exist
+LINE 1: ...onversations"."id", "ai_conversations"."user_id", "ai_conver...
+                                                             ^
+
+"GET /ai/solution/12/ HTTP/1.1" 500 134584
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Internal Server Error: /ai/solution/13/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column ai_conversations.image_solution_id does not exist
+LINE 1: ...onversations"."id", "ai_conversations"."user_id", "ai_conver...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column ai_conversations.image_solution_id does not exist
+LINE 1: ...onversations"."id", "ai_conversations"."user_id", "ai_conver...
+                                                             ^
+
+"GET /ai/solution/13/ HTTP/1.1" 500 134331
+Internal Server Error: /ai/solution/13/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column ai_conversations.image_solution_id does not exist
+LINE 1: ...onversations"."id", "ai_conversations"."user_id", "ai_conver...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column ai_conversations.image_solution_id does not exist
+LINE 1: ...onversations"."id", "ai_conversations"."user_id", "ai_conver...
+                                                             ^
+
+"GET /ai/solution/13/ HTTP/1.1" 500 134596
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/ HTTP/1.1" 200 48061
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Internal Server Error: /ai/solution/12/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column ai_conversations.image_solution_id does not exist
+LINE 1: ...onversations"."id", "ai_conversations"."user_id", "ai_conver...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column ai_conversations.image_solution_id does not exist
+LINE 1: ...onversations"."id", "ai_conversations"."user_id", "ai_conver...
+                                                             ^
+
+"GET /ai/solution/12/ HTTP/1.1" 500 134319
+Internal Server Error: /ai/solution/12/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column ai_conversations.user_id does not exist
+LINE 1: SELECT "ai_conversations"."id", "ai_conversations"."user_id"...
+                                        ^
+HINT:  Perhaps you meant to reference the column "ai_conversations.user".
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column ai_conversations.user_id does not exist
+LINE 1: SELECT "ai_conversations"."id", "ai_conversations"."user_id"...
+                                        ^
+HINT:  Perhaps you meant to reference the column "ai_conversations.user".
+
+"GET /ai/solution/12/ HTTP/1.1" 500 135187
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Internal Server Error: /ai/solution/12/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column ai_conversations.user_id does not exist
+LINE 1: SELECT "ai_conversations"."id", "ai_conversations"."user_id"...
+                                        ^
+HINT:  Perhaps you meant to reference the column "ai_conversations.user".
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2524, in ai_solution_detail_view
+    for conv in conversations:
+                ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column ai_conversations.user_id does not exist
+LINE 1: SELECT "ai_conversations"."id", "ai_conversations"."user_id"...
+                                        ^
+HINT:  Perhaps you meant to reference the column "ai_conversations.user".
+
+"GET /ai/solution/12/ HTTP/1.1" 500 135187
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 29814
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"POST /authenticate/login/ HTTP/1.1" 200 252
+"GET /api/check-username/?username=locwara1 HTTP/1.1" 200 86
+"GET /api/check-email/?email=lethanhloc26012004%40gmail.com HTTP/1.1" 200 58
+"GET /api/check-email/?email=lethanhloc260120041%40gmail.com HTTP/1.1" 200 58
+"POST /register/ HTTP/1.1" 200 111
+"GET /dashboard/ HTTP/1.1" 200 41386
+Not Found: /dashboard/ai
+"GET /dashboard/ai HTTP/1.1" 404 12954
+"GET /ai/ HTTP/1.1" 200 39922
+"POST /ai/text-chat/ HTTP/1.1" 200 74
+"POST /ai/text-chat/ HTTP/1.1" 200 3746
+"GET /ai/ HTTP/1.1" 200 39922
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"POST /ai/solve/ HTTP/1.1" 200 3966
+"GET /ai/ HTTP/1.1" 200 40590
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/solution/1/ HTTP/1.1" 200 45561
+"POST /ai/text-chat/ HTTP/1.1" 200 74
+"POST /ai/text-chat/ HTTP/1.1" 200 235
+"POST /ai/text-chat/ HTTP/1.1" 200 322
+"POST /ai/solve-file/ HTTP/1.1" 200 205
+"POST /ai/solve-file/ HTTP/1.1" 200 205
+"POST /ai/solve-file/ HTTP/1.1" 200 3282
+"GET /ai/history/ HTTP/1.1" 200 24155
+"GET /ai/history/ HTTP/1.1" 200 24155
+"GET /ai/solution/1/ HTTP/1.1" 200 45561
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 41416
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/solution/2/ HTTP/1.1" 200 34860
+"POST /ai/text-chat/ HTTP/1.1" 200 74
+"POST /ai/text-chat/ HTTP/1.1" 200 252
+"GET /ai/ HTTP/1.1" 200 41416
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"POST /ai/text-chat/ HTTP/1.1" 200 74
+"POST /ai/text-chat/ HTTP/1.1" 200 234
+"GET /ai/ HTTP/1.1" 200 41416
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"POST /ai/text-chat/ HTTP/1.1" 200 74
+"GET /ai/ HTTP/1.1" 200 41416
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"POST /ai/text-chat/ HTTP/1.1" 200 74
+"POST /ai/text-chat/ HTTP/1.1" 200 285
+"GET /ai/ HTTP/1.1" 200 41416
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 41416
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"POST /ai/text-chat/ HTTP/1.1" 200 74
+"POST /ai/text-chat/ HTTP/1.1" 200 5816
+"GET /ai/ HTTP/1.1" 200 41416
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13062
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 41477
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/ HTTP/1.1" 200 41477
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"POST /ai/text-chat/ HTTP/1.1" 200 74
+"POST /ai/text-chat/ HTTP/1.1" 200 315
+"GET /ai/ HTTP/1.1" 200 41477
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+/home/locwara/DO_AN_4/doan4/home/models.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/ HTTP/1.1" 200 41950
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 41416
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 191
+"GET /ai/ HTTP/1.1" 200 41416
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 334
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Internal Server Error: /ai/text-chat/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/views/decorators/http.py", line 64, in inner
+    return func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2378, in ai_text_chat_api
+    print(f"[DEBUG] TEXT CHAT API called with message: {user_message}")
+                                                        ^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'user_message' where it is not associated with a value
+"POST /ai/text-chat/ HTTP/1.1" 500 85248
+Internal Server Error: /ai/text-chat/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/views/decorators/http.py", line 64, in inner
+    return func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2378, in ai_text_chat_api
+    print(f"[DEBUG] TEXT CHAT API called with message: {user_message}")
+                                                        ^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'user_message' where it is not associated with a value
+"POST /ai/text-chat/ HTTP/1.1" 500 85565
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+Internal Server Error: /ai/text-chat/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/views/decorators/http.py", line 64, in inner
+    return func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2378, in ai_text_chat_api
+    print(f"[DEBUG] TEXT CHAT API called with message: {user_message}")
+                                                        ^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'user_message' where it is not associated with a value
+"POST /ai/text-chat/ HTTP/1.1" 500 85248
+Internal Server Error: /ai/text-chat/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/views/decorators/http.py", line 64, in inner
+    return func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2378, in ai_text_chat_api
+    print(f"[DEBUG] TEXT CHAT API called with message: {user_message}")
+                                                        ^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'user_message' where it is not associated with a value
+"POST /ai/text-chat/ HTTP/1.1" 500 85562
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 248
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 363
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 41950
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 252
+"GET /ai/ HTTP/1.1" 200 42846
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/ HTTP/1.1" 200 42846
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/ HTTP/1.1" 200 42859
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/solution/3/ HTTP/1.1" 200 29465
+"GET /ai/?conversation=15 HTTP/1.1" 200 42859
+"GET /ai/solution/3/ HTTP/1.1" 200 29465
+"GET /ai/?conversation=15 HTTP/1.1" 200 42859
+"GET /ai/solution/2/ HTTP/1.1" 200 34860
+"GET /ai/ HTTP/1.1" 200 42859
+"GET /ai/ HTTP/1.1" 200 42859
+"GET /ai/solution/1/ HTTP/1.1" 200 45561
+"GET /ai/?conversation=2 HTTP/1.1" 200 42859
+"GET /ai/solution/2/ HTTP/1.1" 200 34860
+"GET /ai/solution/1/ HTTP/1.1" 200 45561
+"GET /ai/?conversation=2 HTTP/1.1" 200 42859
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 1036
+"POST /ai/text-chat/ HTTP/1.1" 200 726
+"GET /ai/solution/3/ HTTP/1.1" 200 29465
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/solution/3/ HTTP/1.1" 200 29465
+"GET /ai/ HTTP/1.1" 200 43768
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 252
+"GET /ai/solution/4/ HTTP/1.1" 200 32595
+"GET /ai/?conversation=16 HTTP/1.1" 200 44677
+"POST /ai/solve-file/ HTTP/1.1" 200 1749
+"POST /ai/chat/ HTTP/1.1" 200 9496

@@ -1359,7 +1359,6 @@ def chat_room_invite(request, room_id):
 
 
 # Thêm vào file views.py của bạn
-
 import requests
 import json
 import base64
@@ -1375,13 +1374,234 @@ from django.core.files.base import ContentFile
 from django.contrib import messages
 from PIL import Image
 import io
+import tempfile
+import os
 
-# Import models (thêm vào imports hiện tại)
+# Import thêm các thư viện xử lý file
+import PyPDF2
+import docx
+from pptx import Presentation
+import pandas as pd
+import openpyxl
+
+# Import models
 from .models import AIImageSolution, AIConversation, AIConversationMessage, AIImageSolutionLike
 
 # Gemini API configuration
 GEMINI_API_KEY = "AIzaSyDpBkPHhMkWs5W3r5s4hCO110tqt2td45s"
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent"
+
+# Supported file types
+SUPPORTED_FILE_TYPES = {
+    'application/pdf': '.pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+    'application/msword': '.doc',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+    'application/vnd.ms-powerpoint': '.ppt',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+    'application/vnd.ms-excel': '.xls',
+    'text/plain': '.txt',
+    'text/csv': '.csv'
+}
+
+
+def extract_text_from_file(file):
+    """Extract text content from various file types"""
+    try:
+        # Get file extension
+        file_extension = None
+        if hasattr(file, 'name') and file.name:
+            file_extension = os.path.splitext(file.name)[1].lower()
+        
+        # Reset file pointer
+        file.seek(0)
+        
+        # PDF files
+        if file_extension == '.pdf':
+            return extract_pdf_text(file)
+        
+        # Word documents
+        elif file_extension in ['.docx']:
+            return extract_docx_text(file)
+        
+        # PowerPoint presentations
+        elif file_extension in ['.pptx']:
+            return extract_pptx_text(file)
+        
+        # Excel files
+        elif file_extension in ['.xlsx', '.xls']:
+            return extract_excel_text(file)
+        
+        # Text files
+        elif file_extension in ['.txt', '.csv']:
+            return extract_text_file(file)
+        
+        # DOC files (older format) - requires python-docx2txt or similar
+        elif file_extension == '.doc':
+            return "Định dạng DOC không được hỗ trợ trực tiếp. Vui lòng chuyển đổi sang DOCX."
+        
+        # PPT files (older format)
+        elif file_extension == '.ppt':
+            return "Định dạng PPT không được hỗ trợ trực tiếp. Vui lòng chuyển đổi sang PPTX."
+        
+        else:
+            return f"Loại file {file_extension} không được hỗ trợ."
+            
+    except Exception as e:
+        print(f"Error extracting text from file: {e}")
+        return f"Lỗi khi đọc file: {str(e)}"
+
+
+def extract_pdf_text(file):
+    """Extract text from PDF file"""
+    try:
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
+            # Write file content to temporary file
+            file.seek(0)
+            tmp_file.write(file.read())
+            tmp_file.flush()
+            
+            # Read PDF
+            text = ""
+            with open(tmp_file.name, 'rb') as pdf_file:
+                pdf_reader = PyPDF2.PdfReader(pdf_file)
+                for page_num, page in enumerate(pdf_reader.pages):
+                    try:
+                        page_text = page.extract_text()
+                        if page_text.strip():
+                            text += f"\n--- Trang {page_num + 1} ---\n"
+                            text += page_text + "\n"
+                    except Exception as e:
+                        text += f"\n--- Lỗi đọc trang {page_num + 1}: {str(e)} ---\n"
+            
+            # Cleanup
+            os.unlink(tmp_file.name)
+            
+            return text.strip() if text.strip() else "Không thể trích xuất text từ PDF này."
+            
+    except Exception as e:
+        return f"Lỗi khi đọc PDF: {str(e)}"
+
+
+def extract_docx_text(file):
+    """Extract text from DOCX file"""
+    try:
+        file.seek(0)
+        doc = docx.Document(file)
+        
+        text = ""
+        for paragraph in doc.paragraphs:
+            if paragraph.text.strip():
+                text += paragraph.text + "\n"
+        
+        # Extract text from tables
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    if cell.text.strip():
+                        text += cell.text + " | "
+                text += "\n"
+        
+        return text.strip() if text.strip() else "Document này không chứa text có thể đọc được."
+        
+    except Exception as e:
+        return f"Lỗi khi đọc DOCX: {str(e)}"
+
+
+def extract_pptx_text(file):
+    """Extract text from PPTX file"""
+    try:
+        file.seek(0)
+        presentation = Presentation(file)
+        
+        text = ""
+        for slide_num, slide in enumerate(presentation.slides, 1):
+            text += f"\n--- Slide {slide_num} ---\n"
+            
+            for shape in slide.shapes:
+                if hasattr(shape, "text") and shape.text.strip():
+                    text += shape.text + "\n"
+        
+        return text.strip() if text.strip() else "Presentation này không chứa text có thể đọc được."
+        
+    except Exception as e:
+        return f"Lỗi khi đọc PPTX: {str(e)}"
+
+
+def extract_excel_text(file):
+    """Extract text from Excel file"""
+    try:
+        file.seek(0)
+        
+        # Try with pandas first
+        try:
+            # Read all sheets
+            xl_file = pd.ExcelFile(file)
+            text = ""
+            
+            for sheet_name in xl_file.sheet_names:
+                text += f"\n--- Sheet: {sheet_name} ---\n"
+                df = pd.read_excel(xl_file, sheet_name=sheet_name)
+                
+                # Convert to string, handling NaN values
+                df_text = df.fillna('').astype(str)
+                text += df_text.to_string(index=False) + "\n"
+            
+            return text.strip() if text.strip() else "File Excel này không chứa dữ liệu có thể đọc được."
+            
+        except Exception as e:
+            # Fallback to openpyxl
+            file.seek(0)
+            wb = openpyxl.load_workbook(file)
+            text = ""
+            
+            for sheet_name in wb.sheetnames:
+                sheet = wb[sheet_name]
+                text += f"\n--- Sheet: {sheet_name} ---\n"
+                
+                for row in sheet.iter_rows(values_only=True):
+                    row_text = []
+                    for cell in row:
+                        if cell is not None:
+                            row_text.append(str(cell))
+                        else:
+                            row_text.append("")
+                    if any(cell.strip() for cell in row_text):  # Skip empty rows
+                        text += " | ".join(row_text) + "\n"
+            
+            return text.strip() if text.strip() else "File Excel này không chứa dữ liệu có thể đọc được."
+            
+    except Exception as e:
+        return f"Lỗi khi đọc Excel: {str(e)}"
+
+
+def extract_text_file(file):
+    """Extract text from text files"""
+    try:
+        file.seek(0)
+        
+        # Try different encodings
+        encodings = ['utf-8', 'utf-16', 'latin1', 'cp1252']
+        
+        for encoding in encodings:
+            try:
+                file.seek(0)
+                content = file.read()
+                if isinstance(content, bytes):
+                    text = content.decode(encoding)
+                else:
+                    text = content
+                
+                return text.strip() if text.strip() else "File text này trống."
+                
+            except UnicodeDecodeError:
+                continue
+        
+        return "Không thể đọc file text với các encoding thông dụng."
+        
+    except Exception as e:
+        return f"Lỗi khi đọc text file: {str(e)}"
 
 
 def image_to_base64(image_file):
@@ -1502,16 +1722,26 @@ def call_gemini_api(messages, image_data=None):
 
 
 @login_required
+
+# 1. SỬA VIEW FUNCTION
+@login_required
 def ai_image_solver_view(request):
     """Main page for AI Image Solver"""
-    # Get user's recent solutions for history
-    recent_solutions = AIImageSolution.objects.filter(user=request.user)[:10]
+    # Debug: In ra console để check
+    all_solutions = AIImageSolution.objects.filter(user=request.user).order_by('-created_at')
+    print(f"Total solutions for user {request.user.id}: {all_solutions.count()}")
+    
+    for solution in all_solutions[:5]:  # Debug 5 solutions đầu
+        print(f"Solution {solution.id}: {solution.title}, type: {solution.solution_type}, image_url: {solution.image_url}")
+    
+    # Get user's recent solutions for history - bao gồm tất cả loại
+    recent_solutions = all_solutions[:20]
     
     # Get active conversations
     active_conversations = AIConversation.objects.filter(
         user=request.user,
         is_active=True
-    )[:5]
+    ).order_by('-updated_at')[:5]
     
     context = {
         'recent_solutions': recent_solutions,
@@ -1519,7 +1749,6 @@ def ai_image_solver_view(request):
     }
     
     return render(request, 'ai/image_solver.html', context)
-
 
 @login_required
 @csrf_exempt
@@ -1795,51 +2024,249 @@ def ai_solve_image_api(request):
         })
 
 
-def image_to_base64(image_file):
-    """Convert image file to base64 for Gemini API - with better error handling"""
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def ai_solve_file_api(request):
+    """API endpoint to process document files and get AI solution"""
     try:
-        # Ensure we're at the beginning of the file
-        image_file.seek(0)
-        image_data = image_file.read()
+        start_time = time.time()
         
-        if not image_data:
-            print("No image data read from file")
-            return None
+        print(f"Request FILES: {request.FILES}")
+        print(f"Request POST: {request.POST}")
         
-        print(f"Read {len(image_data)} bytes from image file")
+        # Get uploaded file
+        file_upload = request.FILES.get('file')
+        if not file_upload:
+            return JsonResponse({
+                'success': False,
+                'error': 'No file provided'
+            })
         
-        # Try to open with PIL to validate
+        print(f"File name: {file_upload.name}")
+        print(f"File size: {file_upload.size}")
+        print(f"File content type: {file_upload.content_type}")
+        
+        # Check file size (20MB limit for documents)
+        if file_upload.size > 20 * 1024 * 1024:
+            return JsonResponse({
+                'success': False,
+                'error': 'File too large. Maximum size is 20MB.'
+            })
+        
+        # Check file type
+        file_extension = os.path.splitext(file_upload.name)[1].lower()
+        if file_extension not in ['.pdf', '.docx', '.pptx', '.xlsx', '.xls', '.txt', '.csv']:
+            return JsonResponse({
+                'success': False,
+                'error': f'File type {file_extension} not supported. Supported types: PDF, DOCX, PPTX, XLSX, XLS, TXT, CSV'
+            })
+        
+        # Get optional parameters
+        conversation_id = request.POST.get('conversation_id')
+        user_question = request.POST.get('question', '')
+        
+        # Extract text from file
         try:
-            from PIL import Image
-            import io
+            extracted_text = extract_text_from_file(file_upload)
+            print(f"Extracted text length: {len(extracted_text)} characters")
             
-            image = Image.open(io.BytesIO(image_data))
-            format_lower = image.format.lower() if image.format else 'jpeg'
-            print(f"Image format: {format_lower}, size: {image.size}")
+            if not extracted_text or len(extracted_text.strip()) < 10:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Could not extract meaningful content from the file'
+                })
+                
+        except Exception as e:
+            print(f"Error extracting text: {e}")
+            return JsonResponse({
+                'success': False,
+                'error': f'Failed to extract text from file: {str(e)}'
+            })
+        
+        # Create or get conversation
+        if conversation_id:
+            try:
+                conversation = AIConversation.objects.get(
+                    id=conversation_id,
+                    user=request.user
+                )
+            except AIConversation.DoesNotExist:
+                conversation = None
+        else:
+            conversation = None
+        
+        # Prepare conversation messages
+        messages = [
+            {
+                'role': 'system',
+                'content': '''Bạn là một AI assistant chuyên phân tích và giải đáp từ các tài liệu văn bản.
+                Nhiệm vụ của bạn:
+                1. Đọc và hiểu nội dung trong tài liệu
+                2. Trả lời câu hỏi dựa trên nội dung tài liệu
+                3. Giải thích chi tiết và rõ ràng bằng tiếng Việt
+                4. Nếu có bài tập, hãy giải từng bước
+                5. Tóm tắt nội dung chính nếu được yêu cầu
+                
+                Định dạng trả lời:
+                **📄 Tóm tắt nội dung tài liệu:**
+                [Tóm tắt ngắn gọn nội dung chính]
+                
+                **❓ Câu hỏi/Yêu cầu:**
+                [Câu hỏi của người dùng]
+                
+                **✅ Trả lời:**
+                [Trả lời chi tiết dựa trên nội dung tài liệu]
+                '''
+            }
+        ]
+        
+        # Add conversation history if exists
+        if conversation:
+            conversation_messages = AIConversationMessage.objects.filter(
+                conversation=conversation
+            ).order_by('-created_at')[:10]
+            conversation_messages = list(reversed(conversation_messages))
+            
+            for msg in conversation_messages:
+                messages.append({
+                    'role': msg.role,
+                    'content': msg.content
+                })
+        
+        # Truncate extracted text if too long (keep within token limits)
+        if len(extracted_text) > 15000:  # ~4000 tokens
+            extracted_text = extracted_text[:15000] + "\n\n[Nội dung bị cắt do quá dài...]"
+        
+        # Add current user message with file content
+        current_message = f"Đây là nội dung từ file '{file_upload.name}':\n\n{extracted_text}\n\n"
+        
+        if user_question:
+            current_message += f"Câu hỏi của tôi: {user_question}"
+        else:
+            current_message += "Hãy tóm tắt nội dung chính và trả lời bất kỳ câu hỏi nào có trong tài liệu."
+            
+        messages.append({
+            'role': 'user',
+            'content': current_message
+        })
+        
+        print(f"Calling Gemini API with {len(messages)} messages")
+        
+        # Call Gemini API (no image data)
+        api_response = call_gemini_api(messages, image_data=None)
+        
+        if not api_response['success']:
+            return JsonResponse({
+                'success': False,
+                'error': api_response['error']
+            })
+        
+        processing_time = int((time.time() - start_time) * 1000)
+        ai_content = api_response['content']
+        
+        # Upload file to Cloudinary
+        try:
+            file_upload.seek(0)
+            from cloudinary import uploader
+            upload_result = uploader.upload(
+                file_upload,
+                folder="ai_documents/",
+                public_id=f"ai_doc_{int(time.time())}_{request.user.id}",
+                resource_type="raw"
+            )
+            print(f"File uploaded to Cloudinary: {upload_result['public_id']}")
             
         except Exception as e:
-            print(f"PIL validation error: {e}")
-            # Try to guess format from file extension or content type
-            format_lower = 'jpeg'
+            print(f"Cloudinary upload error: {e}")
+            return JsonResponse({
+                'success': False,
+                'error': f'Failed to upload file: {str(e)}'
+            })
         
-        base64_string = base64.b64encode(image_data).decode('utf-8')
+        # Create AIImageSolution (reusing the model for document solutions)
+        try:
+            solution = AIImageSolution.objects.create(
+                user=request.user,
+                image_url=upload_result['public_id'],  # Store file URL here
+                original_filename=file_upload.name,
+                extracted_text=extracted_text[:5000] if len(extracted_text) > 5000 else extracted_text,  # Store first 5000 chars
+                ai_solution=ai_content,
+                processing_time=processing_time,
+                title=f"Document Analysis - {file_upload.name}",
+                solution_type='document',  # Set as document analysis
+                document_type=file_extension[1:],  # Remove the dot
+                file_size=file_upload.size
+            )
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': f'Failed to save solution: {str(e)}'
+            })
         
-        if not base64_string:
-            print("Base64 encoding resulted in empty string")
-            return None
+        # Create or update conversation
+        if not conversation:
+            try:
+                conversation = AIConversation.objects.create(
+                    user=request.user,
+                    image_solution=solution,
+                    title=f"Document Chat - {file_upload.name}"
+                )
+                
+            except Exception as e:
+                conversation = None
         
-        print(f"Base64 string length: {len(base64_string)}")
+        # Save messages to conversation
+        if conversation:
+            try:
+                # Save user message
+                AIConversationMessage.objects.create(
+                    conversation=conversation,
+                    role='user',
+                    content=f"Uploaded file: {file_upload.name}\n\nQuestion: {user_question or 'Analyze this document'}"
+                )
+                
+                # Save AI response
+                AIConversationMessage.objects.create(
+                    conversation=conversation,
+                    role='assistant',
+                    content=ai_content,
+                    tokens_used=api_response.get('usage', {}).get('totalTokenCount', 0),
+                    response_time=processing_time
+                )
+                
+            except Exception as e:
+                print(f"Error saving conversation messages: {e}")
         
-        return {
-            'mime_type': f'image/{format_lower}',
-            'data': base64_string
-        }
+        return JsonResponse({
+            'success': True,
+            'solution': {
+                'id': solution.id,
+                'title': solution.title,
+                'ai_solution': ai_content,
+                'file_url': upload_result['secure_url'],
+                'file_name': file_upload.name,
+                'processing_time': processing_time,
+                'created_at': solution.created_at.isoformat(),
+            },
+            'conversation': {
+                'id': conversation.id if conversation else None,
+                'title': conversation.title if conversation else None,
+            }
+        })
         
     except Exception as e:
-        print(f"Error in image_to_base64: {e}")
+        print(f"Unexpected error in ai_solve_file_api: {e}")
         import traceback
         print(traceback.format_exc())
-        return None
+        
+        return JsonResponse({
+            'success': False,
+            'error': f'Server error: {str(e)}'
+        })
+
+
 @login_required
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -1870,7 +2297,6 @@ def ai_continue_conversation_api(request):
             })
         
         # Get conversation history
-        # Thay đổi dòng 297-300
         conversation_messages = AIConversationMessage.objects.filter(
             conversation=conversation
         ).order_by('-created_at')[:15]  # Lấy 15 tin nhắn mới nhất
@@ -1946,200 +2372,87 @@ def ai_continue_conversation_api(request):
 
 
 @login_required
-def ai_solution_detail_view(request, solution_id):
-    """View chi tiết một AI solution với conversation history"""
-    solution = get_object_or_404(AIImageSolution, id=solution_id, user=request.user)
-    
-    # Increment view count
-    solution.view_count += 1
-    solution.save()
-    
-    # Get conversations related to this solution
-    conversations = AIConversation.objects.filter(image_solution=solution)
-    
-    # Get all messages for these conversations
-    conversation_messages = {}
-    for conv in conversations:
-        messages = AIConversationMessage.objects.filter(
-            conversation=conv
-        ).order_by('created_at')
-        conversation_messages[conv.id] = messages
-    
-    context = {
-        'solution': solution,
-        'conversations': conversations,
-        'conversation_messages': conversation_messages,
-    }
-    
-    return render(request, 'ai/solution_detail.html', context)
-
-
-@login_required
-def ai_solutions_history_view(request):
-    """View lịch sử các AI solutions"""
-    solutions = AIImageSolution.objects.filter(user=request.user).order_by('-created_at')
-    
-    # Pagination if needed
-    from django.core.paginator import Paginator
-    paginator = Paginator(solutions, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    context = {
-        'solutions': page_obj,
-    }
-    
-    return render(request, 'ai/solutions_history.html', context)
-
-
-
-
-# Thêm vào cuối file views.py
-
-@login_required
-@csrf_exempt
-@require_http_methods(["POST"])
-def user_report_api(request):
-    """API để người dùng báo cáo bài giải"""
-    try:
-        solution_id = request.POST.get('solution_id')
-        reason = request.POST.get('reason')
-        description = request.POST.get('description', '')
-        
-        if not solution_id or not reason:
-            return JsonResponse({
-                'success': False,
-                'error': 'Thiếu thông tin bắt buộc'
-            })
-        
-        # Kiểm tra solution có tồn tại không
-        try:
-            solution = AIImageSolution.objects.get(id=solution_id)
-        except AIImageSolution.DoesNotExist:
-            return JsonResponse({
-                'success': False,
-                'error': 'Bài giải không tồn tại'
-            })
-        
-        # Tạo model Report nếu chưa có (bạn cần tạo model này)
-        # Hoặc lưu vào log/email admin
-        
-        # Ví dụ: Gửi email báo cáo cho admin
-        from django.core.mail import send_mail
-        from django.conf import settings
-        
-        subject = f'Báo cáo bài giải AI - ID: {solution_id}'
-        message = f"""
-        Người báo cáo: {request.user.username} ({request.user.email})
-        Bài giải ID: {solution_id}
-        Tiêu đề: {solution.title}
-        Lý do: {reason}
-        Mô tả: {description}
-        
-        Link bài giải: {request.build_absolute_uri(f'/ai/solution/{solution_id}/')}
-        """
-        
-        try:
-            # Chỉ gửi email nếu đã cấu hình email settings
-            if hasattr(settings, 'EMAIL_HOST') and settings.EMAIL_HOST:
-                send_mail(
-                    subject,
-                    message,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [settings.DEFAULT_FROM_EMAIL],  # Gửi cho admin
-                    fail_silently=False,
-                )
-        except Exception as e:
-            print(f"Email sending failed: {e}")
-        
-        # Hoặc lưu vào database (nếu có model Report)
-        # Report.objects.create(
-        #     user=request.user,
-        #     solution=solution,
-        #     reason=reason,
-        #     description=description
-        # )
-        
-        # Log báo cáo
-        print(f"Report submitted by {request.user.username} for solution {solution_id}: {reason}")
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Báo cáo đã được gửi thành công'
-        })
-        
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': f'Lỗi server: {str(e)}'
-        })
-
-
-# Nếu bạn muốn tạo model Report, thêm vào models.py:
-"""
-
-"""
-
-# Thêm vào cuối file views.py
-
-@login_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def ai_text_chat_api(request):
     """API để chat với AI bằng text thuần túy, không cần hình ảnh"""
+    print("=== AI TEXT CHAT API CALLED ===")
+    
     try:
         start_time = time.time()
+        print("Start time:", start_time)
         
         user_message = request.POST.get('message', '').strip()
         conversation_id = request.POST.get('conversation_id')
         
+        print("User message:", repr(user_message))
+        print("Conversation ID:", conversation_id)
+        print("Request user:", request.user.id, request.user.username)
+        
         # Nếu không có message, tạo conversation mới và trả về
         if not user_message:
+            print("No user message - creating empty conversation")
             if not conversation_id:
+                print("Creating new conversation without message")
                 conversation = AIConversation.objects.create(
                     user=request.user,
                     title=f"Chat AI - {time.strftime('%d/%m/%Y %H:%M')}",
-                    image_solution=None  # Text chat không liên kết với solution
+                    image_solution=None
                 )
+                print("Created conversation ID:", conversation.id)
                 return JsonResponse({
                     'success': True,
                     'conversation_id': conversation.id,
                     'message': 'Conversation created'
                 })
             else:
+                print("Returning existing conversation ID")
                 return JsonResponse({
                     'success': True,
                     'conversation_id': conversation_id,
                     'message': 'Ready to chat'
                 })
         
+        print("Processing message:", user_message)
+        
         # Tạo hoặc lấy conversation
+        conversation = None
+        is_new_conversation = False
+        
         if conversation_id:
+            print("Looking for existing conversation:", conversation_id)
             try:
                 conversation = AIConversation.objects.get(
                     id=conversation_id,
                     user=request.user
                 )
+                print("Found existing conversation:", conversation.id, conversation.title)
             except AIConversation.DoesNotExist:
+                print("Conversation not found, will create new one")
                 conversation = None
         else:
-            conversation = None
-            
-        # Tạo conversation mới nếu chưa có
+            print("No conversation ID provided")
+        
         if not conversation:
+            print("Creating new conversation with message")
+            is_new_conversation = True
             conversation = AIConversation.objects.create(
                 user=request.user,
                 title=f"Chat AI - {time.strftime('%d/%m/%Y %H:%M')}",
                 image_solution=None
             )
+            print("Created new conversation:", conversation.id, "is_new:", is_new_conversation)
         
-        # Lấy lịch sử conversation (15 tin nhắn mới nhất)
+        # Lấy lịch sử conversation
+        print("Getting conversation history...")
         conversation_messages = AIConversationMessage.objects.filter(
             conversation=conversation
         ).order_by('-created_at')[:15]
         conversation_messages = list(reversed(conversation_messages))
+        print("Found", len(conversation_messages), "previous messages")
         
         # Chuẩn bị messages cho API
+        print("Preparing messages for API...")
         messages = [
             {
                 'role': 'system',
@@ -2176,10 +2489,15 @@ def ai_text_chat_api(request):
             'content': user_message
         })
         
-        # Gọi Gemini API (không có hình ảnh)
+        print("Total messages for API:", len(messages))
+        
+        # Gọi Gemini API
+        print("Calling Gemini API...")
         api_response = call_gemini_api(messages, image_data=None)
+        print("API response success:", api_response.get('success'))
         
         if not api_response['success']:
+            print("API call failed:", api_response.get('error'))
             return JsonResponse({
                 'success': False,
                 'error': api_response['error']
@@ -2188,13 +2506,63 @@ def ai_text_chat_api(request):
         processing_time = int((time.time() - start_time) * 1000)
         ai_response = api_response['content']
         
+        print("Processing time:", processing_time, "ms")
+        print("AI response length:", len(ai_response))
+        print("Is new conversation:", is_new_conversation)
+        
+        # Tạo solution cho conversation chưa có solution
+        if not conversation.image_solution:
+            print("=== CREATING SOLUTION FOR CONVERSATION WITHOUT SOLUTION ===")
+            print("Conversation ID:", conversation.id)
+            print("Conversation has solution:", bool(conversation.image_solution))
+            print("Title will be:", f"Text Chat - {time.strftime('%d/%m/%Y %H:%M')}")
+            print("AI response preview:", ai_response[:100] + "..." if len(ai_response) > 100 else ai_response)
+            print("Processing time:", processing_time)
+            
+            # Check model choices first
+            from home.models import AIImageSolution
+            print("Available solution type choices:", AIImageSolution.SOLUTION_TYPE_CHOICES)
+            
+            try:
+                print("Attempting to create AIImageSolution...")
+                solution = AIImageSolution.objects.create(
+                    user=request.user,
+                    title=f"Text Chat - {time.strftime('%d/%m/%Y %H:%M')}",
+                    ai_solution=ai_response,
+                    solution_type='text_chat',
+                    processing_time=processing_time,
+                    original_filename='text_chat.txt'
+                )
+                print("SUCCESS: Created solution ID:", solution.id)
+                print("Solution type:", solution.solution_type)
+                print("Solution title:", solution.title)
+                
+                # Cập nhật conversation với solution
+                print("Updating conversation with solution...")
+                conversation.image_solution = solution
+                conversation.save()
+                print("SUCCESS: Updated conversation", conversation.id, "with solution", solution.id)
+                
+            except Exception as e:
+                print("ERROR creating text chat solution:", str(e))
+                print("Exception type:", type(e).__name__)
+                import traceback
+                traceback.print_exc()
+                # Continue without solution
+        else:
+            print("Conversation already has solution, not creating new one")
+            print("Existing solution ID:", conversation.image_solution.id if conversation.image_solution else "None")
+        
         # Lưu messages vào database
+        print("Saving user message...")
         user_msg = AIConversationMessage.objects.create(
             conversation=conversation,
             role='user',
             content=user_message
         )
+        print("Saved user message ID:", user_msg.id)
         
+        print("Saving AI message...")
         ai_msg = AIConversationMessage.objects.create(
             conversation=conversation,
             role='assistant',
@@ -2202,10 +2570,13 @@ def ai_text_chat_api(request):
             tokens_used=api_response.get('usage', {}).get('totalTokenCount', 0),
             response_time=processing_time
         )
+        print("Saved AI message ID:", ai_msg.id)
         
         # Update conversation timestamp
+        print("Updating conversation timestamp...")
         conversation.save()
         
+        print("=== RETURNING SUCCESS RESPONSE ===")
         return JsonResponse({
             'success': True,
             'conversation_id': conversation.id,
@@ -2217,11 +2588,129 @@ def ai_text_chat_api(request):
         })
         
     except Exception as e:
-        print(f"Error in ai_text_chat_api: {e}")
+        print("=== UNEXPECTED ERROR ===")
+        print("Error:", str(e))
+        print("Error type:", type(e).__name__)
         import traceback
-        print(traceback.format_exc())
+        traceback.print_exc()
         
         return JsonResponse({
             'success': False,
             'error': f'Server error: {str(e)}'
+        })
+@login_required
+def ai_solution_detail_view(request, solution_id):
+    """View chi tiết một AI solution với conversation history"""
+    solution = get_object_or_404(AIImageSolution, id=solution_id, user=request.user)
+    
+    # Increment view count
+    solution.view_count += 1
+    solution.save()
+    
+    # Get conversations related to this solution
+    conversations = AIConversation.objects.filter(image_solution=solution)
+    
+    # Get all messages for these conversations - Fixed structure
+    conversations_with_messages = []
+    for conv in conversations:
+        messages = AIConversationMessage.objects.filter(
+            conversation=conv
+        ).order_by('created_at')
+        conversations_with_messages.append({
+            'conversation': conv,
+            'messages': messages
+        })
+    
+    context = {
+        'solution': solution,
+        'conversations': conversations,
+        'conversations_with_messages': conversations_with_messages,  # Fixed key name
+    }
+    
+    return render(request, 'ai/solution_detail.html', context)
+
+
+@login_required
+def ai_solutions_history_view(request):
+    """View lịch sử các AI solutions"""
+    solutions = AIImageSolution.objects.filter(user=request.user).order_by('-created_at')
+    
+    # Pagination if needed
+    from django.core.paginator import Paginator
+    paginator = Paginator(solutions, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'solutions': page_obj,
+    }
+    
+    return render(request, 'ai/solutions_history.html', context)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def user_report_api(request):
+    """API để người dùng báo cáo bài giải"""
+    try:
+        solution_id = request.POST.get('solution_id')
+        reason = request.POST.get('reason')
+        description = request.POST.get('description', '')
+        
+        if not solution_id or not reason:
+            return JsonResponse({
+                'success': False,
+                'error': 'Thiếu thông tin bắt buộc'
+            })
+        
+        # Kiểm tra solution có tồn tại không
+        try:
+            solution = AIImageSolution.objects.get(id=solution_id)
+        except AIImageSolution.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Bài giải không tồn tại'
+            })
+        
+        # Gửi email báo cáo cho admin
+        from django.core.mail import send_mail
+        from django.conf import settings
+        
+        subject = f'Báo cáo bài giải AI - ID: {solution_id}'
+        message = f"""
+        Người báo cáo: {request.user.username} ({request.user.email})
+        Bài giải ID: {solution_id}
+        Tiêu đề: {solution.title}
+        Lý do: {reason}
+        Mô tả: {description}
+        
+        Link bài giải: {request.build_absolute_uri(f'/ai/solution/{solution_id}/')}
+        """
+        
+        try:
+            # Chỉ gửi email nếu đã cấu hình email settings
+            if hasattr(settings, 'EMAIL_HOST') and settings.EMAIL_HOST:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [settings.DEFAULT_FROM_EMAIL],  # Gửi cho admin
+                    fail_silently=False,
+                )
+        except Exception as e:
+            print(f"Email sending failed: {e}")
+        
+        # Log báo cáo
+        print(f"Report submitted by {request.user.username} for solution {solution_id}: {reason}")
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Báo cáo đã được gửi thành công'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Lỗi server: {str(e)}'
         })

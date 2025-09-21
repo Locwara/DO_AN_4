@@ -36,31 +36,30 @@ urlpatterns = [
     path('documents/search/', views.documents_search, name='documents_search'),
     path('documents/', views.documents_list, name='documents_list'),
     path('documents/<int:document_id>/like/', views.document_like, name='document_like'),
-    # Thêm các URL patterns này vào file urls.py hiện tại của bạn
+    
+    # Chat URLs
+    path('chat/', views.chat_rooms_list, name='chat_rooms_list'),
+    path('chat/create/', views.chat_room_create, name='chat_room_create'),
+    path('chat/room/<int:room_id>/', views.chat_room_detail, name='chat_room_detail'),
+    path('chat/room/<int:room_id>/edit/', views.chat_room_edit, name='chat_room_edit'),
+    path('chat/room/<int:room_id>/delete/', views.chat_room_delete, name='chat_room_delete'),
+    path('chat/room/<int:room_id>/leave/', views.chat_room_leave, name='chat_room_leave'),
+    path('chat/room/<int:room_id>/invite/', views.chat_room_invite, name='chat_room_invite'),
 
-# Chat URLs
-   path('chat/', views.chat_rooms_list, name='chat_rooms_list'),
-   path('chat/create/', views.chat_room_create, name='chat_room_create'),
-   path('chat/room/<int:room_id>/', views.chat_room_detail, name='chat_room_detail'),
-   path('chat/room/<int:room_id>/edit/', views.chat_room_edit, name='chat_room_edit'),
-   path('chat/room/<int:room_id>/delete/', views.chat_room_delete, name='chat_room_delete'),
-   path('chat/room/<int:room_id>/leave/', views.chat_room_leave, name='chat_room_leave'),
-   path('chat/room/<int:room_id>/invite/', views.chat_room_invite, name='chat_room_invite'),
-
-   # Chat API endpoints
-   path('api/chat/room/<int:room_id>/send/', views.chat_send_message, name='chat_send_message'),
-   path('api/chat/room/<int:room_id>/messages/', views.chat_load_messages, name='chat_load_messages'),
-   path('api/chat/room/<int:room_id>/members/', views.chat_room_members, name='chat_room_members'),
-    # Upload URLs (nếu bạn có)
-    # path('upload/step1/', views.upload_step1, name='upload_step1'),
-    # Thêm vào file urls.py của app home
-
+    # Chat API endpoints
+    path('api/chat/room/<int:room_id>/send/', views.chat_send_message, name='chat_send_message'),
+    path('api/chat/room/<int:room_id>/messages/', views.chat_load_messages, name='chat_load_messages'),
+    path('api/chat/room/<int:room_id>/members/', views.chat_room_members, name='chat_room_members'),
+    
     # AI Image Solver URLs
     path('ai/', views.ai_image_solver_view, name='ai_image_solver'),
     path('ai/solve/', views.ai_solve_image_api, name='ai_solve_image'),
+    path('ai/solve-file/', views.ai_solve_file_api, name='ai_solve_file'),  # NEW URL for file upload
     path('ai/chat/', views.ai_continue_conversation_api, name='ai_continue_conversation'),
     path('ai/solution/<int:solution_id>/', views.ai_solution_detail_view, name='ai_solution_detail'),
     path('ai/history/', views.ai_solutions_history_view, name='ai_solutions_history'),
-    path('api/user-report/', views.user_report_api, name='user_report'),
     path('ai/text-chat/', views.ai_text_chat_api, name='ai_text_chat'),
+    
+    # Report API
+    path('api/user-report/', views.user_report_api, name='user_report'),
 ]
