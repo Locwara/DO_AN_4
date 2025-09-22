@@ -17,7 +17,7 @@ SECRET_KEY = 'django-insecure-2@0nlqs(9n2fvje)14!c*w2@!^2d#iha(@1*ucie-orlk&c^=)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'your-domain.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'your-domain.com', '.vercel.app']
 
 # Application definition
 INSTALLED_APPS = [
@@ -28,13 +28,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.postgres',
-    'cloudinary_storage',  # Thêm cloudinary storage
-    'cloudinary',          # Thêm cloudinary
+    'cloudinary_storage',
+    'cloudinary',
     'home',
     'uploads',
 ]
 
-# Custom user model
 AUTH_USER_MODEL = 'home.User'
 
 MIDDLEWARE = [
@@ -80,14 +79,13 @@ DATABASES = {
     }
 }
 
-# Cloudinary configuration - QUAN TRỌNG: Cấu hình đúng cách
+# Cloudinary configuration
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dddpqvxzg',
     'API_KEY': '768143393531413',
     'API_SECRET': 'kvBPf1aaObw24uYYl_7gw6EZ2Aw'
 }
 
-# Cấu hình Cloudinary cho Python SDK
 cloudinary.config(
     cloud_name='dddpqvxzg',
     api_key='768143393531413', 
@@ -96,7 +94,6 @@ cloudinary.config(
 
 # File storage configuration
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
 
 # Media files configuration
 MEDIA_URL = '/media/'
@@ -104,11 +101,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Static files configuration
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+# Vercel deployment configuration
+if os.environ.get('VERCEL'):
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+    DEBUG = False
+else:
+    STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
 
 # Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -122,11 +123,10 @@ DEFAULT_FROM_EMAIL = 'StudyBot <noreply@studybot.com>'
 SITE_NAME = 'StudyBot'
 
 # File upload settings
-FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
+DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
 FILE_UPLOAD_PERMISSIONS = 0o644
 
-# Allowed file types for upload
 ALLOWED_UPLOAD_EXTENSIONS = [
     '.pdf', '.doc', '.docx', '.ppt', '.pptx', 
     '.txt', '.xls', '.xlsx', '.jpg', '.jpeg', 
@@ -147,13 +147,12 @@ ALLOWED_UPLOAD_TYPES = [
     'image/gif'
 ]
 
-# Session configuration - SỬA ĐỂ FIX LỖI SESSION
-SESSION_COOKIE_AGE = 1209600  # 2 tuần
+# Session configuration
+SESSION_COOKIE_AGE = 1209600
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Sử dụng database để lưu session
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
-# Security settings for file uploads
 SECURE_FILE_UPLOADS = True
 
 # Login/Logout URLs
@@ -163,18 +162,10 @@ LOGOUT_REDIRECT_URL = '/'
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 # Internationalization
@@ -183,34 +174,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Logging configuration
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs', 'django.log'),
-        },
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file', 'console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'home': {
-            'handlers': ['file', 'console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-    },
-}
+# Disable all custom logging - let Django use default console logging
+LOGGING_CONFIG = None

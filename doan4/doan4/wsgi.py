@@ -1,16 +1,14 @@
 """
 WSGI config for doan4 project.
-
-It exposes the WSGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/5.1/howto/deployment/wsgi/
 """
 
 import os
-
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'doan4.settings')
 
-application = get_wsgi_application()
+# Vercel yêu cầu biến 'app' 
+app = get_wsgi_application()
+
+# Để tương thích ngược
+application = app

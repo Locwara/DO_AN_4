@@ -1,6 +1,6 @@
 .from django.core.management.base import BaseCommand
 from django.db.models import Count
-from your_app.models import Document, DocumentView, DocumentDownload, DocumentLike
+from home.models import Document, DocumentView, DocumentDownload, DocumentLike
 
 class Command(BaseCommand):
     help = 'Đồng bộ thống kê tài liệu từ các bảng liên quan'

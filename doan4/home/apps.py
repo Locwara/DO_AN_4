@@ -4,7 +4,7 @@ from django.apps import AppConfig
 class YourAppConfig(AppConfig):
     """
     Cấu hình ứng dụng StudyShare
-    Thay 'your_app' bằng tên app thực tế của bạn
+  
     """
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'home'  # Thay bằng tên app thực tế
@@ -17,7 +17,7 @@ class YourAppConfig(AppConfig):
         """
         try:
             # Import signals để đăng ký các signal handlers
-            import your_app.signals  # Thay 'your_app' bằng tên app thực tế
+            import home.signals 
         except ImportError as e:
             print(f"Warning: Could not import signals: {e}")
             
