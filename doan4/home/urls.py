@@ -59,7 +59,8 @@ urlpatterns = [
     path('ai/solution/<int:solution_id>/', views.ai_solution_detail_view, name='ai_solution_detail'),
     path('ai/history/', views.ai_solutions_history_view, name='ai_solutions_history'),
     path('ai/text-chat/', views.ai_text_chat_api, name='ai_text_chat'),
-    
+    # Trong phần urlpatterns
+    path('ai/conversation/<int:conversation_id>/', views.get_conversation_api, name='get_conversation'),
     # Report API
     path('api/user-report/', views.user_report_api, name='user_report'),
 ]

@@ -345,42 +345,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.contrib import messages
-def documents_list(request):
-    documents = Document.objects.filter(
-        status='approved',
-        is_public=True
-    ).select_related('university', 'course', 'uploaded_by')
-    
-    # Filtering
-    document_type = request.GET.get('type')
-    if document_type:
-        documents = documents.filter(document_type=document_type)
-    
-    university_id = request.GET.get('university')
-    if university_id:
-        documents = documents.filter(university_id=university_id)
-    
-    # Sorting
-    sort_by = request.GET.get('sort', '-created_at')
-    documents = documents.order_by(sort_by)
-    
-    # Pagination
-    from django.core.paginator import Paginator
-    paginator = Paginator(documents, 12)
-    page = request.GET.get('page', 1)
-    documents = paginator.get_page(page)
-    
-    universities = University.objects.filter(is_active=True)
-    
-    context = {
-        'documents': documents,
-        'universities': universities,
-        'current_type': document_type,
-        'current_university': university_id,
-        'current_sort': sort_by,
-    }
-    
-    return render(request, 'documents/list.html', context)
+
 
 def documents_search(request):
     query = request.GET.get('q', '').strip()
@@ -1388,7 +1353,7 @@ import openpyxl
 from .models import AIImageSolution, AIConversation, AIConversationMessage, AIImageSolutionLike
 
 # Gemini API configuration
-GEMINI_API_KEY = "AIzaSyDpBkPHhMkWs5W3r5s4hCO110tqt2td45s"
+GEMINI_API_KEY = "AIzaSyB5r_8Ou0fDq-XHoBWHGIXWcblxkoa9VgM"
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent"
 
 # Supported file types
@@ -1771,12 +1736,37 @@ def ai_solve_image_api(request):
                 'error': 'No image provided'
             })
         
-        # Debug file info
-        print(f"Image file name: {image_file.name}")
-        print(f"Image file size: {image_file.size}")
-        print(f"Image file content type: {image_file.content_type}")
+        # Get optional conversation ID and user question
+        conversation_id = request.POST.get('conversation_id')
+        user_question = request.POST.get('question', '')
         
-        # Check if file is empty
+        print(f"Conversation ID: {conversation_id}")
+        print(f"User question: {user_question}")
+        
+        # FIXED: Tạo hoặc lấy conversation NGAY TỪ ĐẦU
+        conversation = None
+        if conversation_id:
+            try:
+                conversation = AIConversation.objects.get(
+                    id=conversation_id,
+                    user=request.user
+                )
+                print(f"Found existing conversation: {conversation.id}")
+            except AIConversation.DoesNotExist:
+                print("Conversation not found, will create new one")
+                conversation = None
+        
+        # Nếu chưa có conversation, tạo mới NGAY
+        if not conversation:
+            print("Creating new IMAGE conversation early...")
+            conversation = AIConversation.objects.create(
+                user=request.user,
+                title=f"Image Analysis - {time.strftime('%d/%m/%Y %H:%M')}",
+                image_solution=None  # Sẽ update sau
+            )
+            print(f"Created conversation ID: {conversation.id}")
+        
+        # Validate image file
         if image_file.size == 0:
             print("Image file is empty")
             return JsonResponse({
@@ -1784,23 +1774,14 @@ def ai_solve_image_api(request):
                 'error': 'Uploaded file is empty'
             })
         
-        # Check file size limit
         if image_file.size > 10 * 1024 * 1024:  # 10MB
             return JsonResponse({
                 'success': False,
                 'error': 'File too large. Maximum size is 10MB.'
             })
         
-        # Get optional conversation ID for context
-        conversation_id = request.POST.get('conversation_id')
-        user_question = request.POST.get('question', '')
-        
-        print(f"Conversation ID: {conversation_id}")
-        print(f"User question: {user_question}")
-        
-        # Read file content to ensure it's not empty
+        # Read and validate file content
         try:
-            # Reset file pointer
             image_file.seek(0)
             file_content = image_file.read()
             
@@ -1811,8 +1792,6 @@ def ai_solve_image_api(request):
                 })
             
             print(f"File content length: {len(file_content)}")
-            
-            # Reset file pointer again
             image_file.seek(0)
             
         except Exception as e:
@@ -1839,21 +1818,7 @@ def ai_solve_image_api(request):
                 'error': f'Failed to process image: {str(e)}'
             })
         
-        # Create or get conversation
-        if conversation_id:
-            try:
-                conversation = AIConversation.objects.get(
-                    id=conversation_id,
-                    user=request.user
-                )
-                print(f"Found existing conversation: {conversation.id}")
-            except AIConversation.DoesNotExist:
-                print("Conversation not found")
-                conversation = None
-        else:
-            conversation = None
-        
-        # Prepare conversation messages
+        # Prepare conversation messages (lấy từ conversation đã tạo)
         messages = [
             {
                 'role': 'system',
@@ -1879,18 +1844,17 @@ def ai_solve_image_api(request):
         ]
         
         # Add conversation history if exists
-        if conversation:
-            conversation_messages = AIConversationMessage.objects.filter(
-                conversation=conversation
-            ).order_by('-created_at')[:10]  # Lấy 10 tin nhắn mới nhất
-            conversation_messages = list(reversed(conversation_messages))  # Đảo ngược thứ tự
-            
-            for msg in conversation_messages:
-                messages.append({
-                    'role': msg.role,
-                    'content': msg.content
-                })
-            print(f"Added {len(conversation_messages)} conversation messages")
+        conversation_messages = AIConversationMessage.objects.filter(
+            conversation=conversation
+        ).order_by('-created_at')[:10]
+        conversation_messages = list(reversed(conversation_messages))
+        
+        for msg in conversation_messages:
+            messages.append({
+                'role': msg.role,
+                'content': msg.content
+            })
+        print(f"Added {len(conversation_messages)} conversation messages")
         
         # Add current user message
         current_message = f"Hãy phân tích hình ảnh này và giải các bài tập/câu hỏi trong đó."
@@ -1902,6 +1866,15 @@ def ai_solve_image_api(request):
             'content': current_message
         })
         
+        # FIXED: Lưu user message NGAY VÀO DATABASE (trước khi call API)
+        print("Saving user message to conversation...")
+        user_msg = AIConversationMessage.objects.create(
+            conversation=conversation,
+            role='user',
+            content=current_message
+        )
+        print(f"Saved user message ID: {user_msg.id}")
+        
         print(f"Calling Gemini API with {len(messages)} messages")
         
         # Call Gemini API
@@ -1909,9 +1882,14 @@ def ai_solve_image_api(request):
         
         if not api_response['success']:
             print(f"Gemini API error: {api_response['error']}")
+            # FIXED: Vẫn có conversation và user message đã lưu
             return JsonResponse({
                 'success': False,
-                'error': api_response['error']
+                'error': api_response['error'],
+                'conversation': {
+                    'id': conversation.id,
+                    'title': conversation.title,
+                }
             })
         
         processing_time = int((time.time() - start_time) * 1000)
@@ -1921,9 +1899,7 @@ def ai_solve_image_api(request):
         
         # Upload image to Cloudinary
         try:
-            # Reset file pointer before upload
             image_file.seek(0)
-            
             from cloudinary import uploader
             upload_result = uploader.upload(
                 image_file,
@@ -1935,9 +1911,22 @@ def ai_solve_image_api(request):
             
         except Exception as e:
             print(f"Cloudinary upload error: {e}")
+            # FIXED: Vẫn lưu AI response vào conversation
+            ai_msg = AIConversationMessage.objects.create(
+                conversation=conversation,
+                role='assistant',
+                content=f"Lỗi upload hình ảnh: {str(e)}\n\nNhưng đây là phân tích của AI:\n\n{ai_content}",
+                tokens_used=api_response.get('usage', {}).get('totalTokenCount', 0),
+                response_time=processing_time
+            )
+            
             return JsonResponse({
                 'success': False,
-                'error': f'Failed to upload image: {str(e)}'
+                'error': f'Failed to upload image: {str(e)}',
+                'conversation': {
+                    'id': conversation.id,
+                    'title': conversation.title,
+                }
             })
         
         # Create AIImageSolution
@@ -1948,54 +1937,50 @@ def ai_solve_image_api(request):
                 original_filename=image_file.name,
                 ai_solution=ai_content,
                 processing_time=processing_time,
-                title=f"AI Solution - {time.strftime('%Y-%m-%d %H:%M')}"
+                title=f"AI Image Solution - {time.strftime('%Y-%m-%d %H:%M')}",
+                solution_type='image'  # Set explicit type
             )
             print(f"AIImageSolution created: {solution.id}")
             
+            # FIXED: Update conversation với solution
+            conversation.image_solution = solution
+            conversation.title = f"Image Analysis - {solution.title}"
+            conversation.save()
+            print(f"Updated conversation {conversation.id} with solution {solution.id}")
+            
         except Exception as e:
             print(f"Error creating solution: {e}")
+            # FIXED: Vẫn lưu AI response vào conversation
+            ai_msg = AIConversationMessage.objects.create(
+                conversation=conversation,
+                role='assistant',
+                content=ai_content,
+                tokens_used=api_response.get('usage', {}).get('totalTokenCount', 0),
+                response_time=processing_time
+            )
+            
             return JsonResponse({
                 'success': False,
-                'error': f'Failed to save solution: {str(e)}'
+                'error': f'Failed to save solution: {str(e)}',
+                'conversation': {
+                    'id': conversation.id,
+                    'title': conversation.title,
+                }
             })
         
-        # Create or update conversation
-        if not conversation:
-            try:
-                conversation = AIConversation.objects.create(
-                    user=request.user,
-                    image_solution=solution,
-                    title=f"Conversation - {solution.title}"
-                )
-                print(f"AIConversation created: {conversation.id}")
-                
-            except Exception as e:
-                print(f"Error creating conversation: {e}")
-                # Continue without conversation if this fails
-                conversation = None
+        # FIXED: Lưu AI response message
+        print("Saving AI response message...")
+        ai_msg = AIConversationMessage.objects.create(
+            conversation=conversation,
+            role='assistant',
+            content=ai_content,
+            tokens_used=api_response.get('usage', {}).get('totalTokenCount', 0),
+            response_time=processing_time
+        )
+        print(f"Saved AI message ID: {ai_msg.id}")
         
-        # Save messages to conversation if exists
-        if conversation:
-            try:
-                AIConversationMessage.objects.create(
-                    conversation=conversation,
-                    role='user',
-                    content=current_message,
-                    image_url=upload_result['public_id']
-                )
-                
-                AIConversationMessage.objects.create(
-                    conversation=conversation,
-                    role='assistant',
-                    content=ai_content,
-                    tokens_used=api_response.get('usage', {}).get('totalTokenCount', 0),
-                    response_time=processing_time
-                )
-                print("Conversation messages saved")
-                
-            except Exception as e:
-                print(f"Error saving conversation messages: {e}")
-                # Continue without saving messages if this fails
+        # Update conversation timestamp
+        conversation.save()
         
         return JsonResponse({
             'success': True,
@@ -2008,8 +1993,8 @@ def ai_solve_image_api(request):
                 'created_at': solution.created_at.isoformat(),
             },
             'conversation': {
-                'id': conversation.id if conversation else None,
-                'title': conversation.title if conversation else None,
+                'id': conversation.id,
+                'title': conversation.title,
             }
         })
         
@@ -2043,28 +2028,50 @@ def ai_solve_file_api(request):
                 'error': 'No file provided'
             })
         
-        print(f"File name: {file_upload.name}")
-        print(f"File size: {file_upload.size}")
-        print(f"File content type: {file_upload.content_type}")
+        # Get optional parameters
+        conversation_id = request.POST.get('conversation_id')
+        user_question = request.POST.get('question', '')
         
-        # Check file size (20MB limit for documents)
+        print(f"File name: {file_upload.name}")
+        print(f"Conversation ID: {conversation_id}")
+        print(f"User question: {user_question}")
+        
+        # FIXED: Tạo hoặc lấy conversation NGAY TỪ ĐẦU
+        conversation = None
+        if conversation_id:
+            try:
+                conversation = AIConversation.objects.get(
+                    id=conversation_id,
+                    user=request.user
+                )
+                print(f"Found existing conversation: {conversation.id}")
+            except AIConversation.DoesNotExist:
+                print("Conversation not found, will create new one")
+                conversation = None
+        
+        # Nếu chưa có conversation, tạo mới NGAY
+        if not conversation:
+            print("Creating new FILE conversation early...")
+            conversation = AIConversation.objects.create(
+                user=request.user,
+                title=f"Document Analysis - {file_upload.name}",
+                image_solution=None  # Sẽ update sau
+            )
+            print(f"Created conversation ID: {conversation.id}")
+        
+        # Validate file
         if file_upload.size > 20 * 1024 * 1024:
             return JsonResponse({
                 'success': False,
                 'error': 'File too large. Maximum size is 20MB.'
             })
         
-        # Check file type
         file_extension = os.path.splitext(file_upload.name)[1].lower()
         if file_extension not in ['.pdf', '.docx', '.pptx', '.xlsx', '.xls', '.txt', '.csv']:
             return JsonResponse({
                 'success': False,
                 'error': f'File type {file_extension} not supported. Supported types: PDF, DOCX, PPTX, XLSX, XLS, TXT, CSV'
             })
-        
-        # Get optional parameters
-        conversation_id = request.POST.get('conversation_id')
-        user_question = request.POST.get('question', '')
         
         # Extract text from file
         try:
@@ -2083,18 +2090,6 @@ def ai_solve_file_api(request):
                 'success': False,
                 'error': f'Failed to extract text from file: {str(e)}'
             })
-        
-        # Create or get conversation
-        if conversation_id:
-            try:
-                conversation = AIConversation.objects.get(
-                    id=conversation_id,
-                    user=request.user
-                )
-            except AIConversation.DoesNotExist:
-                conversation = None
-        else:
-            conversation = None
         
         # Prepare conversation messages
         messages = [
@@ -2122,20 +2117,19 @@ def ai_solve_file_api(request):
         ]
         
         # Add conversation history if exists
-        if conversation:
-            conversation_messages = AIConversationMessage.objects.filter(
-                conversation=conversation
-            ).order_by('-created_at')[:10]
-            conversation_messages = list(reversed(conversation_messages))
-            
-            for msg in conversation_messages:
-                messages.append({
-                    'role': msg.role,
-                    'content': msg.content
-                })
+        conversation_messages = AIConversationMessage.objects.filter(
+            conversation=conversation
+        ).order_by('-created_at')[:10]
+        conversation_messages = list(reversed(conversation_messages))
         
-        # Truncate extracted text if too long (keep within token limits)
-        if len(extracted_text) > 15000:  # ~4000 tokens
+        for msg in conversation_messages:
+            messages.append({
+                'role': msg.role,
+                'content': msg.content
+            })
+        
+        # Truncate extracted text if too long
+        if len(extracted_text) > 15000:
             extracted_text = extracted_text[:15000] + "\n\n[Nội dung bị cắt do quá dài...]"
         
         # Add current user message with file content
@@ -2151,15 +2145,30 @@ def ai_solve_file_api(request):
             'content': current_message
         })
         
+        # FIXED: Lưu user message NGAY VÀO DATABASE (trước khi call API)
+        print("Saving user message to conversation...")
+        user_msg = AIConversationMessage.objects.create(
+            conversation=conversation,
+            role='user',
+            content=f"Uploaded file: {file_upload.name}\n\nQuestion: {user_question or 'Analyze this document'}"
+        )
+        print(f"Saved user message ID: {user_msg.id}")
+        
         print(f"Calling Gemini API with {len(messages)} messages")
         
         # Call Gemini API (no image data)
         api_response = call_gemini_api(messages, image_data=None)
         
         if not api_response['success']:
+            print(f"Gemini API error: {api_response['error']}")
+            # FIXED: Vẫn có conversation và user message đã lưu
             return JsonResponse({
                 'success': False,
-                'error': api_response['error']
+                'error': api_response['error'],
+                'conversation': {
+                    'id': conversation.id,
+                    'title': conversation.title,
+                }
             })
         
         processing_time = int((time.time() - start_time) * 1000)
@@ -2179,65 +2188,79 @@ def ai_solve_file_api(request):
             
         except Exception as e:
             print(f"Cloudinary upload error: {e}")
+            # FIXED: Vẫn lưu AI response vào conversation
+            ai_msg = AIConversationMessage.objects.create(
+                conversation=conversation,
+                role='assistant',
+                content=f"Lỗi upload file: {str(e)}\n\nNhưng đây là phân tích của AI:\n\n{ai_content}",
+                tokens_used=api_response.get('usage', {}).get('totalTokenCount', 0),
+                response_time=processing_time
+            )
+            
             return JsonResponse({
                 'success': False,
-                'error': f'Failed to upload file: {str(e)}'
+                'error': f'Failed to upload file: {str(e)}',
+                'conversation': {
+                    'id': conversation.id,
+                    'title': conversation.title,
+                }
             })
         
-        # Create AIImageSolution (reusing the model for document solutions)
+        # Create AIImageSolution (reusing model for document solutions)
         try:
             solution = AIImageSolution.objects.create(
                 user=request.user,
-                image_url=upload_result['public_id'],  # Store file URL here
+                image_url=upload_result['public_id'],
                 original_filename=file_upload.name,
-                extracted_text=extracted_text[:5000] if len(extracted_text) > 5000 else extracted_text,  # Store first 5000 chars
+                extracted_text=extracted_text[:5000] if len(extracted_text) > 5000 else extracted_text,
                 ai_solution=ai_content,
                 processing_time=processing_time,
                 title=f"Document Analysis - {file_upload.name}",
-                solution_type='document',  # Set as document analysis
-                document_type=file_extension[1:],  # Remove the dot
+                solution_type='document',
+                document_type=file_extension[1:],
                 file_size=file_upload.size
             )
+            print(f"AIImageSolution created: {solution.id}")
+            
+            # FIXED: Update conversation với solution
+            conversation.image_solution = solution
+            conversation.title = f"Document Analysis - {file_upload.name}"
+            conversation.save()
+            print(f"Updated conversation {conversation.id} with solution {solution.id}")
             
         except Exception as e:
+            print(f"Error creating solution: {e}")
+            # FIXED: Vẫn lưu AI response vào conversation
+            ai_msg = AIConversationMessage.objects.create(
+                conversation=conversation,
+                role='assistant',
+                content=ai_content,
+                tokens_used=api_response.get('usage', {}).get('totalTokenCount', 0),
+                response_time=processing_time
+            )
+            
             return JsonResponse({
                 'success': False,
-                'error': f'Failed to save solution: {str(e)}'
+                'error': f'Failed to save solution: {str(e)}',
+                'conversation': {
+                    'id': conversation.id,
+                    'title': conversation.title,
+                }
             })
         
-        # Create or update conversation
-        if not conversation:
-            try:
-                conversation = AIConversation.objects.create(
-                    user=request.user,
-                    image_solution=solution,
-                    title=f"Document Chat - {file_upload.name}"
-                )
-                
-            except Exception as e:
-                conversation = None
+        # FIXED: Lưu AI response message
+        print("Saving AI response message...")
+        ai_msg = AIConversationMessage.objects.create(
+            conversation=conversation,
+            role='assistant',
+            content=ai_content,
+            tokens_used=api_response.get('usage', {}).get('totalTokenCount', 0),
+            response_time=processing_time
+        )
+        print(f"Saved AI message ID: {ai_msg.id}")
         
-        # Save messages to conversation
-        if conversation:
-            try:
-                # Save user message
-                AIConversationMessage.objects.create(
-                    conversation=conversation,
-                    role='user',
-                    content=f"Uploaded file: {file_upload.name}\n\nQuestion: {user_question or 'Analyze this document'}"
-                )
-                
-                # Save AI response
-                AIConversationMessage.objects.create(
-                    conversation=conversation,
-                    role='assistant',
-                    content=ai_content,
-                    tokens_used=api_response.get('usage', {}).get('totalTokenCount', 0),
-                    response_time=processing_time
-                )
-                
-            except Exception as e:
-                print(f"Error saving conversation messages: {e}")
+        # Update conversation timestamp
+        conversation.save()
         
         return JsonResponse({
             'success': True,
@@ -2251,8 +2274,8 @@ def ai_solve_file_api(request):
                 'created_at': solution.created_at.isoformat(),
             },
             'conversation': {
-                'id': conversation.id if conversation else None,
-                'title': conversation.title if conversation else None,
+                'id': conversation.id,
+                'title': conversation.title,
             }
         })
         
@@ -2265,7 +2288,6 @@ def ai_solve_file_api(request):
             'success': False,
             'error': f'Server error: {str(e)}'
         })
-
 
 @login_required
 @csrf_exempt
@@ -2714,3 +2736,116 @@ def user_report_api(request):
             'success': False,
             'error': f'Lỗi server: {str(e)}'
         })
+    
+
+@login_required
+@csrf_exempt  
+@require_http_methods(["GET"])
+def get_conversation_api(request, conversation_id):
+    """API endpoint để lấy thông tin conversation và messages"""
+    try:
+        # Get conversation
+        conversation = get_object_or_404(
+            AIConversation, 
+            id=conversation_id, 
+            user=request.user
+        )
+        
+        # Get messages
+        messages = AIConversationMessage.objects.filter(
+            conversation=conversation
+        ).order_by('created_at')
+        
+        # Get solution info
+        solution = conversation.image_solution
+        
+        # Prepare response data
+        conversation_data = {
+            'id': conversation.id,
+            'title': conversation.title,
+            'created_at': conversation.created_at.isoformat(),
+            'updated_at': conversation.updated_at.isoformat(),
+        }
+        
+        # Add solution info if exists
+        if solution:
+            conversation_data.update({
+                'solution_type': solution.solution_type,
+                'original_filename': solution.original_filename,
+                'document_type': solution.document_type,
+            })
+            
+            # Add image URL if exists and not text chat
+            if solution.image_url and solution.solution_type != 'text_chat':
+                from cloudinary import CloudinaryImage
+                try:
+                    # Get Cloudinary URL
+                    if hasattr(solution.image_url, 'url'):
+                        conversation_data['image_url'] = solution.image_url.url
+                    else:
+                        # Generate Cloudinary URL
+                        img = CloudinaryImage(solution.image_url)
+                        conversation_data['image_url'] = img.build_url()
+                except:
+                    conversation_data['image_url'] = None
+        
+        # Prepare messages data
+        messages_data = []
+        for msg in messages:
+            msg_data = {
+                'id': msg.id,
+                'role': msg.role,
+                'content': msg.content,
+                'created_at': msg.created_at.isoformat(),
+                'tokens_used': msg.tokens_used,
+                'response_time': msg.response_time,
+            }
+            
+            # Add image URL if exists
+            if msg.image_url:
+                try:
+                    if hasattr(msg.image_url, 'url'):
+                        msg_data['image_url'] = msg.image_url.url
+                    else:
+                        from cloudinary import CloudinaryImage
+                        img = CloudinaryImage(msg.image_url)
+                        msg_data['image_url'] = img.build_url()
+                except:
+                    msg_data['image_url'] = None
+                    
+            messages_data.append(msg_data)
+        
+        return JsonResponse({
+            'success': True,
+            'conversation': conversation_data,
+            'messages': messages_data
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Error loading conversation: {str(e)}'
+        })
+    
+
+def documents_list(request):
+    # Filter logic
+    documents = Document.objects.filter(status='approved', is_public=True)
+    
+    # Apply filters from GET parameters
+    if request.GET.get('university'):
+        documents = documents.filter(university_id=request.GET.get('university'))
+    
+    if request.GET.get('course'):
+        documents = documents.filter(course_id=request.GET.get('course'))
+        
+    # Add pagination, context
+    paginator = Paginator(documents, 12)
+    page = request.GET.get('page')
+    documents = paginator.get_page(page)
+    
+    return render(request, 'documents/list.html', {
+        'documents': documents,
+        'universities': University.objects.filter(is_active=True),
+        'courses': Course.objects.filter(is_active=True),
+    })

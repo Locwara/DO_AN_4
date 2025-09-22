@@ -12283,3 +12283,1152 @@ Not Found: /favicon.ico
 "GET /ai/?conversation=16 HTTP/1.1" 200 44677
 "POST /ai/solve-file/ HTTP/1.1" 200 1749
 "POST /ai/chat/ HTTP/1.1" 200 9496
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 302 0
+"GET /dashboard/ HTTP/1.1" 200 40977
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 12951
+"GET /ai/ HTTP/1.1" 200 45576
+"GET /ai/solution/5/ HTTP/1.1" 200 29465
+Internal Server Error: /ai/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/sessions/backends/base.py", line 244, in _get_session
+    return self._session_cache
+           ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'SessionStore' object has no attribute '_session_cache'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/base/base.py", line 279, in ensure_connection
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/base/base.py", line 256, in connect
+    self.connection = self.get_new_connection(conn_params)
+                      ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py", line 332, in get_new_connection
+    connection = self.Database.connect(**conn_params)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+psycopg2.OperationalError: connection to server at "aws-1-ap-southeast-1.pooler.supabase.com" (3.1.167.181), port 6543 failed: Network is unreachable
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "aws-1-ap-southeast-1.pooler.supabase.com" (13.213.241.248), port 6543 failed: Network is unreachable
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 56, in _view_wrapper
+    test_pass = test_func(request.user)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 79, in <lambda>
+    lambda u: u.is_authenticated,
+              ^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/utils/functional.py", line 251, in inner
+    self._setup()
+    ~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/utils/functional.py", line 404, in _setup
+    self._wrapped = self._setupfunc()
+                    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/middleware.py", line 40, in <lambda>
+    request.user = SimpleLazyObject(lambda: get_user(request))
+                                            ~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/middleware.py", line 20, in get_user
+    request._cached_user = auth.get_user(request)
+                           ~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/__init__.py", line 304, in get_user
+    user_id = _get_user_session_key(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/__init__.py", line 95, in _get_user_session_key
+    return get_user_model()._meta.pk.to_python(request.session[SESSION_KEY])
+                                               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/sessions/backends/base.py", line 55, in __getitem__
+    return self._session[key]
+           ^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/sessions/backends/base.py", line 249, in _get_session
+    self._session_cache = self.load()
+                          ~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/sessions/backends/db.py", line 55, in load
+    s = self._get_session_from_db()
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/sessions/backends/db.py", line 34, in _get_session_from_db
+    return self.model.objects.get(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        session_key=self.session_key, expire_date__gt=timezone.now()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 629, in get
+    num = len(clone)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 366, in __len__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1621, in execute_sql
+    cursor = self.connection.cursor()
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/base/base.py", line 320, in cursor
+    return self._cursor()
+           ~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/base/base.py", line 296, in _cursor
+    self.ensure_connection()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/base/base.py", line 278, in ensure_connection
+    with self.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/base/base.py", line 279, in ensure_connection
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/base/base.py", line 256, in connect
+    self.connection = self.get_new_connection(conn_params)
+                      ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/db/backends/postgresql/base.py", line 332, in get_new_connection
+    connection = self.Database.connect(**conn_params)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+django.db.utils.OperationalError: connection to server at "aws-1-ap-southeast-1.pooler.supabase.com" (3.1.167.181), port 6543 failed: Network is unreachable
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "aws-1-ap-southeast-1.pooler.supabase.com" (13.213.241.248), port 6543 failed: Network is unreachable
+	Is the server running on that host and accepting TCP/IP connections?
+
+"GET /ai/?conversation=18 HTTP/1.1" 500 230658
+"GET /ai/?conversation=18 HTTP/1.1" 200 45576
+"GET /ai/history/ HTTP/1.1" 200 30287
+"GET /ai/solution/4/ HTTP/1.1" 200 32595
+"GET /ai/?conversation=16 HTTP/1.1" 200 45576
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13062
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/urls.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/urls.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/?conversation=16 HTTP/1.1" 200 49703
+"GET /ai/conversation/16/ HTTP/1.1" 200 2363
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/ HTTP/1.1" 200 49703
+"GET /ai/solution/6/ HTTP/1.1" 200 40003
+"GET /ai/?conversation=19 HTTP/1.1" 200 49703
+"GET /ai/conversation/19/ HTTP/1.1" 200 11819
+"GET /ai/solution/6/ HTTP/1.1" 200 40003
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 50743
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49703
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49937
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49937
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/history/ HTTP/1.1" 200 30287
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/history/ HTTP/1.1" 200 30287
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/ HTTP/1.1" 200 49937
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49937
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49937
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49937
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49895
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49903
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49937
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49937
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49937
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49937
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49937
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49938
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49938
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49938
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49938
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 49938
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/history/ HTTP/1.1" 200 30287
+"GET /ai/history/ HTTP/1.1" 200 30287
+"GET /dashboard/ HTTP/1.1" 200 40977
+"GET /profile/ HTTP/1.1" 200 19169
+Upload avatar failed for user 1: 'str' object has no attribute 'url'
+"POST /profile/upload-avatar/ HTTP/1.1" 200 92
+"GET /profile/ HTTP/1.1" 200 19188
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /upload/step1/ HTTP/1.1" 200 24863
+"GET /upload/step1/ HTTP/1.1" 200 24863
+"GET /ai/ HTTP/1.1" 200 49938
+"GET /dashboard/ HTTP/1.1" 200 41449
+"GET /dashboard/ HTTP/1.1" 200 41449
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /profile/ HTTP/1.1" 200 21658
+"GET /profile/ HTTP/1.1" 200 22011
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /dashboard/ HTTP/1.1" 200 41454
+"GET /profile/ HTTP/1.1" 200 22011
+"GET /profile/ HTTP/1.1" 200 22011
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /dashboard/ HTTP/1.1" 200 41455
+"GET /profile/ HTTP/1.1" 200 21394
+"GET /dashboard/ HTTP/1.1" 200 41455
+"GET /profile/ HTTP/1.1" 200 20747
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /profile/ HTTP/1.1" 200 20608
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /dashboard/ HTTP/1.1" 200 41455
+"GET /upload/step1/ HTTP/1.1" 200 24863
+"GET /upload/step1/ HTTP/1.1" 200 24160
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /upload/step1/ HTTP/1.1" 200 27345
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /profile/ HTTP/1.1" 200 20608
+"GET /dashboard/ HTTP/1.1" 200 41455
+Watching for file changes with StatReloader
+"GET /upload/step1/ HTTP/1.1" 200 27345
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /upload/api/temporary-upload/ HTTP/1.1" 200 139
+Internal Server Error: /upload/step2/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 510, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endblock'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/locwara/DO_AN_4/doan4/uploads/views.py", line 64, in upload_step2
+    return render(request, 'uploads/upload_step2.html', context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 299, in do_extends
+    nodelist = parser.parse()
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/base.py", line 577, in invalid_block_tag
+    raise self.error(
+    ...<3 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 1323: 'endblock'. Did you forget to register or load this tag?
+"GET /upload/step2/ HTTP/1.1" 500 183914
+"GET /upload/step2/ HTTP/1.1" 200 55022
+"GET /upload/api/temp-files-info/ HTTP/1.1" 200 325
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /upload/api/universities/?search= HTTP/1.1" 200 29
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /upload/step2/ HTTP/1.1" 200 54387
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /upload/api/temp-files-info/ HTTP/1.1" 200 325
+"GET /upload/api/universities/?search= HTTP/1.1" 200 29
+"GET /dashboard/ HTTP/1.1" 200 41455
+"GET /chat/ HTTP/1.1" 200 27210
+"GET /chat/ HTTP/1.1" 200 27210
+"GET /upload/step1/ HTTP/1.1" 200 27345
+"GET /chat/ HTTP/1.1" 200 27210
+"GET /chat/create/ HTTP/1.1" 200 27314
+"POST /chat/create/ HTTP/1.1" 302 0
+"GET /chat/room/1/ HTTP/1.1" 200 37466
+"GET /api/chat/room/1/messages/?offset=0&limit=10 HTTP/1.1" 200 35
+"GET /api/chat/room/1/messages/?offset=0&limit=10 HTTP/1.1" 200 35
+"POST /api/chat/room/1/send/ HTTP/1.1" 200 234
+"GET /api/chat/room/1/messages/?offset=0&limit=10 HTTP/1.1" 200 279
+"GET /chat/ HTTP/1.1" 200 30519
+"GET /chat/room/1/ HTTP/1.1" 200 38743
+"GET /dashboard/ HTTP/1.1" 200 49994
+"GET /api/university/9/courses/ HTTP/1.1" 200 1391
+"GET /dashboard/ HTTP/1.1" 200 49994
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /api/university/9/courses/ HTTP/1.1" 200 1675
+"GET /api/course/48/documents/ HTTP/1.1" 200 220
+"GET /chat/create/ HTTP/1.1" 200 28060
+"GET /dashboard/ HTTP/1.1" 200 49994
+Internal Server Error: /documents/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 383, in documents_list
+    return render(request, 'documents/list.html', context)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: documents/list.html
+"GET /documents/ HTTP/1.1" 500 92010
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+Internal Server Error: /documents/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2825, in documents_list
+    return render(request, 'documents/list.html', {
+        'documents': documents,
+        'universities': University.objects.filter(is_active=True),
+        'courses': Course.objects.filter(is_active=True),
+    })
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: documents/list.html
+"GET /documents/ HTTP/1.1" 500 91560
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /dashboard/ HTTP/1.1" 200 49995
+Internal Server Error: /documents/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2825, in documents_list
+    return render(request, 'documents/list.html', {
+        'documents': documents,
+        'universities': University.objects.filter(is_active=True),
+        'courses': Course.objects.filter(is_active=True),
+    })
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: documents/list.html
+"GET /documents/ HTTP/1.1" 500 91295
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+Internal Server Error: /documents/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2825, in documents_list
+    return render(request, 'documents/list.html', {
+        'documents': documents,
+        'universities': University.objects.filter(is_active=True),
+        'courses': Course.objects.filter(is_active=True),
+    })
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: documents/list.html
+"GET /documents/ HTTP/1.1" 500 91560
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+/home/locwara/DO_AN_4/doan4/home/urls.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/urls.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+Internal Server Error: /documents/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2790, in documents_list
+    return render(request, 'documents/list.html', {
+        'documents': documents,
+        'universities': University.objects.filter(is_active=True),
+        'courses': Course.objects.filter(is_active=True),
+    })
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: documents/list.html
+"GET /documents/ HTTP/1.1" 500 91432
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+Internal Server Error: /documents/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2790, in documents_list
+    return render(request, 'documents/list.html', {
+        'documents': documents,
+        'universities': University.objects.filter(is_active=True),
+        'courses': Course.objects.filter(is_active=True),
+    })
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: documents/list.html
+"GET /documents/ HTTP/1.1" 500 91295
+/home/locwara/DO_AN_4/doan4/home/urls.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /dashboard/ HTTP/1.1" 200 49995
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+Internal Server Error: /documents/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2790, in documents_list
+    return render(request, 'documents/list.html', {
+        'documents': documents,
+        'universities': University.objects.filter(is_active=True),
+        'courses': Course.objects.filter(is_active=True),
+    })
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: documents/list.html
+"GET /documents/ HTTP/1.1" 500 91295
+Internal Server Error: /documents/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2790, in documents_list
+    return render(request, 'documents/list.html', {
+        'documents': documents,
+        'universities': University.objects.filter(is_active=True),
+        'courses': Course.objects.filter(is_active=True),
+    })
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: documents/list.html
+"GET /documents/ HTTP/1.1" 500 91560
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /dashboard/ HTTP/1.1" 200 49995
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+Internal Server Error: /documents/
+Traceback (most recent call last):
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/locwara/DO_AN_4/doan4/home/views.py", line 2790, in documents_list
+    return render(request, 'documents/list.html', {
+        'documents': documents,
+        'universities': University.objects.filter(is_active=True),
+        'courses': Course.objects.filter(is_active=True),
+    })
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/locwara/DO_AN_4/doan4/venv/lib/python3.13/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: documents/list.html
+"GET /documents/ HTTP/1.1" 500 91295
+"GET /documents/ HTTP/1.1" 200 33222
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /documents/ HTTP/1.1" 200 33222
+"GET /documents/ HTTP/1.1" 200 33065
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 50526
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/ HTTP/1.1" 200 50526
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 50546
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/chat/ HTTP/1.1" 200 3624
+"GET /ai/ HTTP/1.1" 200 50546
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /ai/solve/ HTTP/1.1" 200 3532
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/ HTTP/1.1" 200 53146
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/ HTTP/1.1" 200 57657
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/solve-file/ HTTP/1.1" 200 3098
+Not Found: /ai/solve-image/
+"POST /ai/solve-image/ HTTP/1.1" 404 13266
+Not Found: /ai/solve-image/
+"POST /ai/solve-image/ HTTP/1.1" 404 13266
+Not Found: /ai/solve-image/
+"POST /ai/solve-image/ HTTP/1.1" 404 13266
+Not Found: /ai/solve-image/
+"POST /ai/solve-image/ HTTP/1.1" 404 13266
+"GET /ai/ HTTP/1.1" 200 58550
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /ai/solve/ HTTP/1.1" 200 5585
+"GET /dashboard/ HTTP/1.1" 200 49834
+"GET /ai/ HTTP/1.1" 200 59851
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 316
+"POST /ai/text-chat/ HTTP/1.1" 200 5374
+"POST /ai/solve-file/ HTTP/1.1" 200 3575
+"POST /ai/solve/ HTTP/1.1" 200 5487
+"GET /ai/solution/9/ HTTP/1.1" 200 29718
+"GET /ai/ HTTP/1.1" 200 62962
+"GET /ai/solution/13/ HTTP/1.1" 200 36941
+"GET /ai/ HTTP/1.1" 200 62962
+"GET /ai/solution/12/ HTTP/1.1" 200 30715
+"GET /ai/ HTTP/1.1" 200 62962
+"GET /ai/solution/13/ HTTP/1.1" 200 36941
+"GET /ai/ HTTP/1.1" 200 62962
+"GET /ai/solution/13/ HTTP/1.1" 200 36941
+"GET /ai/ HTTP/1.1" 200 62962
+"GET /ai/solution/12/ HTTP/1.1" 200 30715
+"GET /ai/ HTTP/1.1" 200 62962
+"GET /ai/solution/13/ HTTP/1.1" 200 36941
+/home/locwara/DO_AN_4/doan4/home/urls.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/urls.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/urls.py changed, reloading.
+Watching for file changes with StatReloader
+/home/locwara/DO_AN_4/doan4/home/urls.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 62962
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/solution/13/ HTTP/1.1" 200 36941
+"GET /ai/ HTTP/1.1" 200 62962
+"GET /ai/solution/13/ HTTP/1.1" 200 36941
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/ HTTP/1.1" 200 62962
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/solution/13/ HTTP/1.1" 200 36941
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 62962
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/solution/13/ HTTP/1.1" 200 36941
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/ HTTP/1.1" 200 62962
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/ HTTP/1.1" 200 58457
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/solution/13/ HTTP/1.1" 200 36941
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/ HTTP/1.1" 200 58457
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/ HTTP/1.1" 200 58437
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/solution/12/ HTTP/1.1" 200 30715
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/ HTTP/1.1" 200 58437
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/ HTTP/1.1" 200 58457
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 62461
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/solution/13/ HTTP/1.1" 200 36943
+"GET /ai/ HTTP/1.1" 200 62462
+"GET /ai/ HTTP/1.1" 200 62462
+"GET /ai/ HTTP/1.1" 200 62462
+"GET /ai/ HTTP/1.1" 200 62462
+"GET /ai/history/ HTTP/1.1" 200 37628
+"GET /ai/solution/13/ HTTP/1.1" 200 36943
+"GET /ai/ HTTP/1.1" 200 62462
+"GET /ai/ HTTP/1.1" 200 62462
+"GET /ai/solution/1/ HTTP/1.1" 200 40767
+"GET /ai/?conversation=2 HTTP/1.1" 200 62462
+"GET /ai/conversation/2/ HTTP/1.1" 200 4572
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 237
+"GET /ai/solution/13/ HTTP/1.1" 200 36943
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 63372
+"GET /ai/solution/14/ HTTP/1.1" 200 24642
+"GET /ai/?conversation=31 HTTP/1.1" 200 63372
+"GET /ai/conversation/31/ HTTP/1.1" 200 677
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/solve-file/ HTTP/1.1" 200 1582
+"GET /ai/?conversation=31 HTTP/1.1" 200 64272
+"GET /ai/conversation/31/ HTTP/1.1" 200 677
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/solution/15/ HTTP/1.1" 200 26545
+"GET /ai/ HTTP/1.1" 200 64272
+"GET /ai/solution/15/ HTTP/1.1" 200 26545
+"POST /ai/solve-file/ HTTP/1.1" 200 2889
+"POST /ai/chat/ HTTP/1.1" 200 8097
+"GET /ai/ HTTP/1.1" 200 65172
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/solution/16/ HTTP/1.1" 200 37538
+"GET /ai/?conversation=34 HTTP/1.1" 200 65172
+"GET /ai/conversation/34/ HTTP/1.1" 200 11511
+"POST /ai/solve-file/ HTTP/1.1" 200 3349
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/?conversation=34 HTTP/1.1" 200 66072
+"GET /ai/conversation/34/ HTTP/1.1" 200 14846
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /ai/solve-file/ HTTP/1.1" 200 5980
+"POST /ai/chat/ HTTP/1.1" 200 452
+"GET /ai/?conversation=34 HTTP/1.1" 200 66972
+"GET /ai/conversation/34/ HTTP/1.1" 200 21408
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/solution/18/ HTTP/1.1" 200 51996
+"GET /ai/?conversation=34 HTTP/1.1" 200 66972
+"GET /ai/conversation/34/ HTTP/1.1" 200 21408
+"GET /ai/ HTTP/1.1" 200 66972
+Not Found: /ai/solve-image/
+"POST /ai/solve-image/ HTTP/1.1" 404 13266
+"GET /ai/ HTTP/1.1" 200 66966
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /ai/solve/ HTTP/1.1" 200 6905
+"GET /ai/ HTTP/1.1" 200 68273
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/solution/19/ HTTP/1.1" 200 45490
+"GET /ai/?conversation=35 HTTP/1.1" 200 68273
+"GET /ai/conversation/35/ HTTP/1.1" 200 7415
+"GET /ai/ HTTP/1.1" 200 68273
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 5159
+"POST /ai/text-chat/ HTTP/1.1" 200 990
+"POST /ai/solve-file/ HTTP/1.1" 200 4101
+"POST /ai/solve/ HTTP/1.1" 200 7281
+"GET /ai/solution/17/ HTTP/1.1" 200 30093
+"GET /ai/ HTTP/1.1" 200 69191
+"GET /ai/solution/20/ HTTP/1.1" 200 35942
+"GET /ai/ HTTP/1.1" 200 69191
+"GET /ai/solution/21/ HTTP/1.1" 200 31584
+"GET /ai/ HTTP/1.1" 200 69191
+"GET /ai/solution/22/ HTTP/1.1" 200 55482
+"GET /ai/?conversation=36 HTTP/1.1" 200 69191
+"GET /ai/conversation/36/ HTTP/1.1" 200 18422
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 260
+"GET /ai/?conversation=36 HTTP/1.1" 200 69192
+"GET /ai/conversation/36/ HTTP/1.1" 200 18422
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/solution/23/ HTTP/1.1" 200 24689
+"GET /ai/?conversation=37 HTTP/1.1" 200 69192
+"GET /ai/conversation/37/ HTTP/1.1" 200 691
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/solution/20/ HTTP/1.1" 200 35942
+"GET /ai/ HTTP/1.1" 200 69192
+"GET /ai/solution/20/ HTTP/1.1" 200 35942
+"GET /ai/ HTTP/1.1" 200 69192
+"GET /ai/solution/23/ HTTP/1.1" 200 24689
+"GET /ai/?conversation=37 HTTP/1.1" 200 69192
+"GET /ai/conversation/37/ HTTP/1.1" 200 691
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/?conversation=37 HTTP/1.1" 200 69192
+"GET /ai/conversation/37/ HTTP/1.1" 200 691
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/solution/20/ HTTP/1.1" 200 35942
+"GET /ai/ HTTP/1.1" 200 69192
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 1422
+"POST /ai/text-chat/ HTTP/1.1" 200 1424
+"GET /ai/ HTTP/1.1" 200 69192
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 248
+"GET /ai/ HTTP/1.1" 200 69193
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/solution/24/ HTTP/1.1" 200 24661
+"GET /ai/?conversation=42 HTTP/1.1" 200 69193
+"GET /ai/conversation/42/ HTTP/1.1" 200 679
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/solution/24/ HTTP/1.1" 200 24661
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/solution/23/ HTTP/1.1" 200 24689
+"GET /ai/?conversation=37 HTTP/1.1" 200 69193
+"GET /ai/conversation/37/ HTTP/1.1" 200 691
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/ HTTP/1.1" 200 69193
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 1424
+"POST /ai/text-chat/ HTTP/1.1" 200 252
+"GET /ai/ HTTP/1.1" 200 69194
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/solution/25/ HTTP/1.1" 200 24673
+"GET /ai/?conversation=45 HTTP/1.1" 200 69194
+"GET /ai/conversation/45/ HTTP/1.1" 200 683
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/ HTTP/1.1" 200 69194
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/ HTTP/1.1" 200 69194
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 1424
+"POST /ai/text-chat/ HTTP/1.1" 200 5675
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /ai/ HTTP/1.1" 200 69205
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/ HTTP/1.1" 200 69205
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 1424
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"POST /ai/text-chat/ HTTP/1.1" 200 1424
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 302 0
+"GET /dashboard/ HTTP/1.1" 200 49856
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 69205
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 180
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/ HTTP/1.1" 200 68815
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 302 0
+"GET /dashboard/ HTTP/1.1" 200 49856
+"GET /ai/ HTTP/1.1" 200 68815
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 4981
+/home/locwara/DO_AN_4/doan4/home/views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 302 0
+"GET /dashboard/ HTTP/1.1" 200 49856
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 68425
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 4800
+"POST /ai/solve-file/ HTTP/1.1" 200 3614
+"POST /ai/solve/ HTTP/1.1" 200 6730
+"GET /ai/ HTTP/1.1" 200 68432
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/solution/29/ HTTP/1.1" 200 34696
+"GET /ai/ HTTP/1.1" 200 68432
+"GET /ai/solution/30/ HTTP/1.1" 200 30373
+"GET /ai/ HTTP/1.1" 200 68432
+"GET /ai/solution/31/ HTTP/1.1" 200 54855
+"GET /ai/?conversation=54 HTTP/1.1" 200 68432
+"GET /ai/conversation/54/ HTTP/1.1" 200 15857
+"GET /ai/solution/30/ HTTP/1.1" 200 30373
+"GET /ai/ HTTP/1.1" 200 68432
+"POST /ai/solve-file/ HTTP/1.1" 200 1986
+"GET /ai/ HTTP/1.1" 200 68432
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/solution/32/ HTTP/1.1" 200 28876
+"GET /ai/?conversation=55 HTTP/1.1" 200 68432
+"GET /ai/conversation/55/ HTTP/1.1" 200 2345
+"GET /ai/?conversation=55 HTTP/1.1" 200 68432
+"GET /ai/conversation/55/ HTTP/1.1" 200 2345
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 68432
+"POST /ai/solve-file/ HTTP/1.1" 200 2637
+"POST /ai/solve/ HTTP/1.1" 200 4260
+"GET /ai/ HTTP/1.1" 200 68427
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/solution/33/ HTTP/1.1" 200 28528
+"GET /ai/ HTTP/1.1" 200 68427
+"GET /ai/solution/34/ HTTP/1.1" 200 39016
+"GET /ai/?conversation=56 HTTP/1.1" 200 68427
+"GET /ai/conversation/56/ HTTP/1.1" 200 7393
+"GET /ai/solution/33/ HTTP/1.1" 200 28528
+"GET /ai/ HTTP/1.1" 200 68427
+"GET /ai/ HTTP/1.1" 200 68427
+"POST /ai/solve-file/ HTTP/1.1" 200 4811
+"GET /ai/ HTTP/1.1" 200 68427
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /ai/solve/ HTTP/1.1" 200 4630
+"GET /ai/ HTTP/1.1" 200 68834
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/solution/35/ HTTP/1.1" 200 36531
+"GET /ai/?conversation=57 HTTP/1.1" 200 68834
+"GET /ai/conversation/57/ HTTP/1.1" 200 5160
+"GET /ai/solution/36/ HTTP/1.1" 200 43810
+"GET /ai/?conversation=58 HTTP/1.1" 200 68834
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/ HTTP/1.1" 200 68919
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/ HTTP/1.1" 200 68919
+"GET /ai/ HTTP/1.1" 200 68919
+"GET /ai/ HTTP/1.1" 200 68919
+"GET /ai/solution/36/ HTTP/1.1" 200 43810
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68919
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68894
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68894
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68866
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68866
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68866
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68863
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68863
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68863
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68834
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 68834
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/solution/36/ HTTP/1.1" 200 43810
+"GET /ai/?conversation=58 HTTP/1.1" 200 68834
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"GET /ai/?conversation=58 HTTP/1.1" 200 67462
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/ HTTP/1.1" 200 67462
+"GET /ai/ HTTP/1.1" 200 67462
+"GET /ai/ HTTP/1.1" 200 67462
+"GET /ai/ HTTP/1.1" 200 67462
+"GET /ai/ HTTP/1.1" 200 67462
+"GET /ai/ HTTP/1.1" 200 67462
+"GET /ai/ HTTP/1.1" 200 67462
+"GET /ai/ HTTP/1.1" 200 67462
+"GET /ai/ HTTP/1.1" 200 67462
+"GET /ai/ HTTP/1.1" 200 67462
+"GET /ai/ HTTP/1.1" 200 67462
+"GET /ai/ HTTP/1.1" 200 67462
+"GET /ai/ HTTP/1.1" 200 67462
+"GET /ai/ HTTP/1.1" 200 68834
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/solution/36/ HTTP/1.1" 200 43810
+"GET /ai/?conversation=58 HTTP/1.1" 200 68834
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/ HTTP/1.1" 200 68834
+"GET /ai/solution/36/ HTTP/1.1" 200 43810
+"GET /ai/?conversation=58 HTTP/1.1" 200 68834
+"GET /ai/conversation/58/ HTTP/1.1" 200 5065
+"POST /ai/solve-file/ HTTP/1.1" 200 3249
+"GET /ai/solution/36/ HTTP/1.1" 200 38883
+"GET /ai/ HTTP/1.1" 200 68874
+"GET /ai/solution/36/ HTTP/1.1" 200 38883
+"GET /ai/ HTTP/1.1" 200 68874
+"GET /ai/solution/37/ HTTP/1.1" 200 37919
+"GET /ai/?conversation=58 HTTP/1.1" 200 68874
+"GET /ai/conversation/58/ HTTP/1.1" 200 8302
+"GET /ai/solution/36/ HTTP/1.1" 200 38883
+"GET /ai/ HTTP/1.1" 200 68874
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/ HTTP/1.1" 200 67502
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 67502
+"GET /ai/ HTTP/1.1" 200 67502
+"GET /ai/ HTTP/1.1" 200 67502
+"GET /ai/ HTTP/1.1" 200 67502
+"GET /ai/ HTTP/1.1" 200 67502
+"GET /ai/solution/37/ HTTP/1.1" 200 37919
+"GET /ai/?conversation=58 HTTP/1.1" 200 67502
+"GET /ai/conversation/58/ HTTP/1.1" 200 8302
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/ HTTP/1.1" 200 68229
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 68229
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"GET /ai/ HTTP/1.1" 200 68229
+"GET /ai/solution/37/ HTTP/1.1" 200 37919
+"GET /ai/?conversation=58 HTTP/1.1" 200 68229
+"GET /ai/conversation/58/ HTTP/1.1" 200 8302
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/?conversation=58 HTTP/1.1" 200 68667
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 13364
+"GET /ai/conversation/58/ HTTP/1.1" 200 8302
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 13253
+"GET /ai/ HTTP/1.1" 200 68667
+"GET /ai/solution/37/ HTTP/1.1" 200 37919
+"GET /ai/?conversation=58 HTTP/1.1" 200 68667
+"GET /ai/conversation/58/ HTTP/1.1" 200 8302
+"POST /ai/solve-file/ HTTP/1.1" 200 5604
+"GET /ai/ HTTP/1.1" 200 68667
+"GET /ai/ HTTP/1.1" 200 68667
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 7830
+"GET /ai/ HTTP/1.1" 200 68270
+"POST /ai/solve-file/ HTTP/1.1" 200 3549
+"GET /ai/ HTTP/1.1" 200 68300
+"POST /ai/solve/ HTTP/1.1" 200 5440
+"GET /ai/solution/39/ HTTP/1.1" 200 50695
+"GET /ai/?conversation=84 HTTP/1.1" 200 68707
+"GET /ai/conversation/84/ HTTP/1.1" 200 8327
+"POST /ai/text-chat/ HTTP/1.1" 200 75
+"POST /ai/text-chat/ HTTP/1.1" 200 183
+"GET /ai/solution/41/ HTTP/1.1" 200 41605
+"GET /ai/?conversation=86 HTTP/1.1" 200 68310
+"GET /ai/conversation/86/ HTTP/1.1" 200 5950
+"POST /ai/chat/ HTTP/1.1" 200 1522

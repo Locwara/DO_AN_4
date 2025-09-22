@@ -11,7 +11,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+    {% block extra_css %}
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -331,6 +331,7 @@
             color: #6366f1;
         }
     </style>
+    {% endblock %}
 </head>
 <body>
    
@@ -357,16 +358,12 @@
                             <i class="fas fa-file-alt"></i> Tài liệu
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li onclick="window.location.href='{% url 'ai_image_solver' %}'" class="nav-item">
                         <a class="nav-link" href="#">
                             <i class="fas fa-comments"></i> Chat
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="fas fa-robot"></i> AI Quiz
-                        </a>
-                    </li>
+                    
                 </ul>
                 <!-- Chat Section Card for Dashboard -->
 

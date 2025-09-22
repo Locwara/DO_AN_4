@@ -1,13 +1,7 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Điền Thông Tin Tài Liệu - StudyShare</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+
+  {% extends 'dashboard/index.html' %}
+{% load chat_extras %}
+  {% block extra_css %}
     <style>
         :root {
             --primary-color: #6366f1;
@@ -50,11 +44,7 @@
             box-shadow: var(--shadow);
         }
 
-        .navbar-brand {
-            font-weight: 700;
-            color: var(--primary-color) !important;
-            font-size: 1.5rem;
-        }
+      
 
         .main-container {
             min-height: calc(100vh - 80px);
@@ -505,20 +495,11 @@
             }
         }
     </style>
-</head>
-<body>
+
+    {% endblock %}
+    {% block content %}
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-graduation-cap me-2"></i>StudyShare
-            </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="#"><i class="fas fa-home me-1"></i>Trang chủ</a>
-                <a class="nav-link" href="#"><i class="fas fa-user me-1"></i>{{ user.get_full_name|default:user.username }}</a>
-            </div>
-        </div>
-    </nav>
+    
 
     <!-- Main Container -->
     <div class="main-container">
@@ -1319,11 +1300,10 @@
             // Auto remove after 5 seconds
             setTimeout(() => {
                 alertElement.alert('close');
-            }, 5000);
+            }, 5000)
         }
 
         // Make removeTag function global for onclick handler
         window.removeTag = removeTag;
     </script>
-</body>
-</html>
+{% endblock %}

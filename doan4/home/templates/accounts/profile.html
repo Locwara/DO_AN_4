@@ -1,13 +1,7 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - StudyShare</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
+    {% extends 'dashboard/index.html' %}
+    {% load static %}
+    {% block extra_css %}
+     <style>
         :root {
             --primary-color: #6366f1;
             --primary-dark: #4f46e5;
@@ -46,31 +40,7 @@
             transition: var(--transition);
         }
 
-        .profile-header {
-            background: var(--gradient-card);
-            border-radius: var(--border-radius) var(--border-radius) 0 0;
-            padding: 2rem;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .profile-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--gradient-bg);
-            opacity: 0.1;
-            z-index: 0;
-        }
-
-        .profile-header > * {
-            position: relative;
-            z-index: 1;
-        }
+        
 
         .avatar-container {
             position: relative;
@@ -328,11 +298,7 @@
             padding: 1rem 0;
         }
 
-        .navbar-brand {
-            font-weight: 700;
-            color: var(--primary-color) !important;
-            font-size: 1.5rem;
-        }
+       
 
         @media (max-width: 768px) {
             .profile-container {
@@ -368,24 +334,10 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
-</head>
-<body>
+    {% endblock %}
+
+    {% block content %}
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'dashboard' %}">
-                <i class="fas fa-graduation-cap me-2"></i>StudyShare
-            </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="{% url 'dashboard' %}">
-                    <i class="fas fa-home me-1"></i>Dashboard
-                </a>
-                <a class="nav-link" href="{% url 'logout' %}">
-                    <i class="fas fa-sign-out-alt me-1"></i>Đăng xuất
-                </a>
-            </div>
-        </div>
-    </nav>
 
     <div class="profile-container" style="margin-top: 80px;">
         <div class="container">
@@ -622,5 +574,4 @@
             observer.observe(card);
         });
     </script>
-</body>
-</html>
+    {% endblock %}
