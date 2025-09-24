@@ -246,14 +246,28 @@ class ChatMessage(models.Model):
         ('text', 'Text'),
         ('image', 'Image'),
         ('file', 'File'),
+        ('document_share', 'Document Share'),  # ← THÊM MỚI
         ('system', 'System'),
     ]
 
     room = models.ForeignKey('ChatRoom', on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    message = models.TextField()
+    message = models.TextField(blank=True, null=True)  # Cho phép trống cho file/image
     message_type = models.CharField(max_length=20, choices=MESSAGE_TYPE_CHOICES, default='text')
-    file_url = CloudinaryField('chat_file', resource_type='raw', blank=True, null=True, folder="chat_files/")
+    
+    # File attachments
+    file_url = CloudinaryField('chat_file', resource_type='auto', blank=True, null=True, folder="chat_files/")
+    file_name = models.CharField(max_length=255, blank=True, null=True)  # ← THÊM MỚI
+    file_size = models.BigIntegerField(blank=True, null=True)  # ← THÊM MỚI
+    file_type = models.CharField(max_length=50, blank=True, null=True)  # ← THÊM MỚI
+    
+    # Document sharing
+    shared_document = models.ForeignKey('Document', on_delete=models.SET_NULL, blank=True, null=True)  # ← THÊM MỚI
+    
+    # Image dimensions for better display
+    image_width = models.IntegerField(blank=True, null=True)  # ← THÊM MỚI
+    image_height = models.IntegerField(blank=True, null=True)  # ← THÊM MỚI
+    
     reply_to = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     is_edited = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
@@ -261,10 +275,64 @@ class ChatMessage(models.Model):
     edited_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.username}: {self.message[:50]}"
+        if self.message_type == 'document_share':
+            return f"{self.user.username} shared: {self.shared_document.title if self.shared_document else 'Document'}"
+        elif self.message_type in ['image', 'file']:
+            return f"{self.user.username} sent: {self.file_name or 'File'}"
+        return f"{self.user.username}: {self.message[:50] if self.message else 'Message'}"
 
     class Meta:
         db_table = 'chat_messages'
+    
+    def get_file_icon(self):
+        """Trả về icon phù hợp cho loại file"""
+        if not self.file_type:
+            return 'fa-file'
+        
+        file_icons = {
+            'pdf': 'fa-file-pdf text-danger',
+            'doc': 'fa-file-word text-primary',
+            'docx': 'fa-file-word text-primary',
+            'xls': 'fa-file-excel text-success',
+            'xlsx': 'fa-file-excel text-success',
+            'ppt': 'fa-file-powerpoint text-warning',
+            'pptx': 'fa-file-powerpoint text-warning',
+            'txt': 'fa-file-alt text-info',
+            'zip': 'fa-file-archive text-secondary',
+            'rar': 'fa-file-archive text-secondary',
+            'mp3': 'fa-file-audio text-info',
+            'mp4': 'fa-file-video text-danger',
+            'jpg': 'fa-file-image text-success',
+            'png': 'fa-file-image text-success',
+            'gif': 'fa-file-image text-success',
+        }
+        
+        return file_icons.get(self.file_type.lower(), 'fa-file')
+    
+    def get_file_size_display(self):
+        """Hiển thị kích thước file dễ đọc"""
+        if not self.file_size:
+            return ''
+        
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if self.file_size < 1024.0:
+                return f"{self.file_size:.1f} {unit}"
+            self.file_size /= 1024.0
+        return f"{self.file_size:.1f} TB"
+
+
+# Thêm model mới cho Document Search trong Chat
+class ChatDocumentSearch(models.Model):
+    """Model lưu lịch sử tìm kiếm tài liệu trong chat"""
+    room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    query = models.CharField(max_length=255)
+    results_count = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'chat_document_searches'
+
 
 
 class AIQuizSession(models.Model):

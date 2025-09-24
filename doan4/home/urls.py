@@ -46,11 +46,19 @@ urlpatterns = [
     path('chat/room/<int:room_id>/leave/', views.chat_room_leave, name='chat_room_leave'),
     path('chat/room/<int:room_id>/invite/', views.chat_room_invite, name='chat_room_invite'),
 
-    # Chat API endpoints
     path('api/chat/room/<int:room_id>/send/', views.chat_send_message, name='chat_send_message'),
     path('api/chat/room/<int:room_id>/messages/', views.chat_load_messages, name='chat_load_messages'),
     path('api/chat/room/<int:room_id>/members/', views.chat_room_members, name='chat_room_members'),
     
+    # NEW Chat API endpoints
+    path('api/chat/room/<int:room_id>/search-documents/', views.chat_search_documents, name='chat_search_documents'),
+    path('api/chat/room/<int:room_id>/upload-file/', views.chat_send_message, name='chat_upload_file'),  # Same endpoint, different content-type
+    path('api/chat/room/<int:room_id>/files/', views.chat_room_files, name='chat_room_files'),
+    path('api/chat/room/<int:room_id>/shared-documents/', views.chat_room_shared_documents, name='chat_room_shared_documents'),
+    path('api/chat/room/<int:room_id>/statistics/', views.chat_room_statistics, name='chat_room_statistics'),
+    
+    # File download
+    path('chat/room/<int:room_id>/file/<int:message_id>/download/', views.chat_file_download, name='chat_file_download'),
     # AI Image Solver URLs
     path('ai/', views.ai_image_solver_view, name='ai_image_solver'),
     path('ai/solve/', views.ai_solve_image_api, name='ai_solve_image'),

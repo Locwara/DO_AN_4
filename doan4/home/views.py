@@ -1,4 +1,8 @@
 from django.shortcuts import render
+import time
+from django.utils import timezone
+from django.http import HttpResponse
+import mimetypes
 
 # Create your views here.
 from django.shortcuts import render, redirect
@@ -1145,11 +1149,26 @@ def chat_room_leave(request, room_id):
     return redirect('chat_rooms_list')
 
 
+import os
+from PIL import Image
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.db.models import Q
+import mimetypes
+from django.conf import settings
+
+# Cập nhật view chat_send_message để hỗ trợ file upload
+# Thêm import này vào đầu file views.py
+import time
+from django.utils import timezone
+from django.http import HttpResponse
+import mimetypes
+
+# Sửa lại hàm chat_send_message
 @login_required
 @require_http_methods(["POST"])
 @csrf_exempt
 def chat_send_message(request, room_id):
-    """Gửi tin nhắn"""
+    """Gửi tin nhắn (text, image, file, hoặc document share)"""
     room = get_object_or_404(ChatRoom, id=room_id, is_active=True)
     
     # Check membership
@@ -1160,83 +1179,652 @@ def chat_send_message(request, room_id):
     if membership.is_muted:
         return JsonResponse({'error': 'Bạn đã bị cấm gửi tin nhắn!'}, status=403)
     
-    data = json.loads(request.body)
-    message_text = data.get('message', '').strip()
-    reply_to_id = data.get('reply_to')
+    # Xử lý khác nhau cho form data và JSON data
+    if request.content_type and 'multipart/form-data' in request.content_type:
+        # File upload
+        message_text = request.POST.get('message', '').strip()
+        reply_to_id = request.POST.get('reply_to')
+        uploaded_file = request.FILES.get('file')
+        document_id = request.POST.get('document_id')  # Share document
+        
+    else:
+        # JSON data cho text message
+        data = json.loads(request.body)
+        message_text = data.get('message', '').strip()
+        reply_to_id = data.get('reply_to')
+        uploaded_file = None
+        document_id = data.get('document_id')
     
-    if not message_text:
+    # Validate input
+    if not message_text and not uploaded_file and not document_id:
         return JsonResponse({'error': 'Tin nhắn không thể trống!'}, status=400)
     
     reply_to = None
     if reply_to_id:
         reply_to = ChatMessage.objects.filter(id=reply_to_id, room=room).first()
     
-    # Create message
-    message = ChatMessage.objects.create(
-        room=room,
-        user=request.user,
-        message=message_text,
-        reply_to=reply_to
-    )
+    # Xử lý document sharing
+    if document_id:
+        try:
+            shared_document = Document.objects.get(id=document_id, status='approved')
+            if not shared_document.is_public:
+                return JsonResponse({'error': 'Tài liệu này không công khai!'}, status=403)
+                
+            message = ChatMessage.objects.create(
+                room=room,
+                user=request.user,
+                message=message_text or f"Chia sẻ tài liệu: {shared_document.title}",
+                message_type='document_share',
+                shared_document=shared_document,
+                reply_to=reply_to
+            )
+            
+        except Document.DoesNotExist:
+            return JsonResponse({'error': 'Không tìm thấy tài liệu!'}, status=404)
+    
+    # Xử lý file upload
+    elif uploaded_file:
+        # Validate file size (max 50MB)
+        if uploaded_file.size > 50 * 1024 * 1024:
+            return JsonResponse({'error': 'File quá lớn! Tối đa 50MB.'}, status=400)
+        
+        # Get file info
+        file_name = uploaded_file.name
+        file_size = uploaded_file.size
+        file_type = file_name.split('.')[-1].lower() if '.' in file_name else ''
+        
+        # Determine message type
+        image_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']
+        message_type = 'image' if file_type in image_extensions else 'file'
+        
+        try:
+            # Upload to Cloudinary
+            from cloudinary.uploader import upload
+            
+            upload_options = {
+                'folder': 'chat_files/',
+                'resource_type': 'auto',
+                'public_id': f"{room_id}_{request.user.id}_{int(time.time())}",
+            }
+            
+            # For images, get dimensions và validate
+            image_width = None
+            image_height = None
+            if message_type == 'image':
+                try:
+                    from PIL import Image as PILImage
+                    
+                    # Validate image file trước khi xử lý
+                    uploaded_file.seek(0)  # Reset file pointer
+                    img = PILImage.open(uploaded_file)
+                    img.verify()  # Verify image integrity
+                    
+                    # Reopen file sau khi verify
+                    uploaded_file.seek(0)
+                    img = PILImage.open(uploaded_file)
+                    
+                    # Convert RGBA to RGB if needed
+                    if img.mode in ('RGBA', 'LA', 'P'):
+                        background = PILImage.new('RGB', img.size, (255, 255, 255))
+                        if img.mode == 'P':
+                            img = img.convert('RGBA')
+                        background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                        img = background
+                    
+                    image_width, image_height = img.size
+                    
+                    # Resize if too large
+                    if image_width > 1920 or image_height > 1920:
+                        img.thumbnail((1920, 1920), PILImage.Resampling.LANCZOS)
+                        image_width, image_height = img.size
+                        
+                        # Save resized image to memory
+                        from io import BytesIO
+                        output = BytesIO()
+                        img.save(output, format='JPEG', quality=85)
+                        output.seek(0)
+                        
+                        uploaded_file = InMemoryUploadedFile(
+                            output, None, f"{file_name.split('.')[0]}.jpg", 'image/jpeg',
+                            output.getbuffer().nbytes, None
+                        )
+                    else:
+                        # Reset file pointer for upload
+                        uploaded_file.seek(0)
+                        
+                except Exception as e:
+                    print(f"Image processing error: {e}")
+                    return JsonResponse({'error': f'File ảnh không hợp lệ: {str(e)}'}, status=400)
+            
+            # Upload to Cloudinary
+            result = upload(uploaded_file, **upload_options)
+            file_url = result['secure_url']
+            
+            message = ChatMessage.objects.create(
+                room=room,
+                user=request.user,
+                message=message_text,
+                message_type=message_type,
+                file_url=file_url,
+                file_name=file_name,
+                file_size=file_size,
+                file_type=file_type,
+                image_width=image_width,
+                image_height=image_height,
+                reply_to=reply_to
+            )
+            
+        except Exception as e:
+            print(f"File upload error: {e}")
+            return JsonResponse({'error': f'Lỗi tải file lên: {str(e)}'}, status=500)
+            
+    else:
+        # Text message
+        message = ChatMessage.objects.create(
+            room=room,
+            user=request.user,
+            message=message_text,
+            message_type='text',
+            reply_to=reply_to
+        )
     
     # Update last seen
     membership.last_seen = timezone.now()
     membership.save()
     
-    return JsonResponse({
+    # Prepare response data
+    response_data = {
         'success': True,
         'message': {
             'id': message.id,
             'user': request.user.get_full_name() or request.user.username,
             'user_avatar': request.user.avatar.url if request.user.avatar else None,
             'message': message.message,
+            'message_type': message.message_type,
             'created_at': message.created_at.strftime('%H:%M'),
             'reply_to': {
                 'user': reply_to.user.get_full_name() or reply_to.user.username,
-                'message': reply_to.message[:50] + '...' if len(reply_to.message) > 50 else reply_to.message
+                'message': reply_to.message[:50] + '...' if reply_to and len(reply_to.message) > 50 else reply_to.message if reply_to else ''
             } if reply_to else None
         }
-    })
+    }
+    
+    # Add specific data based on message type
+    if message.message_type == 'image':
+        response_data['message'].update({
+            'file_url': message.file_url,
+            'file_name': message.file_name,
+            'image_width': message.image_width,
+            'image_height': message.image_height,
+        })
+    elif message.message_type == 'file':
+        response_data['message'].update({
+            'file_url': message.file_url,
+            'file_name': message.file_name,
+            'file_size': message.get_file_size_display(),
+            'file_icon': message.get_file_icon(),
+        })
+    elif message.message_type == 'document_share':
+        response_data['message'].update({
+            'document': {
+                'id': message.shared_document.id,
+                'title': message.shared_document.title,
+                'description': message.shared_document.description or '',
+                'university': message.shared_document.university.name if message.shared_document.university else '',
+                'course': message.shared_document.course.name if message.shared_document.course else '',
+                'file_type': message.shared_document.file_type or 'pdf',
+                'view_url': f'/documents/{message.shared_document.id}/view/',
+            }
+        })
+    if uploaded_file:
+        UserActivity.objects.create(
+            user=request.user,
+            action='upload_file_chat',
+            description=f'Upload file "{file_name}" vào phòng "{room.name}"',
+            chat_room=room
+        )
+    
+    # Log document share activity
+    if document_id:
+        UserActivity.objects.create(
+            user=request.user,
+            action='share_document_chat', 
+            description=f'Chia sẻ tài liệu "{shared_document.title}" vào phòng "{room.name}"',
+            document=shared_document,
+            chat_room=room
+        )
+    return JsonResponse(response_data)
+# Thêm các views này vào file views.py của bạn
 
+# Sửa lại view chat_room_files trong views.py
 
 @login_required
-def chat_load_messages(request, room_id):
-    """Load thêm tin nhắn (pagination)"""
+def chat_room_files(request, room_id):
+    """API lấy danh sách files đã upload trong phòng chat"""
     room = get_object_or_404(ChatRoom, id=room_id, is_active=True)
     
     # Check membership
     if not ChatRoomMember.objects.filter(room=room, user=request.user).exists():
         return JsonResponse({'error': 'Bạn không phải thành viên của phòng này!'}, status=403)
     
-    offset = int(request.GET.get('offset', 0))
-    limit = 20
-    
-    messages_list = ChatMessage.objects.filter(
+    # Get all file messages in the room
+    file_messages = ChatMessage.objects.filter(
         room=room,
-        is_deleted=False
-    ).select_related('user', 'reply_to__user').order_by('-created_at')[offset:offset+limit]
+        message_type__in=['image', 'file'],
+        is_deleted=False,
+        file_url__isnull=False
+    ).select_related('user').order_by('-created_at')[:50]  # Limit to latest 50 files
     
-    messages_data = []
-    for msg in reversed(messages_list):
-        messages_data.append({
+    files_data = []
+    for msg in file_messages:
+        # Safely handle avatar URL
+        avatar_url = None
+        if hasattr(msg.user, 'avatar') and msg.user.avatar:
+            try:
+                avatar_url = msg.user.avatar.url
+            except:
+                avatar_url = None
+        
+        files_data.append({
             'id': msg.id,
-            'user': msg.user.get_full_name() or msg.user.username,
-            'user_avatar': msg.user.avatar.url if msg.user.avatar else None,
-            'message': msg.message,
             'message_type': msg.message_type,
-            'created_at': msg.created_at.strftime('%H:%M'),
-            'is_own': msg.user == request.user,
-            'reply_to': {
-                'user': msg.reply_to.user.get_full_name() or msg.reply_to.user.username,
-                'message': msg.reply_to.message[:50] + '...' if len(msg.reply_to.message) > 50 else msg.reply_to.message
-            } if msg.reply_to else None
+            'file_url': msg.file_url,
+            'file_name': msg.file_name or 'Unknown',
+            'file_size': msg.get_file_size_display() if hasattr(msg, 'get_file_size_display') and msg.file_size else '',
+            'file_type': msg.file_type or '',
+            'file_icon': msg.get_file_icon() if hasattr(msg, 'get_file_icon') else 'fa-file',
+            'user': msg.user.get_full_name() or msg.user.username,
+            'user_avatar': avatar_url,
+            'created_at': msg.created_at.isoformat(),
+            'image_width': msg.image_width,
+            'image_height': msg.image_height,
         })
     
-    return JsonResponse({
-        'messages': messages_data,
-        'has_more': ChatMessage.objects.filter(room=room, is_deleted=False).count() > offset + limit
-    })
+    return JsonResponse({'files': files_data})
 
+
+@login_required
+def chat_room_shared_documents(request, room_id):
+    """API lấy danh sách tài liệu đã chia sẻ trong phòng chat"""
+    room = get_object_or_404(ChatRoom, id=room_id, is_active=True)
+    
+    # Check membership
+    if not ChatRoomMember.objects.filter(room=room, user=request.user).exists():
+        return JsonResponse({'error': 'Bạn không phải thành viên của phòng này!'}, status=403)
+    
+    # Get all document share messages in the room
+    document_messages = ChatMessage.objects.filter(
+        room=room,
+        message_type='document_share',
+        is_deleted=False,
+        shared_document__isnull=False
+    ).select_related(
+        'user', 'shared_document__university', 'shared_document__course'
+    ).order_by('-created_at')[:30]  # Limit to latest 30 documents
+    
+    documents_data = []
+    for msg in document_messages:
+        doc = msg.shared_document
+        
+        # Safely handle avatar URL
+        avatar_url = None
+        if hasattr(msg.user, 'avatar') and msg.user.avatar:
+            try:
+                avatar_url = msg.user.avatar.url
+            except:
+                avatar_url = None
+        
+        documents_data.append({
+            'id': doc.id,
+            'title': doc.title,
+            'description': doc.description or '',
+            'university': doc.university.name if doc.university else '',
+            'course': doc.course.name if doc.course else '',
+            'file_type': doc.file_type or 'pdf',
+            'user': msg.user.get_full_name() or msg.user.username,
+            'user_avatar': avatar_url,
+            'created_at': msg.created_at.isoformat(),
+            'view_count': doc.view_count,
+            'like_count': doc.like_count,
+            'view_url': f'/documents/{doc.id}/view/',
+        })
+    
+    return JsonResponse({'documents': documents_data})
+
+
+@login_required 
+def chat_room_statistics(request, room_id):
+    """API lấy thống kê phòng chat"""
+    room = get_object_or_404(ChatRoom, id=room_id, is_active=True)
+    
+    # Check membership
+    if not ChatRoomMember.objects.filter(room=room, user=request.user).exists():
+        return JsonResponse({'error': 'Bạn không phải thành viên của phòng này!'}, status=403)
+    
+    # Get statistics
+    total_messages = ChatMessage.objects.filter(room=room, is_deleted=False).count()
+    total_files = ChatMessage.objects.filter(
+        room=room, 
+        message_type__in=['image', 'file'], 
+        is_deleted=False
+    ).count()
+    total_documents = ChatMessage.objects.filter(
+        room=room, 
+        message_type='document_share', 
+        is_deleted=False
+    ).count()
+    
+    # Most active users
+    from django.db.models import Count
+    active_users = ChatMessage.objects.filter(
+        room=room, 
+        is_deleted=False
+    ).values(
+        'user__username', 
+        'user__first_name', 
+        'user__last_name'
+    ).annotate(
+        message_count=Count('id')
+    ).order_by('-message_count')[:5]
+    
+    # Recent activity by day
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    last_7_days = timezone.now() - timedelta(days=7)
+    daily_activity = ChatMessage.objects.filter(
+        room=room,
+        is_deleted=False,
+        created_at__gte=last_7_days
+    ).extra({
+        'day': 'date(created_at)'
+    }).values('day').annotate(
+        count=Count('id')
+    ).order_by('day')
+    
+    statistics = {
+        'total_messages': total_messages,
+        'total_files': total_files,
+        'total_documents': total_documents,
+        'active_users': list(active_users),
+        'daily_activity': list(daily_activity)
+    }
+    
+    return JsonResponse(statistics)
+# Thêm view mới để handle download file
+
+
+# Thêm helper function này vào đầu views.py hoặc tạo file utils.py riêng
+
+def get_safe_cloudinary_url(cloudinary_field):
+    """
+    Safely get URL from Cloudinary field
+    Returns None if field is empty or invalid
+    """
+    if not cloudinary_field:
+        return None
+    
+    try:
+        # Try to get URL - this might fail if field is empty or corrupted
+        return cloudinary_field.url
+    except (AttributeError, ValueError, TypeError):
+        return None
+
+
+def serialize_message_for_json(message):
+    """
+    Safely serialize a ChatMessage object for JSON response
+    """
+    avatar_url = get_safe_cloudinary_url(message.user.avatar) if hasattr(message.user, 'avatar') else None
+    
+    return {
+        'id': message.id,
+        'message_type': message.message_type,
+        'file_url': message.file_url or '',
+        'file_name': message.file_name or 'Unknown',
+        'file_size': message.get_file_size_display() if hasattr(message, 'get_file_size_display') and message.file_size else '',
+        'file_type': message.file_type or '',
+        'file_icon': message.get_file_icon() if hasattr(message, 'get_file_icon') else 'fa-file',
+        'user': message.user.get_full_name() or message.user.username,
+        'user_avatar': avatar_url,
+        'created_at': message.created_at.isoformat(),
+        'image_width': message.image_width,
+        'image_height': message.image_height,
+    }
+
+# Sau đó sử dụng helper function này trong view:
+
+@login_required
+def chat_room_files(request, room_id):
+    """API lấy danh sách files đã upload trong phòng chat"""
+    room = get_object_or_404(ChatRoom, id=room_id, is_active=True)
+    
+    # Check membership
+    if not ChatRoomMember.objects.filter(room=room, user=request.user).exists():
+        return JsonResponse({'error': 'Bạn không phải thành viên của phòng này!'}, status=403)
+    
+    try:
+        # Get all file messages in the room
+        file_messages = ChatMessage.objects.filter(
+            room=room,
+            message_type__in=['image', 'file'],
+            is_deleted=False,
+            file_url__isnull=False
+        ).select_related('user').order_by('-created_at')[:50]
+        
+        files_data = [serialize_message_for_json(msg) for msg in file_messages]
+        
+        return JsonResponse({'files': files_data})
+        
+    except Exception as e:
+        import logging
+        logging.error(f"Error in chat_room_files: {str(e)}")
+        return JsonResponse({'error': 'Lỗi server', 'files': []}, status=500)
+@login_required
+def chat_file_download(request, room_id, message_id):
+    """Download file từ chat message"""
+    room = get_object_or_404(ChatRoom, id=room_id, is_active=True)
+    
+    # Check membership
+    if not ChatRoomMember.objects.filter(room=room, user=request.user).exists():
+        return JsonResponse({'error': 'Bạn không phải thành viên của phòng này!'}, status=403)
+    
+    message = get_object_or_404(ChatMessage, id=message_id, room=room, message_type__in=['file', 'image'])
+    
+    if not message.file_url:
+        return JsonResponse({'error': 'File không tồn tại!'}, status=404)
+    
+    # Redirect to Cloudinary URL with proper headers for download
+    response = HttpResponse()
+    response['X-Accel-Redirect'] = message.file_url
+    response['Content-Type'] = mimetypes.guess_type(message.file_name or '')[0] or 'application/octet-stream'
+    response['Content-Disposition'] = f'attachment; filename="{message.file_name or "file"}"'
+    
+    return response
+# API tìm kiếm tài liệu cho chat
+@login_required
+def chat_search_documents(request, room_id):
+    """API tìm kiếm tài liệu để chia sẻ trong chat"""
+    room = get_object_or_404(ChatRoom, id=room_id, is_active=True)
+    
+    # Check membership
+    if not ChatRoomMember.objects.filter(room=room, user=request.user).exists():
+        return JsonResponse({'error': 'Bạn không phải thành viên của phòng này!'}, status=403)
+    
+    query = request.GET.get('q', '').strip()
+    if len(query) < 2:
+        return JsonResponse({'documents': []})
+    
+    # Search documents
+    documents = Document.objects.filter(
+        status='approved',
+        is_public=True
+    ).filter(
+        Q(title__icontains=query) |
+        Q(description__icontains=query) |
+        Q(ai_keywords__contains=[query])
+    )
+    
+    # Filter by room's university/course if available
+    if room.university:
+        documents = documents.filter(university=room.university)
+    if room.course:
+        documents = documents.filter(course=room.course)
+    
+    documents = documents.select_related('university', 'course', 'uploaded_by')[:20]
+    
+    # Save search history
+    ChatDocumentSearch.objects.create(
+        room=room,
+        user=request.user,
+        query=query,
+        results_count=documents.count()
+    )
+    
+    documents_data = []
+    for doc in documents:
+        documents_data.append({
+            'id': doc.id,
+            'title': doc.title,
+            'description': doc.description or '',
+            'university': doc.university.name if doc.university else '',
+            'course': doc.course.name if doc.course else '',
+            'uploaded_by': doc.uploaded_by.get_full_name() or doc.uploaded_by.username,
+            'file_type': doc.file_type or 'pdf',
+            'view_count': doc.view_count,
+            'like_count': doc.like_count,
+            'created_at': doc.created_at.strftime('%d/%m/%Y'),
+            'view_url': f'/documents/{doc.id}/view/',
+        })
+    
+    return JsonResponse({'documents': documents_data})
+
+
+@login_required
+def chat_load_messages(request, room_id):
+    """Load tin nhắn - hỗ trợ cả polling (tin nhắn mới) và pagination (tin nhắn cũ)"""
+    try:
+        room = get_object_or_404(ChatRoom, id=room_id, is_active=True)
+        
+        # Check membership
+        membership = ChatRoomMember.objects.filter(room=room, user=request.user).first()
+        if not membership:
+            return JsonResponse({'error': 'Bạn không phải thành viên của phòng này!'}, status=403)
+        
+        # Update last seen
+        membership.last_seen = timezone.now()
+        membership.save()
+        
+        # Xử lý polling - lấy tin nhắn mới từ last_id
+        last_id = request.GET.get('last_id')
+        if last_id:
+            try:
+                last_id = int(last_id)
+                new_messages = ChatMessage.objects.filter(
+                    room=room,
+                    is_deleted=False,
+                    id__gt=last_id
+                ).select_related(
+                    'user', 'reply_to__user', 'shared_document__university', 'shared_document__course'
+                ).order_by('created_at')[:20]
+                
+                messages_data = []
+                for msg in new_messages:
+                    message_data = format_message_data(msg, request.user)
+                    messages_data.append(message_data)
+                
+                return JsonResponse({'messages': messages_data})
+                
+            except (ValueError, TypeError):
+                return JsonResponse({'error': 'Invalid last_id parameter'}, status=400)
+        
+        # Xử lý pagination - load tin nhắn cũ
+        offset = int(request.GET.get('offset', 0))
+        limit = 20
+        
+        messages_list = ChatMessage.objects.filter(
+            room=room,
+            is_deleted=False
+        ).select_related(
+            'user', 'reply_to__user', 'shared_document__university', 'shared_document__course'
+        ).order_by('-created_at')[offset:offset+limit]
+        
+        messages_data = []
+        for msg in reversed(messages_list):
+            message_data = format_message_data(msg, request.user)
+            messages_data.append(message_data)
+        
+        # Check if there are more messages
+        total_messages = ChatMessage.objects.filter(room=room, is_deleted=False).count()
+        has_more = total_messages > offset + limit
+        
+        return JsonResponse({
+            'messages': messages_data,
+            'has_more': has_more,
+            'total': total_messages
+        })
+        
+    except Exception as e:
+        print(f"chat_load_messages error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'error': 'Lỗi server khi tải tin nhắn'}, status=500)
+
+
+def format_message_data(msg, current_user):
+    """Helper function để format message data"""
+    message_data = {
+        'id': msg.id,
+        'user': msg.user.get_full_name() or msg.user.username,
+        'user_avatar': msg.user.avatar.url if msg.user.avatar else None,
+        'message': msg.message,
+        'message_type': msg.message_type,
+        'created_at': msg.created_at.strftime('%H:%M'),
+        'is_own': msg.user == current_user,
+        'is_edited': msg.is_edited,
+        'reply_to': None
+    }
+    
+    # Add reply_to data if exists
+    if msg.reply_to:
+        reply_message = msg.reply_to.message or ''
+        if len(reply_message) > 50:
+            reply_message = reply_message[:50] + '...'
+        
+        message_data['reply_to'] = {
+            'user': msg.reply_to.user.get_full_name() or msg.reply_to.user.username,
+            'message': reply_message
+        }
+    
+    # Add specific data based on message type
+    if msg.message_type == 'image':
+        message_data.update({
+            'file_url': msg.file_url,
+            'file_name': msg.file_name,
+            'image_width': msg.image_width,
+            'image_height': msg.image_height,
+        })
+    elif msg.message_type == 'file':
+        message_data.update({
+            'file_url': msg.file_url,
+            'file_name': msg.file_name,
+            'file_size': msg.get_file_size_display(),
+            'file_icon': msg.get_file_icon(),
+        })
+    elif msg.message_type == 'document_share' and msg.shared_document:
+        message_data.update({
+            'document': {
+                'id': msg.shared_document.id,
+                'title': msg.shared_document.title,
+                'description': msg.shared_document.description or '',
+                'university': msg.shared_document.university.name if msg.shared_document.university else '',
+                'course': msg.shared_document.course.name if msg.shared_document.course else '',
+                'file_type': msg.shared_document.file_type or 'pdf',
+                'view_url': f'/documents/{msg.shared_document.id}/view/',
+            }
+        })
+    
+    return message_data
 
 @login_required
 def chat_room_members(request, room_id):
@@ -1746,17 +2334,32 @@ def ai_solve_image_api(request):
         # FIXED: Tạo hoặc lấy conversation NGAY TỪ ĐẦU
         conversation = None
         if conversation_id:
+            print("Looking for existing conversation:", conversation_id)
             try:
                 conversation = AIConversation.objects.get(
                     id=conversation_id,
                     user=request.user
                 )
-                print(f"Found existing conversation: {conversation.id}")
+                print("Found existing conversation:", conversation.id, conversation.title)
             except AIConversation.DoesNotExist:
                 print("Conversation not found, will create new one")
                 conversation = None
-        
-        # Nếu chưa có conversation, tạo mới NGAY
+        # THÊM DEBUG LOGS VÀO ĐÂY:
+        if conversation:
+            print(f"=== DEBUG CONVERSATION {conversation.id} ===")
+            print(f"Conversation title: {conversation.title}")
+            print(f"Created at: {conversation.created_at}")
+            print(f"Has solution: {bool(conversation.image_solution)}")
+            
+            # Check tất cả messages trong conversation này
+            all_msgs = AIConversationMessage.objects.filter(conversation=conversation)
+            print(f"Total messages in conversation: {all_msgs.count()}")
+            
+            for i, msg in enumerate(all_msgs.order_by('created_at')):
+                print(f"  Message {i+1}: {msg.role} - {msg.content[:100]}...")
+                print(f"              Created: {msg.created_at}")
+            print("=== END DEBUG ===")
+                # Nếu chưa có conversation, tạo mới NGAY
         if not conversation:
             print("Creating new IMAGE conversation early...")
             conversation = AIConversation.objects.create(
@@ -2465,41 +3068,59 @@ def ai_text_chat_api(request):
             )
             print("Created new conversation:", conversation.id, "is_new:", is_new_conversation)
         
-        # Lấy lịch sử conversation
+        # Lấy lịch sử conversation - FIXED: Đảm bảo lấy đúng thứ tự
         print("Getting conversation history...")
         conversation_messages = AIConversationMessage.objects.filter(
             conversation=conversation
-        ).order_by('-created_at')[:15]
-        conversation_messages = list(reversed(conversation_messages))
-        print("Found", len(conversation_messages), "previous messages")
+        ).order_by('created_at')
+
+        print("=== CONVERSATION MESSAGES QUERY ===")
+        print(f"Query filter: conversation={conversation.id}")
+        print(f"Found {len(conversation_messages)} previous messages")
+        for i, msg in enumerate(conversation_messages):
+            print(f"  {i+1}. {msg.role}: {msg.content[:50]}...")
+        print("=== END QUERY DEBUG ===")
+        if len(conversation_messages) == 0:
+            # Conversation mới - system prompt ban đầu
+            system_prompt = '''Bạn là AI assistant thông minh, hữu ích và thân thiện.
+            Nhiệm vụ của bạn là trả lời câu hỏi của người dùng một cách chi tiết và chính xác.
+            
+            Khả năng của bạn:
+            1. Giải thích kiến thức học tập (toán, lý, hóa, văn, anh, v.v.)
+            2. Giải bài tập và hướng dẫn từng bước
+            3. Trả lời câu hỏi thường thức
+            4. Hỗ trợ học tập và nghiên cứu
+            5. Giải thích khái niệm phức tạp một cách đơn giản
+            
+            Hãy luôn:
+            - Trả lời bằng tiếng Việt
+            - Giải thích chi tiết và dễ hiểu
+            - Đưa ra ví dụ cụ thể khi cần thiết
+            - Thân thiện và khích lệ người học
+            - Nếu không chắc chắn, hãy thừa nhận và đưa ra gợi ý'''
+        else:
+            # Conversation đã có lịch sử - system prompt nhấn mạnh context
+            system_prompt = '''Bạn đang trong cuộc trò chuyện với người dùng. 
+            Hãy tiếp tục hỗ trợ dựa trên context cuộc trò chuyện trước đó.
+            Trả lời một cách tự nhiên, hữu ích và chi tiết bằng tiếng Việt.
+            
+            Hãy nhớ:
+            - Tham khảo các tin nhắn trước đó trong cuộc trò chuyện
+            - Duy trì tính liên tục và logic trong đối thoại
+            - Trả lời phù hợp với ngữ cảnh đã thiết lập
+            - Giải thích chi tiết khi cần thiết'''
         
-        # Chuẩn bị messages cho API
-        print("Preparing messages for API...")
         messages = [
             {
                 'role': 'system',
-                'content': '''Bạn là AI assistant thông minh, hữu ích và thân thiện.
-                Nhiệm vụ của bạn là trả lời câu hỏi của người dùng một cách chi tiết và chính xác.
-                
-                Khả năng của bạn:
-                1. Giải thích kiến thức học tập (toán, lý, hóa, văn, anh, v.v.)
-                2. Giải bài tập và hướng dẫn từng bước
-                3. Trả lời câu hỏi thường thức
-                4. Hỗ trợ học tập và nghiên cứu
-                5. Giải thích khái niệm phức tạp một cách đơn giản
-                
-                Hãy luôn:
-                - Trả lời bằng tiếng Việt
-                - Giải thích chi tiết và dễ hiểu
-                - Đưa ra ví dụ cụ thể khi cần thiết
-                - Thân thiện và khích lệ người học
-                - Nếu không chắc chắn, hãy thừa nhận và đưa ra gợi ý
-                '''
+                'content': system_prompt
             }
         ]
         
-        # Thêm lịch sử conversation
-        for msg in conversation_messages:
+        # Thêm lịch sử conversation - FIXED: Giới hạn số lượng để tránh token limit
+        recent_messages = conversation_messages[-10:] if len(conversation_messages) > 10 else conversation_messages
+        
+        for msg in recent_messages:
             messages.append({
                 'role': msg.role,
                 'content': msg.content
@@ -2512,6 +3133,7 @@ def ai_text_chat_api(request):
         })
         
         print("Total messages for API:", len(messages))
+        print("Recent messages count:", len(recent_messages))
         
         # Gọi Gemini API
         print("Calling Gemini API...")

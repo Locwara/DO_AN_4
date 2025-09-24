@@ -949,8 +949,9 @@ function initTextMode() {
   document.getElementById('chatModeIndicator').textContent = 'Chat text';
   document.getElementById('chatModeIndicator').className = 'chat-mode-indicator mode-text';
   document.getElementById('chatStatus').textContent = 'Sẵn sàng trả lời câu hỏi';
+  document.getElementById('sendBtn').disabled = false;
   
-  // Clear welcome message and start new conversation
+  // Clear welcome message
   document.getElementById('chatMessages').innerHTML = `
     <div class="message assistant">
       <div class="message-content">
@@ -960,10 +961,14 @@ function initTextMode() {
     </div>
   `;
   
-  // Create new text conversation
-  startTextConversation();
+  // *** SỬA: Chỉ tạo conversation mới nếu chưa có ***
+  if (!currentConversationId) {
+    console.log('No existing conversation, creating new text conversation');
+    startTextConversation();
+  } else {
+    console.log('Using existing conversation:', currentConversationId);
+  }
 }
-
 // Load cuộc trò chuyện có sẵn
 function loadExistingConversation(conversationId) {
   // Set conversation ID
@@ -1491,8 +1496,11 @@ function initializeChat() {
 }
 
 function sendMessage() {
-  const chatInput = document.getElementById('chatInput');
   const message = chatInput.value.trim();
+  console.log('=== SENDING MESSAGE ===');
+  console.log('Current conversation ID:', currentConversationId);
+  console.log('Chat mode:', chatMode);
+  console.log('Message:', message);
   
   if (!message) return;
 
@@ -1533,8 +1541,17 @@ function sendMessage() {
   .then(data => {
     // Remove typing indicator
     typingDiv.remove();
+    console.log('=== RECEIVED RESPONSE ===');
+    console.log('Response data:', data);
+    console.log('New conversation ID:', data.conversation_id);
     
     if (data.success) {
+      // *** QUAN TRỌNG: Lưu conversation ID cho text chat ***
+      if (chatMode === 'text' && data.conversation_id) {
+        currentConversationId = data.conversation_id;
+        console.log('Updated currentConversationId:', currentConversationId);
+      }
+      
       if (chatMode === 'text' && !currentConversationId) {
         currentConversationId = data.conversation_id;
       }
@@ -1546,6 +1563,7 @@ function sendMessage() {
       addMessage('assistant', 'Xin lỗi, có lỗi xảy ra: ' + data.error);
     }
   })
+  
   .catch(error => {
     // Remove typing indicator
     typingDiv.remove();

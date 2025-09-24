@@ -563,7 +563,15 @@
 <script>
 // Global variables
 const solutionId = {{ solution.id }};
-const conversationId = {{ conversations.0.id|default:"null" }};
+// Thay thế dòng lỗi bằng:
+const conversationId = (() => {
+  const conversations = [
+    {% for conv in conversations %}
+      {{ conv.id }}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+  return conversations.length > 0 ? conversations[conversations.length - 1] : null;
+})();
 
 // Continue solution in new chat
 function continueSolution() {
