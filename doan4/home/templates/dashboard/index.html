@@ -12,6 +12,7 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     {% block extra_css %}
+    
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -336,9 +337,10 @@
 <body>
    
     <!-- Navigation -->
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="#">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
                 <i class="fas fa-graduation-cap"></i> StudyBot
             </a>
             
@@ -354,12 +356,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'documents_list' %}">
+                        <a class="nav-link active" href="{% url 'documents_list' %}">
                             <i class="fas fa-file-alt"></i> Tài liệu
                         </a>
                     </li>
                     <li onclick="window.location.href='{% url 'ai_image_solver' %}'" class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link active" href="#">
                             <i class="fas fa-comments"></i> Chat
                         </a>
                     </li>
@@ -370,18 +372,12 @@
                 
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link active dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user"></i> {{ user.get_full_name|default:user.username }}
-                            {% if user.is_premium %}
-                                <span class="premium-badge ms-2">PREMIUM</span>
-                            {% endif %}
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-edit"></i> Hồ sơ</a></li>
                             <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Cài đặt</a></li>
-                            {% if not user.is_premium %}
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-crown"></i> Nâng cấp Premium</a></li>
-                            {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
                         </ul>
@@ -390,6 +386,7 @@
             </div>
         </div>
     </nav>
+
     {% block content %}
     <!-- Main Content -->
     <div class="container mt-4">
@@ -410,9 +407,6 @@
                 <div class="col-md-8">
                     <h1 class="h3 mb-2">
                         Chào mừng trở lại, {{ user.get_full_name|default:user.username }}! 
-                        {% if user.is_premium %}
-                            <i class="fas fa-crown text-warning"></i>
-                        {% endif %}
                     </h1>
                     <p class="mb-0 opacity-90">
                         {% if user.bio %}
@@ -426,10 +420,6 @@
                     <div class="d-flex flex-column align-items-end">
                         <small class="opacity-75">Thành viên từ</small>
                         <strong>{{ user.date_joined|date:"d/m/Y" }}</strong>
-                        {% if user.is_premium %}
-                            <small class="opacity-75 mt-2">Premium đến</small>
-                            <strong>{{ user.premium_expiry|date:"d/m/Y"|default:"Vĩnh viễn" }}</strong>
-                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -1162,5 +1152,6 @@
         });
     </script>
     {% endblock %}
+    
 </body>
 </html>

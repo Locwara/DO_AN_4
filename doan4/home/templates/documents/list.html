@@ -1,11 +1,83 @@
 {% extends 'dashboard/index.html' %}
 
+{% block extra_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+
+    .document-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .document-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .card-img-top {
+        transition: transform 0.3s ease;
+    }
+
+    .document-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+
+    .like-btn {
+        transition: all 0.2s ease;
+    }
+
+    .like-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .like-btn.liked {
+        background-color: #dc3545 !important;
+        border-color: #dc3545 !important;
+        color: white !important;
+    }
+
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        border-radius: 10px;
+    }
+
+    .badge {
+        font-size: 0.7rem;
+        border-radius: 20px;
+    }
+
+    .search-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: none;
+        border-radius: 15px;
+    }
+
+    @media (max-width: 768px) {
+        .document-card:hover {
+            transform: none;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-4">
     <!-- Header Section -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 text-gray-800">📚 Thư viện Tài liệu</h1>
+            <h1 class="h3 text-gray-800">Thư viện Tài liệu</h1>
             <p class="text-muted">Khám phá và tải xuống tài liệu học tập chất lượng cao</p>
         </div>
         <div class="d-flex gap-2">
@@ -26,12 +98,23 @@
         </div>
     </div>
 
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
     <!-- Filters Section -->
-    <div class="card mb-4 shadow-sm">
+    <div class="card search-card mb-4 shadow-sm">
         <div class="card-body">
-            <form method="GET" class="row g-3">
+            <form method="GET" class="row g-3" id="searchForm">
                 <div class="col-md-4">
-                    <label class="form-label fw-semibold">🏫 Trường Đại học</label>
+                    <label class="form-label fw-semibold">Trường Đại học</label>
                     <select name="university" class="form-select" id="universitySelect">
                         <option value="">Tất cả trường</option>
                         {% for university in universities %}
@@ -44,7 +127,7 @@
                 </div>
                 
                 <div class="col-md-4">
-                    <label class="form-label fw-semibold">📖 Ngành học</label>
+                    <label class="form-label fw-semibold">Ngành học</label>
                     <select name="course" class="form-select" id="courseSelect">
                         <option value="">Tất cả ngành</option>
                         {% for course in courses %}
@@ -57,20 +140,20 @@
                 </div>
                 
                 <div class="col-md-4">
-                    <label class="form-label fw-semibold">📋 Loại tài liệu</label>
+                    <label class="form-label fw-semibold">Loại tài liệu</label>
                     <select name="document_type" class="form-select">
                         <option value="">Tất cả loại</option>
-                        <option value="textbook" {% if request.GET.document_type == 'textbook' %}selected{% endif %}>📚 Giáo trình</option>
-                        <option value="exercise" {% if request.GET.document_type == 'exercise' %}selected{% endif %}>📝 Bài tập</option>
-                        <option value="exam" {% if request.GET.document_type == 'exam' %}selected{% endif %}>📄 Đề thi</option>
-                        <option value="thesis" {% if request.GET.document_type == 'thesis' %}selected{% endif %}>🎓 Luận văn</option>
-                        <option value="lecture" {% if request.GET.document_type == 'lecture' %}selected{% endif %}>🎯 Bài giảng</option>
-                        <option value="other" {% if request.GET.document_type == 'other' %}selected{% endif %}>📎 Khác</option>
+                        <option value="textbook" {% if request.GET.document_type == 'textbook' %}selected{% endif %}>Giáo trình</option>
+                        <option value="exercise" {% if request.GET.document_type == 'exercise' %}selected{% endif %}>Bài tập</option>
+                        <option value="exam" {% if request.GET.document_type == 'exam' %}selected{% endif %}>Đề thi</option>
+                        <option value="thesis" {% if request.GET.document_type == 'thesis' %}selected{% endif %}>Luận văn</option>
+                        <option value="lecture" {% if request.GET.document_type == 'lecture' %}selected{% endif %}>Bài giảng</option>
+                        <option value="other" {% if request.GET.document_type == 'other' %}selected{% endif %}>Khác</option>
                     </select>
                 </div>
                 
                 <div class="col-md-8">
-                    <label class="form-label fw-semibold">🔍 Tìm kiếm</label>
+                    <label class="form-label fw-semibold">Tìm kiếm</label>
                     <input type="text" name="search" class="form-control" 
                            placeholder="Nhập tên tài liệu, từ khóa..." 
                            value="{{ request.GET.search }}">
@@ -97,23 +180,13 @@
                 cho từ khóa "<strong>{{ request.GET.search }}</strong>"
             {% endif %}
         </div>
-        <div class="btn-group btn-group-sm" role="group">
-            <input type="radio" class="btn-check" name="view" id="gridView" autocomplete="off" checked>
-            <label class="btn btn-outline-primary" for="gridView">
-                <i class="fas fa-th-large"></i>
-            </label>
-            <input type="radio" class="btn-check" name="view" id="listView" autocomplete="off">
-            <label class="btn btn-outline-primary" for="listView">
-                <i class="fas fa-list"></i>
-            </label>
-        </div>
     </div>
 
     <!-- Documents Grid -->
     <div class="row" id="documentsGrid">
         {% for document in documents %}
         <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card document-card h-100 shadow-sm border-0" style="transition: all 0.3s ease;">
+            <div class="card document-card h-100 shadow-sm">
                 <!-- Document Header -->
                 <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
@@ -133,70 +206,77 @@
                         <small class="fw-bold">{{ document.get_document_type_display }}</small>
                     </div>
                     <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-light" data-bs-toggle="dropdown">
+                        <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{% url 'document_view' document.id %}">
-                                <i class="fas fa-eye"></i> Xem
-                            </a></li>
-                            <li><a class="dropdown-item" href="{% url 'document_download' document.id %}">
-                                <i class="fas fa-download"></i> Tải xuống
-                            </a></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'document_view' document.id %}">
+                                    <i class="fas fa-eye"></i> Xem
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'document_download' document.id %}">
+                                    <i class="fas fa-download"></i> Tải xuống
+                                </a>
+                            </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="#" onclick="reportDocument({{ document.id }})">
-                                <i class="fas fa-flag"></i> Báo cáo
-                            </a></li>
+                            <li>
+                                <button class="dropdown-item text-danger" type="button" onclick="reportDocument({{ document.id }})">
+                                    <i class="fas fa-flag"></i> Báo cáo
+                                </button>
+                            </li>
                         </ul>
                     </div>
                 </div>
 
                 <!-- Thumbnail -->
-                {% if document.thumbnail %}
-                <div class="position-relative" style="height: 200px; overflow: hidden;">
-                    <img src="{{ document.thumbnail.url }}" class="card-img-top" 
-                         style="height: 100%; object-fit: cover; transition: transform 0.3s ease;"
-                         onmouseover="this.style.transform='scale(1.05)'"
-                         onmouseout="this.style.transform='scale(1)'">
-                    <div class="position-absolute top-0 end-0 m-2">
-                        <span class="badge bg-dark bg-opacity-75">
-                            {% if document.file_size %}
+                <div class="position-relative" style="height: 200px; overflow: hidden; cursor: pointer;" 
+                     onclick="window.location.href='{% url 'document_view' document.id %}'">
+                    {% if document.thumbnail %}
+                        <img src="{{ document.thumbnail.url }}" class="card-img-top w-100 h-100" 
+                             style="object-fit: cover;" alt="{{ document.title }}">
+                    {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center h-100">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-file-pdf fa-3x mb-2"></i>
+                                <div>{{ document.file_type|upper|default:"PDF" }}</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if document.file_size %}
+                        <div class="position-absolute top-0 end-0 m-2">
+                            <span class="badge bg-dark bg-opacity-75">
                                 {{ document.file_size|filesizeformat }}
-                            {% endif %}
-                        </span>
-                    </div>
+                            </span>
+                        </div>
+                    {% endif %}
                 </div>
-                {% else %}
-                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                    <div class="text-center text-muted">
-                        <i class="fas fa-file-pdf fa-3x mb-2"></i>
-                        <div>{{ document.file_type|upper|default:"PDF" }}</div>
-                    </div>
-                </div>
-                {% endif %}
 
                 <!-- Card Body -->
                 <div class="card-body d-flex flex-column">
-                    <h6 class="card-title fw-bold text-truncate" title="{{ document.title }}">
-                        <a href="{% url 'document_view' document.id %}" class="text-decoration-none text-dark">
-                            {{ document.title }}
+                    <h6 class="card-title fw-bold mb-2">
+                        <a href="{% url 'document_view' document.id %}" 
+                           class="text-decoration-none text-dark stretched-link"
+                           style="z-index: 2;">
+                            {{ document.title|truncatechars:60 }}
                         </a>
                     </h6>
                     
                     {% if document.description %}
-                    <p class="card-text text-muted small mb-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                        {{ document.description|truncatechars:100 }}
+                    <p class="card-text text-muted small mb-2" 
+                       style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        {{ document.description|truncatechars:80 }}
                     </p>
                     {% endif %}
 
                     <!-- University & Course Info -->
                     <div class="mb-2">
-                        <small class="text-primary fw-semibold">
+                        <small class="text-primary fw-semibold d-block">
                             <i class="fas fa-university"></i> {{ document.university.short_name }}
                         </small>
-                        <br>
                         <small class="text-success">
-                            <i class="fas fa-book-open"></i> {{ document.course.code }} - {{ document.course.name|truncatechars:30 }}
+                            <i class="fas fa-book-open"></i> {{ document.course.code }} - {{ document.course.name|truncatechars:25 }}
                         </small>
                     </div>
 
@@ -204,7 +284,7 @@
                     {% if document.academic_year or document.semester %}
                     <div class="mb-2">
                         {% if document.academic_year %}
-                            <small class="badge bg-secondary me-1">📅 {{ document.academic_year }}</small>
+                            <small class="badge bg-secondary me-1">{{ document.academic_year }}</small>
                         {% endif %}
                         {% if document.semester %}
                             <small class="badge bg-info">{{ document.semester }}</small>
@@ -214,19 +294,24 @@
 
                     <!-- Stats -->
                     <div class="mt-auto">
-                        <div class="d-flex justify-content-between align-items-center text-muted small">
-                            <div>
-                                <i class="fas fa-user"></i> {{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}
-                            </div>
-                            <div>{{ document.created_at|date:"d/m/Y" }}</div>
+                        <div class="d-flex justify-content-between align-items-center text-muted small mb-2">
+                            <span>
+                                <i class="fas fa-user"></i> {{ document.uploaded_by.get_full_name|default:document.uploaded_by.username|truncatechars:15 }}
+                            </span>
+                            <span>{{ document.created_at|date:"d/m/Y" }}</span>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
+                        <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex gap-3 small text-muted">
                                 <span><i class="fas fa-eye"></i> {{ document.view_count }}</span>
                                 <span><i class="fas fa-download"></i> {{ document.download_count }}</span>
-                                <span><i class="fas fa-heart"></i> {{ document.like_count }}</span>
+                                <span class="like-count-{{ document.id }}">
+                                    <i class="fas fa-heart"></i> {{ document.like_count }}
+                                </span>
                             </div>
-                            <button class="btn btn-sm btn-outline-danger like-btn" data-document-id="{{ document.id }}">
+                            <button class="btn btn-sm btn-outline-danger like-btn position-relative" 
+                                    style="z-index: 3;"
+                                    data-document-id="{{ document.id }}"
+                                    onclick="event.stopPropagation(); toggleLike({{ document.id }})">
                                 <i class="fas fa-heart"></i>
                             </button>
                         </div>
@@ -256,10 +341,10 @@
         <ul class="pagination justify-content-center">
             {% if documents.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.university %}&university={{ request.GET.university }}{% endif %}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}{% if request.GET.document_type %}&document_type={{ request.GET.document_type }}{% endif %}">First</a>
+                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.university %}&university={{ request.GET.university }}{% endif %}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}{% if request.GET.document_type %}&document_type={{ request.GET.document_type }}{% endif %}">Đầu</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ documents.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.university %}&university={{ request.GET.university }}{% endif %}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}{% if request.GET.document_type %}&document_type={{ request.GET.document_type }}{% endif %}">Previous</a>
+                    <a class="page-link" href="?page={{ documents.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.university %}&university={{ request.GET.university }}{% endif %}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}{% if request.GET.document_type %}&document_type={{ request.GET.document_type }}{% endif %}">Trước</a>
                 </li>
             {% endif %}
 
@@ -277,10 +362,10 @@
 
             {% if documents.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ documents.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.university %}&university={{ request.GET.university }}{% endif %}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}{% if request.GET.document_type %}&document_type={{ request.GET.document_type }}{% endif %}">Next</a>
+                    <a class="page-link" href="?page={{ documents.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.university %}&university={{ request.GET.university }}{% endif %}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}{% if request.GET.document_type %}&document_type={{ request.GET.document_type }}{% endif %}">Sau</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ documents.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.university %}&university={{ request.GET.university }}{% endif %}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}{% if request.GET.document_type %}&document_type={{ request.GET.document_type }}{% endif %}">Last</a>
+                    <a class="page-link" href="?page={{ documents.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.university %}&university={{ request.GET.university }}{% endif %}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}{% if request.GET.document_type %}&document_type={{ request.GET.document_type }}{% endif %}">Cuối</a>
                 </li>
             {% endif %}
         </ul>
@@ -288,68 +373,31 @@
     {% endif %}
 </div>
 
-<style>
-.document-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
-}
-
-.bg-gradient-primary {
-    background: linear-gradient(45deg, #007bff, #0056b3);
-}
-
-.like-btn:hover {
-    transform: scale(1.1);
-}
-
-.card-img-top:hover {
-    cursor: pointer;
-}
-
-.badge {
-    font-size: 0.7rem;
-}
-
-/* Custom scrollbar for dropdown */
-.dropdown-menu {
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.dropdown-menu::-webkit-scrollbar {
-    width: 4px;
-}
-
-.dropdown-menu::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-.dropdown-menu::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-}
-
-.dropdown-menu::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-
-/* Loading animation */
-.loading {
-    opacity: 0.6;
-    pointer-events: none;
-}
-
-@media (max-width: 768px) {
-    .col-md-4, .col-md-8 {
-        margin-bottom: 1rem;
-    }
-}
-</style>
-
 <script>
-// Dynamic course filtering based on university selection
-document.getElementById('universitySelect').addEventListener('change', function() {
-    const universityId = this.value;
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Documents page loaded');
+    
+    // Auto-hide messages
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000);
+    
+    // Initialize university filter
+    const universitySelect = document.getElementById('universitySelect');
+    if (universitySelect.value) {
+        filterCourses();
+    }
+});
+
+// Dynamic course filtering
+document.getElementById('universitySelect').addEventListener('change', filterCourses);
+
+function filterCourses() {
+    const universityId = document.getElementById('universitySelect').value;
     const courseSelect = document.getElementById('courseSelect');
     const courseOptions = courseSelect.querySelectorAll('option');
     
@@ -366,117 +414,138 @@ document.getElementById('universitySelect').addEventListener('change', function(
         }
     });
     
-    // Reset course selection if current selection is not visible
-    const currentCourseOption = courseSelect.querySelector(`option[value="${courseSelect.value}"]`);
-    if (currentCourseOption && currentCourseOption.style.display === 'none') {
+    // Reset course selection if not visible
+    const currentOption = courseSelect.querySelector(`option[value="${courseSelect.value}"]`);
+    if (currentOption && currentOption.style.display === 'none') {
         courseSelect.value = '';
-    }
-});
-
-// Like button functionality
-document.querySelectorAll('.like-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const documentId = this.dataset.documentId;
-        
-        fetch(`/documents/${documentId}/like/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const heartIcon = this.querySelector('i');
-                const likeCount = this.closest('.card-body').querySelector('.fa-heart').parentElement;
-                
-                if (data.liked) {
-                    heartIcon.style.color = '#dc3545';
-                    this.classList.remove('btn-outline-danger');
-                    this.classList.add('btn-danger');
-                } else {
-                    heartIcon.style.color = '';
-                    this.classList.remove('btn-danger');
-                    this.classList.add('btn-outline-danger');
-                }
-                
-                // Update like count in stats
-                likeCount.innerHTML = `<i class="fas fa-heart"></i> ${data.like_count}`;
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    });
-});
-
-// Report document function
-function reportDocument(documentId) {
-    if (confirm('Bạn có chắc chắn muốn báo cáo tài liệu này?')) {
-        fetch('/api/user-report/', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                'document_id': documentId,
-                'reason': 'inappropriate',
-                'description': 'Báo cáo từ danh sách tài liệu'
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Đã gửi báo cáo thành công. Cảm ơn bạn đã góp phần duy trì chất lượng nội dung!');
-            } else {
-                alert('Có lỗi xảy ra khi gửi báo cáo. Vui lòng thử lại.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi xảy ra khi gửi báo cáo.');
-        });
     }
 }
 
-// View toggle functionality
-document.getElementById('listView').addEventListener('change', function() {
-    if (this.checked) {
-        document.getElementById('documentsGrid').className = 'row';
-        document.querySelectorAll('.col-lg-4').forEach(col => {
-            col.className = 'col-12 mb-3';
-        });
-        document.querySelectorAll('.document-card').forEach(card => {
-            card.querySelector('.row') || (() => {
-                // Convert to list view layout
-                const cardBody = card.querySelector('.card-body');
-                cardBody.style.display = 'flex';
-                cardBody.style.flexDirection = 'row';
-                cardBody.style.alignItems = 'center';
-            })();
-        });
+// Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
     }
-});
+    return cookieValue;
+}
 
-document.getElementById('gridView').addEventListener('change', function() {
-    if (this.checked) {
-        document.getElementById('documentsGrid').className = 'row';
-        document.querySelectorAll('.col-12.mb-3').forEach(col => {
-            col.className = 'col-lg-4 col-md-6 mb-4';
-        });
-        document.querySelectorAll('.card-body').forEach(body => {
-            body.style.display = 'flex';
-            body.style.flexDirection = 'column';
-        });
+// Toggle like function
+function toggleLike(documentId) {
+    console.log('Toggling like for document:', documentId);
+    
+    const button = document.querySelector(`button[data-document-id="${documentId}"]`);
+    const likeCountElement = document.querySelector(`.like-count-${documentId}`);
+    
+    if (!button) {
+        console.error('Like button not found');
+        return;
     }
-});
+    
+    // Disable button during request
+    button.disabled = true;
+    
+    fetch(`/documents/${documentId}/like/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Like response:', data);
+        
+        if (data.success) {
+            const heartIcon = button.querySelector('i');
+            
+            if (data.liked) {
+                button.classList.remove('btn-outline-danger');
+                button.classList.add('btn-danger', 'liked');
+                heartIcon.style.color = 'white';
+            } else {
+                button.classList.remove('btn-danger', 'liked');
+                button.classList.add('btn-outline-danger');
+                heartIcon.style.color = '';
+            }
+            
+            // Update like count
+            if (likeCountElement) {
+                likeCountElement.innerHTML = `<i class="fas fa-heart"></i> ${data.like_count}`;
+            }
+        } else {
+            alert('Có lỗi xảy ra khi thực hiện thao tác');
+        }
+    })
+    .catch(error => {
+        console.error('Like error:', error);
+        alert('Có lỗi xảy ra. Vui lòng thử lại.');
+    })
+    .finally(() => {
+        button.disabled = false;
+    });
+}
 
-// Initialize course filter on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const universitySelect = document.getElementById('universitySelect');
-    if (universitySelect.value) {
-        universitySelect.dispatchEvent(new Event('change'));
+// Report document function
+function reportDocument(documentId) {
+    if (!confirm('Bạn có chắc chắn muốn báo cáo tài liệu này?')) {
+        return;
     }
+    
+    console.log('Reporting document:', documentId);
+    
+    fetch('/api/user-report/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            'document_id': documentId,
+            'reason': 'inappropriate',
+            'description': 'Báo cáo từ danh sách tài liệu'
+        })
+    })
+    .then(response => {
+        console.log('Report response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Report response:', data);
+        
+        if (data.success) {
+            alert('Đã gửi báo cáo thành công. Cảm ơn bạn đã góp phần duy trì chất lượng nội dung!');
+        } else {
+            alert('Có lỗi xảy ra khi gửi báo cáo. Vui lòng thử lại.');
+        }
+    })
+    .catch(error => {
+        console.error('Report error:', error);
+        alert('Có lỗi xảy ra khi gửi báo cáo.');
+    });
+}
+
+// Error handling
+window.addEventListener('error', function(e) {
+    console.error('JavaScript Error:', e.error);
 });
 </script>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap JS (đặt trước closing body tag) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}

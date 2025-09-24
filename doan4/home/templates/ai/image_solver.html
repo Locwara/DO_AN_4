@@ -1,7 +1,7 @@
 {% extends 'dashboard/index.html' %}
 {% load static %}
 
-{% block title %}AI Giải Bài Tập | StudyShare{% endblock %}
+
 
 {% block extra_css %}
 <style>
@@ -472,7 +472,78 @@
   backdrop-filter: blur(20px);
   background: rgba(255,255,255,0.95);
 }
+/* CSS cho thẻ lịch sử với thanh cuộn */
+.card-body {
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 
+/* Tùy chỉnh thanh cuộn cho webkit browsers (Chrome, Safari, Edge) */
+.card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.card-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.card-body::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* CSS cho các thẻ lịch sử */
+.history-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  padding: 15px;
+  background: white;
+  border: 1px solid #e9ecef;
+}
+
+.history-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #dee2e6;
+}
+
+.history-card:active {
+  transform: translateY(0);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .card-body {
+    max-height: 600px; /* Giảm chiều cao trên mobile */
+  }
+  
+  .history-card {
+    padding: 12px;
+  }
+  
+  .history-card .d-flex > div:first-child {
+    width: 50px !important;
+    height: 50px !important;
+  }
+  
+  .history-card img {
+    width: 50px !important;
+    height: 50px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-body {
+    max-height: 500px; /* Giảm thêm trên màn hình nhỏ */
+  }
+}
 .dropdown-item {
   padding: 0.75rem 1.5rem;
   transition: all 0.3s ease;
@@ -530,6 +601,7 @@
 {% endblock %}
 
 {% block content %}
+
 <div class="container-fluid px-4">
   <!-- Header Section -->
   <!-- Thay thế phần header trong image_solver.html -->
@@ -1625,4 +1697,9 @@ function getCookie(name) {
   return cookieValue;
 }
 </script>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap JS (đặt trước closing body tag) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
