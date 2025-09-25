@@ -1,0 +1,543 @@
+<!-- templates/uploads/my_uploads.html -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tài Liệu Của Tôi - StudyShare</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-500: #6b7280;
+            --dark-color: #1f2937;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --border-radius: 16px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--gray-100);
+            color: var(--dark-color);
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+            font-size: 1.5rem;
+        }
+
+        .page-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .filters-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .document-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .document-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .document-card.status-approved {
+            border-left-color: var(--success-color);
+        }
+
+        .document-card.status-pending {
+            border-left-color: var(--warning-color);
+        }
+
+        .document-card.status-rejected {
+            border-left-color: var(--danger-color);
+        }
+
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .document-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .document-meta {
+            font-size: 0.9rem;
+            color: var(--gray-500);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .status-approved {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .status-rejected {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .document-stats {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.9rem;
+            color: var(--gray-500);
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-outline-primary {
+            background: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            color: var(--gray-500);
+            margin-bottom: 1rem;
+        }
+
+        .file-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .document-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .pagination {
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .page-link {
+            color: var(--primary-color);
+            border-color: var(--gray-200);
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .document-header {
+                flex-direction: column;
+                align-items: start;
+                gap: 1rem;
+            }
+
+            .document-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .document-info {
+                flex-direction: column;
+                align-items: start;
+            }
+
+            .file-icon {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-graduation-cap me-2"></i>StudyShare
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Trang chủ</a>
+                <a class="nav-link" href="{% url 'upload_step1' %}"><i class="fas fa-plus me-1"></i>Upload</a>
+                <a class="nav-link" href="#"><i class="fas fa-user me-1"></i>{{ user.username }}</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <h1 class="page-title"><i class="fas fa-folder-open me-3"></i>Tài Liệu Của Tôi</h1>
+            <p class="page-subtitle">Quản lý và theo dõi trạng thái các tài liệu bạn đã tải lên</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Filters -->
+        <div class="filters-card">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <form method="GET" class="d-flex gap-3 align-items-center flex-wrap">
+                        <div class="flex-grow-1" style="min-width: 250px;">
+                            <input type="text" class="form-control" name="search" 
+                                   placeholder="Tìm kiếm tài liệu..." 
+                                   value="{{ search }}">
+                        </div>
+                        <select class="form-select" name="status" style="width: auto;">
+                            <option value="">Tất cả trạng thái</option>
+                            {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Tìm kiếm
+                        </button>
+                    </form>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                    <a href="{% url 'upload_step1' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Upload Tài Liệu Mới
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {% if page_obj %}
+            <!-- Document List -->
+            {% for document in page_obj %}
+            <div class="document-card status-{{ document.status }}">
+                <div class="document-header">
+                    <div class="document-info">
+                        <div class="file-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div>
+                            <h3 class="document-title">{{ document.title }}</h3>
+                            <div class="document-meta">
+                                <i class="fas fa-university me-1"></i>{{ document.university.short_name }} • 
+                                <i class="fas fa-book me-1"></i>{{ document.course.name }} • 
+                                <i class="fas fa-calendar me-1"></i>{{ document.created_at|date:"d/m/Y H:i" }}
+                            </div>
+                        </div>
+                    </div>
+                    <span class="status-badge status-{{ document.status }}">
+                        {% if document.status == 'approved' %}
+                            <i class="fas fa-check-circle"></i>Đã duyệt
+                        {% elif document.status == 'pending' %}
+                            <i class="fas fa-clock"></i>Chờ duyệt
+                        {% elif document.status == 'rejected' %}
+                            <i class="fas fa-times-circle"></i>Bị từ chối
+                        {% endif %}
+                    </span>
+                </div>
+
+                {% if document.description %}
+                <p class="text-muted mb-3">{{ document.description|truncatechars:150 }}</p>
+                {% endif %}
+
+                <div class="document-stats">
+                    <span class="stat-item">
+                        <i class="fas fa-eye"></i>{{ document.view_count }} lượt xem
+                    </span>
+                    <span class="stat-item">
+                        <i class="fas fa-download"></i>{{ document.download_count }} lượt tải
+                    </span>
+                    <span class="stat-item">
+                        <i class="fas fa-heart"></i>{{ document.like_count }} lượt thích
+                    </span>
+                    {% if document.file_size %}
+                    <span class="stat-item">
+                        <i class="fas fa-hdd"></i>{{ document.file_size|filesizeformat }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                {% if document.admin_notes and document.status == 'rejected' %}
+                <div class="alert alert-danger">
+                    <strong>Lý do từ chối:</strong> {{ document.admin_notes }}
+                </div>
+                {% endif %}
+
+                <div class="document-actions">
+                    {% if document.status == 'approved' %}
+                        <a href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i>Xem tài liệu
+                        </a>
+                        <a href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-chart-line me-1"></i>Thống kê
+                        </a>
+                    {% endif %}
+                    
+                    {% if document.status in 'pending,rejected' %}
+                        <button class="btn btn-outline-primary btn-sm" onclick="editDocument({{ document.id }})">
+                            <i class="fas fa-edit me-1"></i>Chỉnh sửa
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteDocument({{ document.id }})">
+                            <i class="fas fa-trash me-1"></i>Xóa
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                    {{ num }}
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+        {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-folder-open"></i>
+                </div>
+                <h3>Chưa có tài liệu nào</h3>
+                <p class="text-muted mb-4">
+                    {% if search or status_filter %}
+                        Không tìm thấy tài liệu phù hợp với tiêu chí tìm kiếm.
+                    {% else %}
+                        Bạn chưa tải lên tài liệu nào. Hãy bắt đầu chia sẻ kiến thức với cộng đồng!
+                    {% endif %}
+                </p>
+                <div>
+                    {% if search or status_filter %}
+                        <a href="{% url 'uploads:my_uploads' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-refresh me-2"></i>Xem tất cả
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'uploads:upload_step1' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Tải lên tài liệu đầu tiên
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function editDocument(documentId) {
+            // Redirect to edit page or open edit modal
+            alert('Chức năng chỉnh sửa đang được phát triển');
+        }
+
+        function deleteDocument(documentId) {
+            if (confirm('Bạn có chắc chắn muốn xóa tài liệu này? Hành động này không thể hoàn tác.')) {
+                fetch(`/upload/api/delete/${documentId}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi xóa tài liệu');
+                });
+            }
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

@@ -69,6 +69,11 @@ urlpatterns = [
     path('ai/text-chat/', views.ai_text_chat_api, name='ai_text_chat'),
     # Trong phần urlpatterns
     path('ai/conversation/<int:conversation_id>/', views.get_conversation_api, name='get_conversation'),
+    path('ai/search-documents/', views.ai_search_documents_api, name='ai_search_documents'),
+    path('ai/search-chat-rooms/', views.ai_search_chat_rooms_api, name='ai_search_chat_rooms'),
     # Report API
     path('api/user-report/', views.user_report_api, name='user_report'),
+    
+    # Code with AI URLs
+    path('code/', include('home.code_urls')),
 ]

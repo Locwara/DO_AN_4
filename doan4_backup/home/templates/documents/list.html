@@ -1,0 +1,551 @@
+{% extends 'dashboard/index.html' %}
+
+{% block extra_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+
+    .document-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .document-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .card-img-top {
+        transition: transform 0.3s ease;
+    }
+
+    .document-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+
+    .like-btn {
+        transition: all 0.2s ease;
+    }
+
+    .like-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .like-btn.liked {
+        background-color: #dc3545 !important;
+        border-color: #dc3545 !important;
+        color: white !important;
+    }
+
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        border-radius: 10px;
+    }
+
+    .badge {
+        font-size: 0.7rem;
+        border-radius: 20px;
+    }
+
+    .search-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: none;
+        border-radius: 15px;
+    }
+
+    @media (max-width: 768px) {
+        .document-card:hover {
+            transform: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 text-gray-800">Thư viện Tài liệu</h1>
+            <p class="text-muted">Khám phá và tải xuống tài liệu học tập chất lượng cao</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                <i class="fas fa-upload"></i> Tải lên
+            </button>
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fas fa-sort"></i> Sắp xếp
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="?sort=newest">Mới nhất</a></li>
+                    <li><a class="dropdown-item" href="?sort=popular">Phổ biến</a></li>
+                    <li><a class="dropdown-item" href="?sort=downloads">Tải xuống nhiều</a></li>
+                    <li><a class="dropdown-item" href="?sort=likes">Yêu thích nhiều</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Filters Section -->
+    <div class="card search-card mb-4 shadow-sm">
+        <div class="card-body">
+            <form method="GET" class="row g-3" id="searchForm">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Trường Đại học</label>
+                    <select name="university" class="form-select" id="universitySelect">
+                        <option value="">Tất cả trường</option>
+                        {% for university in universities %}
+                            <option value="{{ university.id }}" 
+                                {% if request.GET.university == university.id|stringformat:"s" %}selected{% endif %}>
+                                {{ university.short_name }} - {{ university.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Ngành học</label>
+                    <select name="course" class="form-select" id="courseSelect">
+                        <option value="">Tất cả ngành</option>
+                        {% for course in courses %}
+                            <option value="{{ course.id }}" data-university="{{ course.university.id }}"
+                                {% if request.GET.course == course.id|stringformat:"s" %}selected{% endif %}>
+                                {{ course.code }} - {{ course.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Loại tài liệu</label>
+                    <select name="document_type" class="form-select">
+                        <option value="">Tất cả loại</option>
+                        <option value="textbook" {% if request.GET.document_type == 'textbook' %}selected{% endif %}>Giáo trình</option>
+                        <option value="exercise" {% if request.GET.document_type == 'exercise' %}selected{% endif %}>Bài tập</option>
+                        <option value="exam" {% if request.GET.document_type == 'exam' %}selected{% endif %}>Đề thi</option>
+                        <option value="thesis" {% if request.GET.document_type == 'thesis' %}selected{% endif %}>Luận văn</option>
+                        <option value="lecture" {% if request.GET.document_type == 'lecture' %}selected{% endif %}>Bài giảng</option>
+                        <option value="other" {% if request.GET.document_type == 'other' %}selected{% endif %}>Khác</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-8">
+                    <label class="form-label fw-semibold">Tìm kiếm</label>
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Nhập tên tài liệu, từ khóa..." 
+                           value="{{ request.GET.search }}">
+                </div>
+                
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
+                    <a href="{% url 'documents_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Xóa bộ lọc
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Info -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="text-muted">
+            <i class="fas fa-info-circle"></i>
+            Tìm thấy <strong>{{ documents.paginator.count }}</strong> tài liệu
+            {% if request.GET.search %}
+                cho từ khóa "<strong>{{ request.GET.search }}</strong>"
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Documents Grid -->
+    <div class="row" id="documentsGrid">
+        {% for document in documents %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card document-card h-100 shadow-sm">
+                <!-- Document Header -->
+                <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        {% if document.document_type == 'textbook' %}
+                            <i class="fas fa-book text-warning me-2"></i>
+                        {% elif document.document_type == 'exercise' %}
+                            <i class="fas fa-pen-square text-success me-2"></i>
+                        {% elif document.document_type == 'exam' %}
+                            <i class="fas fa-file-alt text-danger me-2"></i>
+                        {% elif document.document_type == 'thesis' %}
+                            <i class="fas fa-graduation-cap text-info me-2"></i>
+                        {% elif document.document_type == 'lecture' %}
+                            <i class="fas fa-presentation text-purple me-2"></i>
+                        {% else %}
+                            <i class="fas fa-file text-secondary me-2"></i>
+                        {% endif %}
+                        <small class="fw-bold">{{ document.get_document_type_display }}</small>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'document_view' document.id %}">
+                                    <i class="fas fa-eye"></i> Xem
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'document_download' document.id %}">
+                                    <i class="fas fa-download"></i> Tải xuống
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <button class="dropdown-item text-danger" type="button" onclick="reportDocument({{ document.id }})">
+                                    <i class="fas fa-flag"></i> Báo cáo
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Thumbnail -->
+                <div class="position-relative" style="height: 200px; overflow: hidden; cursor: pointer;" 
+                     onclick="window.location.href='{% url 'document_view' document.id %}'">
+                    {% if document.thumbnail %}
+                        <img src="{{ document.thumbnail.url }}" class="card-img-top w-100 h-100" 
+                             style="object-fit: cover;" alt="{{ document.title }}">
+                    {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center h-100">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-file-pdf fa-3x mb-2"></i>
+                                <div>{{ document.file_type|upper|default:"PDF" }}</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if document.file_size %}
+                        <div class="position-absolute top-0 end-0 m-2">
+                            <span class="badge bg-dark bg-opacity-75">
+                                {{ document.file_size|filesizeformat }}
+                            </span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body d-flex flex-column">
+                    <h6 class="card-title fw-bold mb-2">
+                        <a href="{% url 'document_view' document.id %}" 
+                           class="text-decoration-none text-dark stretched-link"
+                           style="z-index: 2;">
+                            {{ document.title|truncatechars:60 }}
+                        </a>
+                    </h6>
+                    
+                    {% if document.description %}
+                    <p class="card-text text-muted small mb-2" 
+                       style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        {{ document.description|truncatechars:80 }}
+                    </p>
+                    {% endif %}
+
+                    <!-- University & Course Info -->
+                    <div class="mb-2">
+                        <small class="text-primary fw-semibold d-block">
+                            <i class="fas fa-university"></i> {{ document.university.short_name }}
+                        </small>
+                        <small class="text-success">
+                            <i class="fas fa-book-open"></i> {{ document.course.code }} - {{ document.course.name|truncatechars:25 }}
+                        </small>
+                    </div>
+
+                    <!-- Academic Info -->
+                    {% if document.academic_year or document.semester %}
+                    <div class="mb-2">
+                        {% if document.academic_year %}
+                            <small class="badge bg-secondary me-1">{{ document.academic_year }}</small>
+                        {% endif %}
+                        {% if document.semester %}
+                            <small class="badge bg-info">{{ document.semester }}</small>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Stats -->
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center text-muted small mb-2">
+                            <span>
+                                <i class="fas fa-user"></i> {{ document.uploaded_by.get_full_name|default:document.uploaded_by.username|truncatechars:15 }}
+                            </span>
+                            <span>{{ document.created_at|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex gap-3 small text-muted">
+                                <span><i class="fas fa-eye"></i> {{ document.view_count }}</span>
+                                <span><i class="fas fa-download"></i> {{ document.download_count }}</span>
+                                <span class="like-count-{{ document.id }}">
+                                    <i class="fas fa-heart"></i> {{ document.like_count }}
+                                </span>
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger like-btn position-relative" 
+                                    style="z-index: 3;"
+                                    data-document-id="{{ document.id }}"
+                                    onclick="event.stopPropagation(); toggleLike({{ document.id }})">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-search fa-3x text-muted"></i>
+                </div>
+                <h5 class="text-muted">Không tìm thấy tài liệu nào</h5>
+                <p class="text-muted">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+                <a href="{% url 'documents_list' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-refresh"></i> Xóa bộ lọc
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if documents.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if documents.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.university %}&university={{ request.GET.university }}{% endif %}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}{% if request.GET.document_type %}&document_type={{ request.GET.document_type }}{% endif %}">Đầu</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ documents.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.university %}&university={{ request.GET.university }}{% endif %}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}{% if request.GET.document_type %}&document_type={{ request.GET.document_type }}{% endif %}">Trước</a>
+                </li>
+            {% endif %}
+
+            {% for num in documents.paginator.page_range %}
+                {% if documents.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > documents.number|add:'-3' and num < documents.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.university %}&university={{ request.GET.university }}{% endif %}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}{% if request.GET.document_type %}&document_type={{ request.GET.document_type }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if documents.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ documents.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.university %}&university={{ request.GET.university }}{% endif %}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}{% if request.GET.document_type %}&document_type={{ request.GET.document_type }}{% endif %}">Sau</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ documents.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.university %}&university={{ request.GET.university }}{% endif %}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}{% if request.GET.document_type %}&document_type={{ request.GET.document_type }}{% endif %}">Cuối</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Documents page loaded');
+    
+    // Auto-hide messages
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000);
+    
+    // Initialize university filter
+    const universitySelect = document.getElementById('universitySelect');
+    if (universitySelect.value) {
+        filterCourses();
+    }
+});
+
+// Dynamic course filtering
+document.getElementById('universitySelect').addEventListener('change', filterCourses);
+
+function filterCourses() {
+    const universityId = document.getElementById('universitySelect').value;
+    const courseSelect = document.getElementById('courseSelect');
+    const courseOptions = courseSelect.querySelectorAll('option');
+    
+    courseOptions.forEach(option => {
+        if (option.value === '') {
+            option.style.display = 'block';
+            return;
+        }
+        
+        if (!universityId || option.dataset.university === universityId) {
+            option.style.display = 'block';
+        } else {
+            option.style.display = 'none';
+        }
+    });
+    
+    // Reset course selection if not visible
+    const currentOption = courseSelect.querySelector(`option[value="${courseSelect.value}"]`);
+    if (currentOption && currentOption.style.display === 'none') {
+        courseSelect.value = '';
+    }
+}
+
+// Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Toggle like function
+function toggleLike(documentId) {
+    console.log('Toggling like for document:', documentId);
+    
+    const button = document.querySelector(`button[data-document-id="${documentId}"]`);
+    const likeCountElement = document.querySelector(`.like-count-${documentId}`);
+    
+    if (!button) {
+        console.error('Like button not found');
+        return;
+    }
+    
+    // Disable button during request
+    button.disabled = true;
+    
+    fetch(`/documents/${documentId}/like/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Like response:', data);
+        
+        if (data.success) {
+            const heartIcon = button.querySelector('i');
+            
+            if (data.liked) {
+                button.classList.remove('btn-outline-danger');
+                button.classList.add('btn-danger', 'liked');
+                heartIcon.style.color = 'white';
+            } else {
+                button.classList.remove('btn-danger', 'liked');
+                button.classList.add('btn-outline-danger');
+                heartIcon.style.color = '';
+            }
+            
+            // Update like count
+            if (likeCountElement) {
+                likeCountElement.innerHTML = `<i class="fas fa-heart"></i> ${data.like_count}`;
+            }
+        } else {
+            alert('Có lỗi xảy ra khi thực hiện thao tác');
+        }
+    })
+    .catch(error => {
+        console.error('Like error:', error);
+        alert('Có lỗi xảy ra. Vui lòng thử lại.');
+    })
+    .finally(() => {
+        button.disabled = false;
+    });
+}
+
+// Report document function
+function reportDocument(documentId) {
+    if (!confirm('Bạn có chắc chắn muốn báo cáo tài liệu này?')) {
+        return;
+    }
+    
+    console.log('Reporting document:', documentId);
+    
+    fetch('/api/user-report/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            'document_id': documentId,
+            'reason': 'inappropriate',
+            'description': 'Báo cáo từ danh sách tài liệu'
+        })
+    })
+    .then(response => {
+        console.log('Report response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Report response:', data);
+        
+        if (data.success) {
+            alert('Đã gửi báo cáo thành công. Cảm ơn bạn đã góp phần duy trì chất lượng nội dung!');
+        } else {
+            alert('Có lỗi xảy ra khi gửi báo cáo. Vui lòng thử lại.');
+        }
+    })
+    .catch(error => {
+        console.error('Report error:', error);
+        alert('Có lỗi xảy ra khi gửi báo cáo.');
+    });
+}
+
+// Error handling
+window.addEventListener('error', function(e) {
+    console.error('JavaScript Error:', e.error);
+});
+</script>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap JS (đặt trước closing body tag) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

@@ -597,6 +597,134 @@
     gap: 0.5rem !important;
   }
 }
+/* Container chính cho các gợi ý */
+.ai-suggestions {
+  margin: 15px 0;
+  padding: 0;
+}
+
+.ai-suggestions h6 {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.ai-suggestions h6 i {
+  color: #007bff;
+}
+
+/* Thẻ gợi ý chung */
+.suggestion-card {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px 15px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.suggestion-card:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.suggestion-card:last-child {
+  margin-bottom: 0;
+}
+
+/* Header của thẻ */
+.suggestion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.suggestion-header strong {
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  flex: 1;
+  margin-right: 10px;
+}
+
+/* Thống kê bên phải */
+.suggestion-stats {
+  color: #666;
+  font-size: 12px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+
+.suggestion-stats i {
+  color: #888;
+  font-size: 11px;
+}
+
+/* Meta info (khóa học - trường) */
+.suggestion-meta {
+  margin-bottom: 8px;
+}
+
+.suggestion-meta small {
+  color: #888 !important;
+  font-size: 12px;
+}
+
+/* Mô tả */
+.suggestion-desc {
+  color: #555;
+  font-size: 13px;
+  line-height: 1.4;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Styling riêng cho từng loại thẻ */
+.document-card {
+  border-left: 3px solid #28a745;
+}
+
+.document-card:hover {
+  border-left-color: #20c997;
+}
+
+.chat-card {
+  border-left: 3px solid #007bff;
+}
+
+.chat-card:hover {
+  border-left-color: #0056b3;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .suggestion-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .suggestion-stats {
+    align-self: flex-start;
+  }
+  
+  .suggestion-header strong {
+    margin-right: 0;
+  }
+}
+
+/* Focus cho accessibility */
+.suggestion-card:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
 </style>
 {% endblock %}
 
@@ -890,14 +1018,19 @@
 <script>
   let currentConversationId = null;
 let currentSolutionId = null;
-let chatMode = 'none'; // 'image', 'text', 'file', 'none'
+let chatMode = 'none'; // 'image', 'text', 'file',  'none'
 
 document.addEventListener('DOMContentLoaded', function() {
   initializeUpload();
   initializeFileUpload();
   initializeChat();
   
-  // KIỂM TRA conversation ID từ URL TRƯỚC
+  // Add quick action buttons after a short delay
+  setTimeout(() => {
+    addQuickActionButtons();
+  }, 1000);
+  
+  // Check for existing conversation from URL
   const urlParams = new URLSearchParams(window.location.search);
   const conversationId = urlParams.get('conversation');
   
@@ -905,13 +1038,11 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Loading existing conversation:', conversationId);
     loadExistingConversation(conversationId);
   } else {
-    // KIỂM TRA xem có mode đã chọn từ sessionStorage không
+    // Check for mode from sessionStorage
     const selectedMode = sessionStorage.getItem('selectedMode');
     if (selectedMode) {
-      // XÓA mode khỏi sessionStorage để tránh lặp lại
       sessionStorage.removeItem('selectedMode');
       
-      // Tự động kích hoạt mode đã chọn SAU KHI reload
       switch(selectedMode) {
         case 'image':
           initImageMode();
@@ -926,46 +1057,229 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 });
+function addQuickActionButtons() {
+  const chatInputContainer = document.querySelector('.chat-input-container');
+  if (!chatInputContainer || chatInputContainer.querySelector('.dropdown')) {
+    return; // Already added or container not found
+  }
+  
+  const quickActionsHtml = `
+    <div class="dropdown me-2">
+      <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        <i class="fas fa-magic me-1"></i>Gợi ý
+      </button>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="#" onclick="askForDocumentSuggestion()">
+          <i class="fas fa-file-alt me-2"></i>Tìm tài liệu</a></li>
+        <li><a class="dropdown-item" href="#" onclick="askForChatRoomSuggestion()">
+          <i class="fas fa-comments me-2"></i>Tìm phòng chat</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="#" onclick="askStudyQuestion()">
+          <i class="fas fa-graduation-cap me-2"></i>Câu hỏi học tập</a></li>
+      </ul>
+    </div>
+  `;
+  
+  chatInputContainer.insertAdjacentHTML('afterbegin', quickActionsHtml);
+}
+function askForDocumentSuggestion() {
+  const message = "Bạn có thể gợi ý một số tài liệu học tập phù hợp với tôi không?";
+  document.getElementById('chatInput').value = message;
+  sendMessage();
+}
+function askForChatRoomSuggestion() {
+  const message = "Có phòng chat nào phù hợp để tôi thảo luận và học hỏi không?";
+  document.getElementById('chatInput').value = message;
+  sendMessage();
+}
 
+function askStudyQuestion() {
+  const message = "Tôi cần hỗ trợ học tập. Bạn có thể giúp tôi không?";
+  document.getElementById('chatInput').value = message;
+  sendMessage();
+}
+function formatMessageWithSuggestions(content) {
+  let formatted = content
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br>');
+  
+  // Convert markdown links to clickable HTML links
+  formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(match, text, url) {
+    if (url.includes('/documents/') && url.includes('/view/')) {
+      return `<a href="${url}" class="document-suggestion-link" target="_blank">
+                <i class="fas fa-file-alt me-1"></i>${text}
+              </a>`;
+    } else if (url.includes('/chat/room/')) {
+      return `<a href="${url}" class="chat-room-suggestion-link" target="_blank">
+                <i class="fas fa-comments me-1"></i>${text}
+              </a>`;
+    } else {
+      return `<a href="${url}" target="_blank">${text}</a>`;
+    }
+  });
+  
+  return formatted;
+}
+
+function searchDocuments(query) {
+  const formData = new FormData();
+  formData.append('query', query);
+  
+  fetch('/ai/search-documents/', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success && data.documents.length > 0) {
+      console.log('Found documents:', data.documents);
+      displayDocumentSuggestions(data.documents);
+    }
+  })
+  .catch(error => console.error('Document search error:', error));
+}
+function displayDocumentSuggestions(documents) {
+  if (!documents || documents.length === 0) return;
+  
+  let suggestionsHtml = '<div class="ai-suggestions documents-suggestions">';
+  suggestionsHtml += '<h6><i class="fas fa-file-alt me-2"></i>Tài liệu gợi ý:</h6>';
+  
+  documents.forEach(doc => {
+    suggestionsHtml += `
+      <div class="suggestion-card document-card" onclick="window.open('${doc.url}', '_blank')">
+        <div class="suggestion-header">
+          <strong>${doc.title}</strong>
+          <span class="suggestion-stats">
+            <i class="fas fa-eye me-1"></i>${doc.view_count} 
+            <i class="fas fa-heart me-1 ms-2"></i>${doc.like_count}
+          </span>
+        </div>
+        <div class="suggestion-meta">
+          <small class="text-muted">${doc.course} - ${doc.university}</small>
+        </div>
+        ${doc.description ? `<div class="suggestion-desc">${doc.description}</div>` : ''}
+      </div>
+    `;
+  });
+  
+  suggestionsHtml += '</div>';
+  addMessage('assistant', suggestionsHtml);
+}
+function searchChatRooms(query) {
+  const formData = new FormData();
+  formData.append('query', query);
+  
+  fetch('/ai/search-chat-rooms/', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success && data.chat_rooms.length > 0) {
+      console.log('Found chat rooms:', data.chat_rooms);
+      displayChatRoomSuggestions(data.chat_rooms);
+    }
+  })
+  .catch(error => console.error('Chat room search error:', error));
+}
 // FUNCTION KIỂM TRA có đang load conversation không
 function isLoadingExistingConversation() {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get('conversation') !== null;
 }
+function displayChatRoomSuggestions(chatRooms) {
+  if (!chatRooms || chatRooms.length === 0) return;
+  
+  let suggestionsHtml = '<div class="ai-suggestions chat-suggestions">';
+  suggestionsHtml += '<h6><i class="fas fa-comments me-2"></i>Phòng chat gợi ý:</h6>';
+  
+  chatRooms.forEach(room => {
+    suggestionsHtml += `
+      <div class="suggestion-card chat-card" onclick="window.open('${room.url}', '_blank')">
+        <div class="suggestion-header">
+          <strong>${room.name}</strong>
+          <span class="suggestion-stats">
+            <i class="fas fa-users me-1"></i>${room.member_count} thành viên
+          </span>
+        </div>
+        <div class="suggestion-meta">
+          <small class="text-muted">${room.course} - ${room.university}</small>
+        </div>
+        ${room.description ? `<div class="suggestion-desc">${room.description}</div>` : ''}
+      </div>
+    `;
+  });
+  
+  suggestionsHtml += '</div>';
+  addMessage('assistant', suggestionsHtml);
+}
+function detectAndShowSuggestions(message, aiResponse) {
+  const lowerMessage = message.toLowerCase();
+  
+  // Check if user is asking for documents
+  if (lowerMessage.includes('tài liệu') || lowerMessage.includes('sách') || 
+      lowerMessage.includes('bài tập') || lowerMessage.includes('đề thi') ||
+      lowerMessage.includes('giáo trình') || lowerMessage.includes('slides')) {
+    
+    const keywords = extractKeywords(message);
+    if (keywords.length > 0) {
+      setTimeout(() => searchDocuments(keywords.join(' ')), 1000);
+    }
+  }
+  
+  // Check if user is asking for chat rooms
+  if (lowerMessage.includes('phòng chat') || lowerMessage.includes('thảo luận') || 
+      lowerMessage.includes('nhóm học') || lowerMessage.includes('cùng học') ||
+      lowerMessage.includes('group') || lowerMessage.includes('chat')) {
+    
+    const keywords = extractKeywords(message);
+    if (keywords.length > 0) {
+      setTimeout(() => searchChatRooms(keywords.join(' ')), 1000);
+    }
+  }
+}
 
+function extractKeywords(message) {
+  const stopWords = ['tôi', 'bạn', 'có', 'là', 'của', 'và', 'với', 'cho', 'về', 'trong', 
+                     'một', 'các', 'này', 'đó', 'được', 'không', 'cho', 'từ', 'để'];
+  const words = message.toLowerCase()
+    .replace(/[^\w\sáàảạãâấầẩậẫăắằẳặẵéèẻẹẽêếềểệễíìỉịĩóòỏọõôốồổộỗơớờởợỡúùủụũưứừửựữýỳỷỵỹđ]/g, ' ')
+    .split(/\s+/)
+    .filter(word => word.length > 2 && !stopWords.includes(word));
+  
+  return [...new Set(words)];
+}
 // SỬA LẠI các hàm select mode - Lưu mode vào sessionStorage và reload
 function selectImageMode() {
-  // KHÔNG reload nếu đang load conversation cũ
   if (isLoadingExistingConversation()) {
     initImageMode();
     return;
   }
-  
-  // Lưu mode đã chọn và reload
   sessionStorage.setItem('selectedMode', 'image');
   window.location.reload();
 }
 
+
 function selectFileMode() {
-  // KHÔNG reload nếu đang load conversation cũ
   if (isLoadingExistingConversation()) {
     initFileMode();
     return;
   }
-  
-  // Lưu mode đã chọn và reload
   sessionStorage.setItem('selectedMode', 'file');
   window.location.reload();
 }
-
 function selectTextMode() {
-  // KHÔNG reload nếu đang load conversation cũ
   if (isLoadingExistingConversation()) {
     initTextMode();
     return;
   }
-  
-  // Lưu mode đã chọn và reload
   sessionStorage.setItem('selectedMode', 'text');
   window.location.reload();
 }
@@ -981,7 +1295,6 @@ function initImageMode() {
   document.getElementById('chatModeIndicator').className = 'chat-mode-indicator mode-image';
   document.getElementById('chatStatus').textContent = 'Upload hình ảnh để bắt đầu';
   
-  // Clear welcome message
   document.getElementById('chatMessages').innerHTML = `
     <div class="text-center py-4">
       <i class="fas fa-image text-primary mb-3" style="font-size: 2.5rem;"></i>
@@ -990,7 +1303,6 @@ function initImageMode() {
     </div>
   `;
 }
-
 function initFileMode() {
   chatMode = 'file';
   document.getElementById('uploadCard').style.display = 'none';
@@ -1001,7 +1313,6 @@ function initFileMode() {
   document.getElementById('chatModeIndicator').className = 'chat-mode-indicator mode-file';
   document.getElementById('chatStatus').textContent = 'Upload tài liệu để bắt đầu';
   
-  // Clear welcome message
   document.getElementById('chatMessages').innerHTML = `
     <div class="text-center py-4">
       <i class="fas fa-file-alt mb-3" style="font-size: 2.5rem; color: var(--file-mode);"></i>
@@ -1010,7 +1321,6 @@ function initFileMode() {
     </div>
   `;
 }
-
 function initTextMode() {
   chatMode = 'text';
   document.getElementById('uploadCard').style.display = 'none';
@@ -1023,7 +1333,6 @@ function initTextMode() {
   document.getElementById('chatStatus').textContent = 'Sẵn sàng trả lời câu hỏi';
   document.getElementById('sendBtn').disabled = false;
   
-  // Clear welcome message
   document.getElementById('chatMessages').innerHTML = `
     <div class="message assistant">
       <div class="message-content">
@@ -1033,12 +1342,8 @@ function initTextMode() {
     </div>
   `;
   
-  // *** SỬA: Chỉ tạo conversation mới nếu chưa có ***
   if (!currentConversationId) {
-    console.log('No existing conversation, creating new text conversation');
     startTextConversation();
-  } else {
-    console.log('Using existing conversation:', currentConversationId);
   }
 }
 // Load cuộc trò chuyện có sẵn
@@ -1198,14 +1503,10 @@ function startTextConversation() {
 function initializeUpload() {
   const uploadZone = document.getElementById('uploadZone');
   const imageInput = document.getElementById('imageInput');
-  const imagePreview = document.getElementById('imagePreview');
-  const previewImage = document.getElementById('previewImage');
   const solveBtn = document.getElementById('solveBtn');
 
-  // Click to upload
   uploadZone.addEventListener('click', () => imageInput.click());
-
-  // Drag and drop
+  
   uploadZone.addEventListener('dragover', (e) => {
     e.preventDefault();
     uploadZone.classList.add('dragover');
@@ -1224,27 +1525,23 @@ function initializeUpload() {
     }
   });
 
-  // File input change
   imageInput.addEventListener('change', (e) => {
     if (e.target.files.length > 0) {
       handleImageSelect(e.target.files[0]);
     }
   });
 
-  // Solve button
   solveBtn.addEventListener('click', solveImage);
 }
+
 
 function initializeFileUpload() {
   const fileUploadZone = document.getElementById('fileUploadZone');
   const fileInput = document.getElementById('fileInput');
-  const filePreview = document.getElementById('filePreview');
   const analyzeFileBtn = document.getElementById('analyzeFileBtn');
 
-  // Click to upload
   fileUploadZone.addEventListener('click', () => fileInput.click());
-
-  // Drag and drop
+  
   fileUploadZone.addEventListener('dragover', (e) => {
     e.preventDefault();
     fileUploadZone.classList.add('dragover');
@@ -1263,51 +1560,39 @@ function initializeFileUpload() {
     }
   });
 
-  // File input change
   fileInput.addEventListener('change', (e) => {
     if (e.target.files.length > 0) {
       handleFileSelect(e.target.files[0]);
     }
   });
 
-  // Analyze button
   analyzeFileBtn.addEventListener('click', analyzeFile);
 }
-
 function handleImageSelect(file) {
-  // Validate file
   if (!file.type.startsWith('image/')) {
     alert('Vui lòng chọn file hình ảnh!');
     return;
   }
-
   if (file.size > 10 * 1024 * 1024) {
     alert('File quá lớn! Vui lòng chọn file nhỏ hơn 10MB.');
     return;
   }
 
-  // Store file globally
   window.selectedFile = file;
-
-  // Show preview
   const reader = new FileReader();
   reader.onload = (e) => {
     document.getElementById('previewImage').src = e.target.result;
     document.getElementById('uploadZone').style.display = 'none';
     document.getElementById('imagePreview').style.display = 'block';
-    
     document.getElementById('userQuestion').disabled = false;
     document.getElementById('userQuestion').focus();
-    
     document.getElementById('chatInput').disabled = true;
     document.getElementById('chatInput').placeholder = 'Chờ AI trả lời câu hỏi đầu tiên...';
     document.getElementById('sendBtn').disabled = true;
-    
     document.getElementById('chatStatus').textContent = 'Nhập câu hỏi và nhấn "Giải Bài Tập"';
   };
   reader.readAsDataURL(file);
 }
-
 function handleFileSelect(file) {
   // Validate file type
   const allowedTypes = ['.pdf', '.docx', '.doc', '.pptx', '.ppt', '.xlsx', '.xls', '.txt', '.csv'];
@@ -1551,7 +1836,6 @@ function initializeChat() {
   chatInput.addEventListener('input', function() {
     sendBtn.disabled = !this.value.trim() || this.disabled;
     
-    // Auto resize textarea
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 120) + 'px';
   });
@@ -1568,14 +1852,14 @@ function initializeChat() {
 }
 
 function sendMessage() {
+  const chatInput = document.getElementById('chatInput');
   const message = chatInput.value.trim();
-  console.log('=== SENDING MESSAGE ===');
-  console.log('Current conversation ID:', currentConversationId);
-  console.log('Chat mode:', chatMode);
-  console.log('Message:', message);
   
   if (!message) return;
 
+  // Store message for auto-suggestion detection
+  window.lastUserMessage = message;
+  
   addMessage('user', message);
   chatInput.value = '';
   chatInput.style.height = 'auto';
@@ -1587,7 +1871,6 @@ function sendMessage() {
   let endpoint, formData;
   
   if (chatMode === 'text') {
-    // Text chat endpoint
     endpoint = '{% url "ai_text_chat" %}';
     formData = new FormData();
     formData.append('message', message);
@@ -1595,7 +1878,6 @@ function sendMessage() {
       formData.append('conversation_id', currentConversationId);
     }
   } else {
-    // Continue image/file conversation
     endpoint = '{% url "ai_continue_conversation" %}';
     formData = new FormData();
     formData.append('conversation_id', currentConversationId);
@@ -1611,38 +1893,36 @@ function sendMessage() {
   })
   .then(response => response.json())
   .then(data => {
-    // Remove typing indicator
     typingDiv.remove();
-    console.log('=== RECEIVED RESPONSE ===');
-    console.log('Response data:', data);
-    console.log('New conversation ID:', data.conversation_id);
     
     if (data.success) {
-      // *** QUAN TRỌNG: Lưu conversation ID cho text chat ***
       if (chatMode === 'text' && data.conversation_id) {
         currentConversationId = data.conversation_id;
-        console.log('Updated currentConversationId:', currentConversationId);
       }
       
-      if (chatMode === 'text' && !currentConversationId) {
-        currentConversationId = data.conversation_id;
-      }
+      const aiResponse = data.response?.content || data.solution?.ai_solution || '';
+      addMessage('assistant', aiResponse);
       
-      addMessage('assistant', data.response.content || data.solution?.ai_solution);
+      // Auto-detect and show suggestions
+      setTimeout(() => {
+        detectAndShowSuggestions(message, aiResponse);
+      }, 500);
+      
       document.getElementById('chatStatus').textContent = 
-        `Phản hồi trong ${data.response?.processing_time || data.solution?.processing_time}ms`;
+        `Phản hồi trong ${data.response?.processing_time || data.solution?.processing_time || 0}ms`;
     } else {
       addMessage('assistant', 'Xin lỗi, có lỗi xảy ra: ' + data.error);
     }
+    
+    // Re-enable input
+    document.getElementById('sendBtn').disabled = false;
   })
-  
   .catch(error => {
-    // Remove typing indicator
     typingDiv.remove();
     addMessage('assistant', 'Có lỗi kết nối: ' + error.message);
+    document.getElementById('sendBtn').disabled = false;
   });
 }
-
 function addMessage(role, content, isTemporary = false) {
   const chatMessages = document.getElementById('chatMessages');
   const messageDiv = document.createElement('div');
@@ -1654,7 +1934,7 @@ function addMessage(role, content, isTemporary = false) {
   
   const messageContent = document.createElement('div');
   messageContent.className = 'message-content';
-  messageContent.innerHTML = formatMessage(content);
+  messageContent.innerHTML = formatMessageWithSuggestions(content);
   
   messageDiv.appendChild(messageContent);
   chatMessages.appendChild(messageDiv);
@@ -1662,7 +1942,7 @@ function addMessage(role, content, isTemporary = false) {
   // Scroll to bottom
   chatMessages.scrollTop = chatMessages.scrollHeight;
   
-  return messageDiv; // Return for removal if needed
+  return messageDiv;
 }
 
 function formatMessage(content) {
@@ -1696,6 +1976,7 @@ function getCookie(name) {
   }
   return cookieValue;
 }
+
 </script>
 <!-- Bootstrap CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">

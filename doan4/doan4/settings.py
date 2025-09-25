@@ -32,8 +32,20 @@ INSTALLED_APPS = [
     'cloudinary',
     'home',
     'uploads',
+    
 ]
 
+
+# Judge0 API configuration
+JUDGE0_API_KEY = "9a99780a04msh553f9e3886a82b4p1390b1jsnb8610d7b3942"
+JUDGE0_BASE_URL = "https://judge0-ce.p.rapidapi.com"
+AI_SETTINGS = {
+    'GEMINI_API_KEY': 'AIzaSyB5r_8Ou0fDq-XHoBWHGIXWcblxkoa9VgM',  # Move to environment variable
+    'MAX_DOCUMENT_SUGGESTIONS': 5,
+    'MAX_CHATROOM_SUGGESTIONS': 5,
+    'SEARCH_MIN_QUERY_LENGTH': 2,
+    'ENABLE_AUTO_SUGGESTIONS': True,
+}
 AUTH_USER_MODEL = 'home.User'
 
 MIDDLEWARE = [

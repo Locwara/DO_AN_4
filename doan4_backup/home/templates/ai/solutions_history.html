@@ -1,0 +1,693 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block title %}Lịch Sử AI | StudyShare{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --success: #10b981;
+  --border: #e5e7eb;
+  --dark: #1f2937;
+  --light: #f9fafb;
+}
+
+.history-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 2rem;
+  color: white;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.history-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.history-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.solution-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.solution-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.card-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 16px 16px 0 0;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.card-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.card-preview {
+  color: #6b7280;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.filter-section {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  margin-bottom: 2rem;
+}
+
+.filter-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.filter-input {
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  transition: border-color 0.3s ease;
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.search-box {
+  flex: 1;
+  min-width: 250px;
+}
+
+.filter-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.filter-btn:hover {
+  background: var(--primary-dark);
+}
+
+.clear-btn {
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid var(--border);
+}
+
+.clear-btn:hover {
+  background: #f3f4f6;
+  color: var(--dark);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #6b7280;
+}
+
+.empty-state i {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  color: #d1d5db;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 3rem;
+}
+
+.stats-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.bulk-actions {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  margin-bottom: 2rem;
+  display: none;
+}
+
+.bulk-actions.show {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.selection-info {
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.bulk-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.solution-checkbox {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  width: 20px;
+  height: 20px;
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .history-header {
+    padding: 1.5rem;
+    text-align: center;
+  }
+  
+  .filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .card-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .stats-overview {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .bulk-actions {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-4">
+  <!-- Header -->
+  <div class="history-header">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="h2 mb-2">
+          <i class="fas fa-history me-2"></i>
+          Lịch Sử AI Giải Bài
+        </h1>
+        <p class="mb-0 opacity-90">
+          Quản lý và xem lại các bài tập đã được AI giải. Tìm kiếm, lọc và sắp xếp theo ý muốn.
+        </p>
+      </div>
+      <div class="col-md-4 text-end">
+        <a href="{% url 'ai_image_solver' %}" class="btn btn-light">
+          <i class="fas fa-plus me-2"></i>
+          Giải Bài Mới
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Overview -->
+  <div class="stats-overview">
+    <div class="stat-card">
+      <div class="stat-number">{{ solutions.paginator.count }}</div>
+      <div class="stat-label">Tổng Bài Giải</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">15</div>
+      <div class="stat-label">Tuần Này</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">89%</div>
+      <div class="stat-label">Độ Chính Xác</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">1.2s</div>
+      <div class="stat-label">Thời Gian TB</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-section">
+    <h5 class="mb-3">
+      <i class="fas fa-filter me-2"></i>
+      Bộ Lọc & Tìm Kiếm
+    </h5>
+    
+    <form id="filterForm" method="GET">
+      <div class="filter-row">
+        <div class="filter-group search-box">
+          <label>Tìm kiếm</label>
+          <input type="text" name="q" class="filter-input" 
+                 placeholder="Nhập từ khóa, tiêu đề bài giải..."
+                 value="{{ request.GET.q }}">
+        </div>
+        
+        <div class="filter-group">
+          <label>Từ ngày</label>
+          <input type="date" name="date_from" class="filter-input"
+                 value="{{ request.GET.date_from }}">
+        </div>
+        
+        <div class="filter-group">
+          <label>Đến ngày</label>
+          <input type="date" name="date_to" class="filter-input"
+                 value="{{ request.GET.date_to }}">
+        </div>
+        
+        <div class="filter-group">
+          <label>Sắp xếp</label>
+          <select name="sort" class="filter-input">
+            <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>
+              Mới nhất
+            </option>
+            <option value="created_at" {% if request.GET.sort == 'created_at' %}selected{% endif %}>
+              Cũ nhất
+            </option>
+            <option value="-view_count" {% if request.GET.sort == '-view_count' %}selected{% endif %}>
+              Xem nhiều nhất
+            </option>
+            <option value="-like_count" {% if request.GET.sort == '-like_count' %}selected{% endif %}>
+              Thích nhiều nhất
+            </option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label>&nbsp;</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" class="filter-btn">
+              <i class="fas fa-search me-1"></i>
+              Lọc
+            </button>
+            <a href="{% url 'ai_solutions_history' %}" class="filter-btn clear-btn">
+              <i class="fas fa-times me-1"></i>
+              Xóa
+            </a>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Bulk Actions (Hidden by default) -->
+  <div class="bulk-actions" id="bulkActions">
+    <div class="selection-info">
+      <span id="selectedCount">0</span> bài giải được chọn
+    </div>
+    <div class="bulk-buttons">
+      <button class="btn btn-outline-danger btn-sm" onclick="bulkDelete()">
+        <i class="fas fa-trash me-1"></i>
+        Xóa
+      </button>
+      <button class="btn btn-outline-primary btn-sm" onclick="bulkExport()">
+        <i class="fas fa-download me-1"></i>
+        Xuất file
+      </button>
+      <button class="btn btn-outline-secondary btn-sm" onclick="clearSelection()">
+        <i class="fas fa-times me-1"></i>
+        Bỏ chọn
+      </button>
+    </div>
+  </div>
+
+  <!-- Solutions Grid -->
+  {% if solutions %}
+    <div class="row">
+      {% for solution in solutions %}
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="solution-card" onclick="viewSolution({{ solution.id }})">
+            <!-- Checkbox for bulk selection -->
+            <input type="checkbox" class="solution-checkbox" 
+                   value="{{ solution.id }}" onclick="event.stopPropagation()">
+            
+            <!-- Image -->
+            <img src="{{ solution.image_url.url }}" alt="{{ solution.title }}" class="card-image">
+            
+            <!-- Content -->
+            <div class="card-body">
+              <h5 class="card-title">{{ solution.title }}</h5>
+              
+              <div class="card-meta">
+                <span>{{ solution.created_at|date:"d/m/Y H:i" }}</span>
+                <div class="card-stats">
+                  <span class="stat-item">
+                    <i class="fas fa-eye"></i>
+                    {{ solution.view_count }}
+                  </span>
+                  <span class="stat-item">
+                    <i class="fas fa-heart"></i>
+                    {{ solution.like_count }}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="card-preview">
+                {{ solution.ai_solution|truncatechars:150 }}
+              </div>
+              
+              {% if solution.processing_time %}
+                <div class="text-muted small">
+                  <i class="fas fa-clock me-1"></i>
+                  Xử lý trong {{ solution.processing_time }}ms
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if solutions.has_other_pages %}
+      <div class="pagination-wrapper">
+        <nav aria-label="Page navigation">
+          <ul class="pagination">
+            {% if solutions.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ solutions.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                  <i class="fas fa-chevron-left"></i>
+                </a>
+              </li>
+            {% endif %}
+            
+            {% for num in solutions.paginator.page_range %}
+              {% if solutions.number == num %}
+                <li class="page-item active">
+                  <span class="page-link">{{ num }}</span>
+                </li>
+              {% elif num > solutions.number|add:'-3' and num < solutions.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+            
+            {% if solutions.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ solutions.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                  <i class="fas fa-chevron-right"></i>
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+    {% endif %}
+  {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+      <i class="fas fa-robot"></i>
+      <h3>Chưa có bài giải nào</h3>
+      <p class="mb-4">
+        {% if request.GET.q %}
+          Không tìm thấy bài giải nào với từ khóa "{{ request.GET.q }}"
+        {% else %}
+          Bạn chưa sử dụng AI để giải bài tập nào. Hãy bắt đầu ngay!
+        {% endif %}
+      </p>
+      <a href="{% url 'ai_image_solver' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>
+        Giải Bài Đầu Tiên
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-trash me-2 text-danger"></i>
+          Xác Nhận Xóa
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Bạn có chắc chắn muốn xóa <span id="deleteCount">0</span> bài giải đã chọn?</p>
+        <p class="text-muted small">
+          <i class="fas fa-exclamation-triangle me-1"></i>
+          Hành động này không thể hoàn tác.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+          <i class="fas fa-trash me-2"></i>
+          Xóa
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedSolutions = new Set();
+
+document.addEventListener('DOMContentLoaded', function() {
+  initializeCheckboxes();
+  initializeFilters();
+});
+
+function initializeCheckboxes() {
+  const checkboxes = document.querySelectorAll('.solution-checkbox');
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function(e) {
+      e.stopPropagation();
+      
+      if (this.checked) {
+        selectedSolutions.add(this.value);
+      } else {
+        selectedSolutions.delete(this.value);
+      }
+      
+      updateBulkActions();
+    });
+  });
+}
+
+function initializeFilters() {
+  // Auto-submit form when filter changes (except search)
+  const filterInputs = document.querySelectorAll('select[name="sort"]');
+  filterInputs.forEach(input => {
+    input.addEventListener('change', function() {
+      document.getElementById('filterForm').submit();
+    });
+  });
+}
+
+function updateBulkActions() {
+  const bulkActions = document.getElementById('bulkActions');
+  const selectedCount = document.getElementById('selectedCount');
+  
+  if (selectedSolutions.size > 0) {
+    bulkActions.classList.add('show');
+    selectedCount.textContent = selectedSolutions.size;
+  } else {
+    bulkActions.classList.remove('show');
+  }
+}
+
+function viewSolution(solutionId) {
+  window.location.href = `{% url 'ai_solution_detail' 0 %}`.replace('0', solutionId);
+}
+
+function bulkDelete() {
+  if (selectedSolutions.size === 0) return;
+  
+  document.getElementById('deleteCount').textContent = selectedSolutions.size;
+  const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+  deleteModal.show();
+}
+
+function confirmDelete() {
+  const solutionIds = Array.from(selectedSolutions);
+  
+  // Implementation would require additional backend endpoint
+  console.log('Deleting solutions:', solutionIds);
+  
+  // Hide modal
+  bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+  
+  // Show success message
+  showToast('success', `Đã xóa ${solutionIds.length} bài giải thành công!`);
+  
+  // Clear selection
+  selectedSolutions.clear();
+  updateBulkActions();
+}
+
+function bulkExport() {
+  if (selectedSolutions.size === 0) return;
+  
+  const solutionIds = Array.from(selectedSolutions);
+  console.log('Exporting solutions:', solutionIds);
+  
+  showToast('info', 'Đang chuẩn bị file tải xuống...');
+}
+
+function clearSelection() {
+  const checkboxes = document.querySelectorAll('.solution-checkbox:checked');
+  checkboxes.forEach(checkbox => {
+    checkbox.checked = false;
+  });
+  
+  selectedSolutions.clear();
+  updateBulkActions();
+}
+
+function showToast(type, message) {
+  const toast = document.createElement('div');
+  toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0`;
+  toast.setAttribute('role', 'alert');
+  toast.innerHTML = `
+    <div class="d-flex">
+      <div class="toast-body">${message}</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  `;
+  
+  let toastContainer = document.getElementById('toast-container');
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.id = 'toast-container';
+    toastContainer.className = 'position-fixed top-0 end-0 p-3';
+    toastContainer.style.zIndex = '9999';
+    document.body.appendChild(toastContainer);
+  }
+  
+  toastContainer.appendChild(toast);
+  
+  const bsToast = new bootstrap.Toast(toast);
+  bsToast.show();
+  
+  toast.addEventListener('hidden.bs.toast', () => {
+    toast.remove();
+  });
+}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap JS (đặt trước closing body tag) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

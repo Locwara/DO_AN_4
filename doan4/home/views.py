@@ -1910,8 +1910,6 @@ def chat_room_invite(request, room_id):
     
     return JsonResponse({'success': True, 'message': 'Mời thành công!'})
 
-
-# Thêm vào file views.py của bạn
 import requests
 import json
 import base64
@@ -1938,12 +1936,16 @@ import pandas as pd
 import openpyxl
 
 # Import models
-from .models import AIImageSolution, AIConversation, AIConversationMessage, AIImageSolutionLike
+from .models import (
+    AIImageSolution, AIConversation, AIConversationMessage, AIImageSolutionLike,
+    Document, ChatRoom, Course, University, User, ChatRoomMember
+)
+from django.db.models import Q, Count
+from django.contrib.postgres.search import SearchVector
 
 # Gemini API configuration
 GEMINI_API_KEY = "AIzaSyB5r_8Ou0fDq-XHoBWHGIXWcblxkoa9VgM"
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent"
-
 # Supported file types
 SUPPORTED_FILE_TYPES = {
     'application/pdf': '.pdf',
@@ -1957,7 +1959,491 @@ SUPPORTED_FILE_TYPES = {
     'text/csv': '.csv'
 }
 
+def search_documents_for_ai(query, user, limit=5):
+    """Search documents relevant to user query with debug and fallback"""
+    try:
+        print(f"=== DEBUG SEARCH DOCUMENTS ===")
+        print(f"Query: '{query}'")
+        print(f"User: {user.username}")
+        
+        # Đếm tổng số documents trong DB
+        total_docs = Document.objects.count()
+        print(f"Total documents in DB: {total_docs}")
+        
+        # Đếm documents approved và public
+        approved_public = Document.objects.filter(
+            status='approved', 
+            is_public=True
+        ).count()
+        print(f"Approved + Public documents: {approved_public}")
+        
+        # Test search với điều kiện đơn giản trước
+        simple_search = Document.objects.filter(
+            status='approved',
+            is_public=True,
+            title__icontains=query
+        )
+        print(f"Simple title search results: {simple_search.count()}")
+        
+        # Nếu không có kết quả với approved/public, thử search tất cả
+        if simple_search.count() == 0:
+            all_search = Document.objects.filter(
+                title__icontains=query
+            )
+            print(f"Search all documents (ignore status): {all_search.count()}")
+            
+            # In ra một vài documents để kiểm tra
+            sample_docs = Document.objects.all()[:3]
+            for doc in sample_docs:
+                print(f"Sample doc: {doc.title}, status: {doc.status}, public: {doc.is_public}")
+        
+        # Search chính với điều kiện đầy đủ
+        documents = Document.objects.filter(
+            Q(status='approved') & Q(is_public=True) &
+            (Q(title__icontains=query) |
+             Q(description__icontains=query) |
+             Q(ai_summary__icontains=query) |
+             Q(ai_keywords__icontains=query))
+        ).select_related('course', 'university', 'uploaded_by').order_by('-view_count', '-created_at')[:limit]
+        
+        print(f"Final search results: {documents.count()}")
+        
+        # FIXED: Fallback nếu không tìm thấy
+        if documents.count() == 0:
+            print("No results with query, trying fallback...")
+            # Fallback: lấy tất cả approved docs
+            documents = Document.objects.filter(
+                status='approved',
+                is_public=True
+            ).select_related('course', 'university', 'uploaded_by')[:limit]
+            print(f"Fallback results: {documents.count()}")
+        
+        # FIXED: Debug approved documents
+        if documents.count() > 0:
+            print("=== APPROVED DOCUMENTS FOUND ===")
+            for doc in documents:
+                print(f"- ID: {doc.id}, Title: '{doc.title}', Course: {doc.course}, University: {doc.university}")
+        
+        # Format results for AI
+        results = []
+        for doc in documents:
+            try:
+                result_item = {
+                    'id': doc.id,
+                    'title': doc.title,
+                    'description': doc.description[:200] if doc.description else '',
+                    'course': f"{doc.course.code} - {doc.course.name}" if doc.course else 'No course',
+                    'university': doc.university.name if doc.university else 'No university',
+                    'document_type': doc.get_document_type_display() if hasattr(doc, 'get_document_type_display') else 'Document',
+                    'view_count': getattr(doc, 'view_count', 0),
+                    'like_count': getattr(doc, 'like_count', 0),
+                    'url': f"/documents/{doc.id}/view/"
+                }
+                results.append(result_item)
+                print(f"Formatted doc: {result_item['title']}")
+            except Exception as e:
+                print(f"Error formatting document {doc.id}: {e}")
+                continue
+            
+        print(f"Formatted results: {len(results)}")
+        print("=== END DEBUG ===")
+        
+        return results
+    except Exception as e:
+        print(f"Error searching documents: {e}")
+        import traceback
+        traceback.print_exc()
+        return []
+def search_chat_rooms_for_ai(query, user, limit=5):
+    """Search chat rooms relevant to user query with debug"""
+    try:
+        print(f"=== DEBUG SEARCH CHAT ROOMS ===")
+        print(f"Query: '{query}'")
+        print(f"User: {user.username}")
+        
+        # Đếm tổng số chat rooms
+        total_rooms = ChatRoom.objects.count()
+        print(f"Total chat rooms in DB: {total_rooms}")
+        
+        # Đếm active rooms
+        active_rooms = ChatRoom.objects.filter(
+            is_active=True,
+            room_type__in=['public', 'group']
+        ).count()
+        print(f"Active public/group rooms: {active_rooms}")
+        
+        # Test search đơn giản
+        simple_search = ChatRoom.objects.filter(
+            is_active=True,
+            room_type__in=['public', 'group'],
+            name__icontains=query
+        )
+        print(f"Simple name search results: {simple_search.count()}")
+        
+        # Nếu không có, thử search tất cả
+        if simple_search.count() == 0:
+            all_search = ChatRoom.objects.filter(
+                name__icontains=query
+            )
+            print(f"Search all rooms (ignore conditions): {all_search.count()}")
+            
+            # Sample rooms
+            sample_rooms = ChatRoom.objects.all()[:3]
+            for room in sample_rooms:
+                print(f"Sample room: {room.name}, active: {room.is_active}, type: {room.room_type}")
+        
+        # Search chính - FIXED: đổi 'chatroomMember' thành 'chatroommember'
+        rooms = ChatRoom.objects.filter(
+            Q(is_active=True) & Q(room_type__in=['public', 'group']) &
+            (Q(name__icontains=query) |
+             Q(description__icontains=query) |
+             Q(course__name__icontains=query) |
+             Q(course__code__icontains=query) |
+             Q(university__name__icontains=query))
+        ).select_related('course', 'university', 'created_by').annotate(
+            member_count=Count('chatroommember')  # FIXED: lowercase
+        ).order_by('-member_count', '-created_at')[:limit]
+        
+        print(f"Final search results: {rooms.count()}")
+        
+        # FIXED: Fallback nếu không tìm thấy
+        if rooms.count() == 0:
+            print("No results with query, trying fallback...")
+            rooms = ChatRoom.objects.filter(
+                is_active=True,
+                room_type__in=['public', 'group']
+            ).select_related('course', 'university', 'created_by').annotate(
+                member_count=Count('chatroommember')
+            )[:limit]
+            print(f"Fallback results: {rooms.count()}")
+        
+        # Format results for AI
+        results = []
+        for room in rooms:
+            try:
+                result_item = {
+                    'id': room.id,
+                    'name': room.name,
+                    'description': room.description[:200] if room.description else '',
+                    'course': f"{room.course.code} - {room.course.name}" if room.course else 'Chung',
+                    'university': room.university.name if room.university else 'Chung',
+                    'room_type': room.get_room_type_display() if hasattr(room, 'get_room_type_display') else room.room_type,
+                    'member_count': getattr(room, 'member_count', 0),
+                    'url': f"/chat/room/{room.id}/"
+                }
+                results.append(result_item)
+                print(f"Formatted room: {result_item['name']}")
+            except Exception as e:
+                print(f"Error formatting room {room.id}: {e}")
+                continue
+            
+        print(f"Formatted results: {len(results)}")
+        print("=== END DEBUG ===")
+        
+        return results
+    except Exception as e:
+        print(f"Error searching chat rooms: {e}")
+        import traceback
+        traceback.print_exc()
+        return []
+def search_documents_simple(query, user, limit=5):
+    """Simple search function as backup"""
+    try:
+        documents = Document.objects.filter(
+            Q(title__icontains=query) |
+            Q(description__icontains=query)
+        ).select_related('course', 'university', 'uploaded_by')[:limit]
+        
+        results = []
+        for doc in documents:
+            results.append({
+                'id': doc.id,
+                'title': doc.title,
+                'description': doc.description[:200] if doc.description else '',
+                'course': f"{doc.course.code} - {doc.course.name}" if doc.course else 'No course',
+                'university': doc.university.name if doc.university else 'No university',
+                'url': f"/documents/{doc.id}/view/"
+            })
+        return results
+    except Exception as e:
+        print(f"Simple search error: {e}")
+        return []
 
+def search_chat_rooms_simple(query, user, limit=5):
+    """Simple search function as backup"""
+    try:
+        rooms = ChatRoom.objects.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query)
+        ).select_related('course', 'university', 'created_by')[:limit]
+        
+        results = []
+        for room in rooms:
+            results.append({
+                'id': room.id,
+                'name': room.name,
+                'description': room.description[:200] if room.description else '',
+                'course': f"{room.course.code} - {room.course.name}" if room.course else 'Chung',
+                'university': room.university.name if room.university else 'Chung',
+                'url': f"/chat/room/{room.id}/"
+            })
+        return results
+    except Exception as e:
+        print(f"Simple search error: {e}")
+        return []
+def get_user_courses_and_interests(user):
+    """Get user's courses and interests for better recommendations"""
+    try:
+        # Get courses from user's documents
+        user_courses = Course.objects.filter(
+            document__uploaded_by=user
+        ).distinct().values_list('name', 'code')
+        
+        # Get courses from user's chat rooms
+        user_chat_courses = Course.objects.filter(
+            chatroom__chatroomMember__user=user
+        ).distinct().values_list('name', 'code')
+        
+        # Combine and format
+        all_courses = list(user_courses) + list(user_chat_courses)
+        course_info = [f"{code} - {name}" for code, name in set(all_courses)]
+        
+        return course_info
+    except Exception as e:
+        print(f"Error getting user courses: {e}")
+        return []
+
+def enhance_ai_prompt_with_context(user_message, user, conversation_type='text'):
+    """Enhance AI prompt with database context"""
+    try:
+        # Get user context
+        user_courses = get_user_courses_and_interests(user)
+        
+        # Search for relevant documents and chat rooms
+        docs = search_documents_for_ai(user_message, user, limit=3)
+        chat_rooms = search_chat_rooms_for_ai(user_message, user, limit=3)
+        
+        # Build enhanced context
+        context_parts = []
+        
+        if user_courses:
+            context_parts.append(f"Thông tin người dùng: Đang học/quan tâm các môn: {', '.join(user_courses[:5])}")
+        
+        if docs:
+            doc_info = []
+            for doc in docs:
+                doc_info.append(f"- [{doc['title']}]({doc['url']}) - {doc['course']} ({doc['view_count']} lượt xem)")
+            context_parts.append(f"Tài liệu liên quan:\n" + "\n".join(doc_info))
+        
+        if chat_rooms:
+            room_info = []
+            for room in chat_rooms:
+                room_info.append(f"- [{room['name']}]({room['url']}) - {room['course']} ({room['member_count']} thành viên)")
+            context_parts.append(f"Phòng chat liên quan:\n" + "\n".join(room_info))
+        
+        return "\n\n".join(context_parts) if context_parts else ""
+        
+    except Exception as e:
+        print(f"Error enhancing prompt: {e}")
+        return ""
+def call_gemini_api_enhanced(messages, image_data=None, user=None):
+    """Enhanced Gemini API call with database context"""
+    try:
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        # Prepare contents for API
+        contents = []
+        
+        # FIXED: Enhanced system prompt - chỉ gợi ý tài liệu có thật
+        system_prompt = '''Bạn là AI assistant thông minh của một website chia sẻ tài liệu học tập.
+        
+        Khả năng của bạn:
+        1. Giải thích kiến thức học tập (toán, lý, hóa, văn, anh, v.v.)
+        2. Giải bài tập và hướng dẫn từng bước
+        3. Trả lời câu hỏi thường thức
+        4. Gợi ý tài liệu và phòng chat CÓ TRONG HỆ THỐNG
+        5. Hỗ trợ học tập và nghiên cứu
+        
+        QUY TẮC QUAN TRỌNG:
+        - CHỈ gợi ý tài liệu và phòng chat được cung cấp trong phần "Thông tin từ hệ thống"
+        - KHÔNG tự tạo ra tài liệu hoặc phòng chat không tồn tại
+        - Nếu không có tài liệu phù hợp trong hệ thống, nói rằng "Hiện tại chưa có tài liệu phù hợp trong hệ thống"
+        - Nếu không có phòng chat phù hợp, nói rằng "Hiện tại chưa có phòng chat phù hợp trong hệ thống"
+        
+        Khi có thông tin từ hệ thống:
+        📚 **Tài liệu liên quan:**
+        [Chỉ liệt kê tài liệu được cung cấp với đúng link]
+        
+        💬 **Phòng chat để thảo luận:**
+        [Chỉ liệt kê phòng chat được cung cấp với đúng link]
+        
+        Khi không có thông tin từ hệ thống:
+        - Trả lời câu hỏi bình thường
+        - Nói rõ là hiện tại chưa có tài liệu/phòng chat phù hợp
+        - KHÔNG đưa ra gợi ý tài liệu/phòng chat giả tạo
+        
+        Luôn trả lời bằng tiếng Việt, thân thiện và khích lệ người học.
+        '''
+        
+        # Add conversation history
+        for i, msg in enumerate(messages):
+            if msg['role'] == 'system':
+                continue  # Will be handled separately
+                
+            content = {
+                "role": "user" if msg['role'] == 'user' else "model",
+                "parts": [{"text": msg['content']}]
+            }
+            
+            # Enhance the last user message with database context
+            if i == len(messages) - 1 and msg['role'] == 'user' and user:
+                db_context = enhance_ai_prompt_with_context(msg['content'], user)
+                if db_context:
+                    enhanced_content = f"{msg['content']}\n\n--- Thông tin từ hệ thống ---\n{db_context}"
+                    content['parts'] = [{"text": enhanced_content}]
+                    print(f"Enhanced user message with DB context: {len(db_context)} chars")
+                else:
+                    # IMPORTANT: Thêm thông báo không có dữ liệu
+                    enhanced_content = f"{msg['content']}\n\n--- Thông tin từ hệ thống ---\nKhông tìm thấy tài liệu hoặc phòng chat phù hợp trong hệ thống."
+                    content['parts'] = [{"text": enhanced_content}]
+                    print("No DB context found - added no data message")
+            
+            contents.append(content)
+        
+        # Add system prompt as the first user message
+        if contents:
+            contents.insert(0, {
+                "role": "user",
+                "parts": [{"text": system_prompt}]
+            })
+            contents.insert(1, {
+                "role": "model", 
+                "parts": [{"text": "Tôi hiểu. Tôi sẽ chỉ gợi ý tài liệu và phòng chat có thật trong hệ thống. Nếu không có, tôi sẽ nói rõ là chưa có dữ liệu phù hợp thay vì tự tạo gợi ý."}]
+            })
+        
+        # Add image if provided
+        if image_data and contents:
+            # Add image to the last user message
+            for content in reversed(contents):
+                if content['role'] == 'user':
+                    content['parts'].append({
+                        "inline_data": image_data
+                    })
+                    break
+        
+        payload = {
+            "contents": contents,
+            "generationConfig": {
+                "temperature": 0.7,
+                "topK": 40,
+                "topP": 0.95,
+                "maxOutputTokens": 8192,
+            },
+            "safetySettings": [
+                {
+                    "category": "HARM_CATEGORY_HARASSMENT",
+                    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                },
+                {
+                    "category": "HARM_CATEGORY_HATE_SPEECH",
+                    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                },
+                {
+                    "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                },
+                {
+                    "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                }
+            ]
+        }
+        
+        response = requests.post(
+            f"{GEMINI_URL}?key={GEMINI_API_KEY}",
+            headers=headers,
+            data=json.dumps(payload),
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            if 'candidates' in result and len(result['candidates']) > 0:
+                content = result['candidates'][0]['content']['parts'][0]['text']
+                return {
+                    'success': True,
+                    'content': content,
+                    'usage': result.get('usageMetadata', {})
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': 'No response from AI'
+                }
+        else:
+            return {
+                'success': False,
+                'error': f'API Error: {response.status_code} - {response.text}'
+            }
+            
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f'Exception: {str(e)}'
+        }
+
+def enhance_ai_prompt_with_context_strict(user_message, user, conversation_type='text'):
+    """Enhanced AI prompt - CHỈ trả về nếu có dữ liệu thật"""
+    try:
+        print(f"=== STRICT ENHANCE PROMPT ===")
+        print(f"User message: '{user_message[:100]}...'")
+        
+        # Get user context
+        user_courses = get_user_courses_and_interests(user)
+        print(f"User courses: {user_courses}")
+        
+        # Search documents and chat rooms
+        docs = search_documents_for_ai(user_message, user, limit=3)
+        chat_rooms = search_chat_rooms_for_ai(user_message, user, limit=3)
+        
+        print(f"Search results - Docs: {len(docs)}, Rooms: {len(chat_rooms)}")
+        
+        # CHỈ BUILD CONTEXT NỀU CÓ DỮ LIỆU THẬT
+        context_parts = []
+        
+        # User courses luôn có thể thêm
+        if user_courses:
+            context_parts.append(f"Thông tin người dùng: Đang học/quan tâm các môn: {', '.join(user_courses[:5])}")
+        
+        # CHỈ thêm documents nếu tìm thấy trong DB
+        if docs:
+            doc_info = []
+            for doc in docs:
+                doc_info.append(f"- [{doc['title']}]({doc['url']}) - {doc['course']}")
+            context_parts.append(f"Tài liệu có trong hệ thống:\n" + "\n".join(doc_info))
+        
+        # CHỈ thêm chat rooms nếu tìm thấy trong DB  
+        if chat_rooms:
+            room_info = []
+            for room in chat_rooms:
+                room_info.append(f"- [{room['name']}]({room['url']}) - {room['course']}")
+            context_parts.append(f"Phòng chat có trong hệ thống:\n" + "\n".join(room_info))
+        
+        enhanced_context = "\n\n".join(context_parts) if context_parts else ""  
+        
+        print(f"Final context length: {len(enhanced_context)}")
+        print(f"Has docs: {bool(docs)}, Has rooms: {bool(chat_rooms)}")
+        print("=== END STRICT ENHANCE ===")
+        
+        return enhanced_context
+        
+    except Exception as e:
+        print(f"Error enhancing prompt: {e}")
+        import traceback
+        traceback.print_exc()
+        return ""
 def extract_text_from_file(file):
     """Extract text content from various file types"""
     try:
@@ -2892,11 +3378,70 @@ def ai_solve_file_api(request):
             'error': f'Server error: {str(e)}'
         })
 
+
+
 @login_required
 @csrf_exempt
 @require_http_methods(["POST"])
+def ai_search_documents_api(request):
+    """API để tìm kiếm tài liệu theo yêu cầu của user"""
+    try:
+        query = request.POST.get('query', '').strip()
+        if not query:
+            return JsonResponse({
+                'success': False,
+                'error': 'Missing search query'
+            })
+        
+        documents = search_documents_for_ai(query, request.user, limit=10)
+        
+        return JsonResponse({
+            'success': True,
+            'documents': documents,
+            'count': len(documents)
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Search error: {str(e)}'
+        })
+
+# NEW: API endpoint for manual chat room search  
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def ai_search_chat_rooms_api(request):
+    """API để tìm kiếm phòng chat theo yêu cầu của user"""
+    try:
+        query = request.POST.get('query', '').strip()
+        if not query:
+            return JsonResponse({
+                'success': False,
+                'error': 'Missing search query'
+            })
+        
+        chat_rooms = search_chat_rooms_for_ai(query, request.user, limit=10)
+        
+        return JsonResponse({
+            'success': True,
+            'chat_rooms': chat_rooms,
+            'count': len(chat_rooms)
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Search error: {str(e)}'
+        })
+
+# Keep all other existing functions unchanged...
+# (Include all the existing functions like ai_solve_image_api, ai_solve_file_api, etc.)
+@login_required
+@csrf_exempt  
+@require_http_methods(["POST"])
 def ai_continue_conversation_api(request):
-    """API để tiếp tục cuộc trò chuyện với AI"""
+    """API để tiếp tục cuộc trò chuyện với AI (enhanced)"""
     try:
         start_time = time.time()
         
@@ -2924,18 +3469,11 @@ def ai_continue_conversation_api(request):
         # Get conversation history
         conversation_messages = AIConversationMessage.objects.filter(
             conversation=conversation
-        ).order_by('-created_at')[:15]  # Lấy 15 tin nhắn mới nhất
-        conversation_messages = list(reversed(conversation_messages))  # Đảo ngược thứ tự
+        ).order_by('-created_at')[:15]
+        conversation_messages = list(reversed(conversation_messages))
         
         # Prepare messages for API
-        messages = [
-            {
-                'role': 'system',
-                'content': '''Bạn đang trong cuộc trò chuyện về giải bài tập. 
-                Hãy tiếp tục hỗ trợ user dựa trên context cuộc trò chuyện trước đó.
-                Trả lời một cách tự nhiên, hữu ích và chi tiết.'''
-            }
-        ]
+        messages = []
         
         # Add conversation history
         for msg in conversation_messages:
@@ -2950,8 +3488,8 @@ def ai_continue_conversation_api(request):
             'content': user_message
         })
         
-        # Call Gemini API
-        api_response = call_gemini_api(messages)
+        # ENHANCED: Call API với database context
+        api_response = call_gemini_api_enhanced(messages, user=request.user)
         
         if not api_response['success']:
             return JsonResponse({
@@ -2995,129 +3533,71 @@ def ai_continue_conversation_api(request):
             'error': f'Server error: {str(e)}'
         })
 
-
 @login_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def ai_text_chat_api(request):
-    """API để chat với AI bằng text thuần túy, không cần hình ảnh"""
-    print("=== AI TEXT CHAT API CALLED ===")
+    """API để chat với AI bằng text thuần túy với database integration"""
+    print("=== AI TEXT CHAT API CALLED (ENHANCED) ===")
     
     try:
         start_time = time.time()
-        print("Start time:", start_time)
         
         user_message = request.POST.get('message', '').strip()
         conversation_id = request.POST.get('conversation_id')
         
         print("User message:", repr(user_message))
-        print("Conversation ID:", conversation_id)
-        print("Request user:", request.user.id, request.user.username)
+        print("User:", request.user.username)
         
         # Nếu không có message, tạo conversation mới và trả về
         if not user_message:
-            print("No user message - creating empty conversation")
             if not conversation_id:
-                print("Creating new conversation without message")
                 conversation = AIConversation.objects.create(
                     user=request.user,
                     title=f"Chat AI - {time.strftime('%d/%m/%Y %H:%M')}",
                     image_solution=None
                 )
-                print("Created conversation ID:", conversation.id)
                 return JsonResponse({
                     'success': True,
                     'conversation_id': conversation.id,
                     'message': 'Conversation created'
                 })
             else:
-                print("Returning existing conversation ID")
                 return JsonResponse({
                     'success': True,
                     'conversation_id': conversation_id,
                     'message': 'Ready to chat'
                 })
         
-        print("Processing message:", user_message)
-        
         # Tạo hoặc lấy conversation
         conversation = None
         is_new_conversation = False
         
         if conversation_id:
-            print("Looking for existing conversation:", conversation_id)
             try:
                 conversation = AIConversation.objects.get(
                     id=conversation_id,
                     user=request.user
                 )
-                print("Found existing conversation:", conversation.id, conversation.title)
             except AIConversation.DoesNotExist:
-                print("Conversation not found, will create new one")
                 conversation = None
-        else:
-            print("No conversation ID provided")
         
         if not conversation:
-            print("Creating new conversation with message")
             is_new_conversation = True
             conversation = AIConversation.objects.create(
                 user=request.user,
                 title=f"Chat AI - {time.strftime('%d/%m/%Y %H:%M')}",
                 image_solution=None
             )
-            print("Created new conversation:", conversation.id, "is_new:", is_new_conversation)
         
-        # Lấy lịch sử conversation - FIXED: Đảm bảo lấy đúng thứ tự
-        print("Getting conversation history...")
+        # Lấy lịch sử conversation
         conversation_messages = AIConversationMessage.objects.filter(
             conversation=conversation
         ).order_by('created_at')
-
-        print("=== CONVERSATION MESSAGES QUERY ===")
-        print(f"Query filter: conversation={conversation.id}")
-        print(f"Found {len(conversation_messages)} previous messages")
-        for i, msg in enumerate(conversation_messages):
-            print(f"  {i+1}. {msg.role}: {msg.content[:50]}...")
-        print("=== END QUERY DEBUG ===")
-        if len(conversation_messages) == 0:
-            # Conversation mới - system prompt ban đầu
-            system_prompt = '''Bạn là AI assistant thông minh, hữu ích và thân thiện.
-            Nhiệm vụ của bạn là trả lời câu hỏi của người dùng một cách chi tiết và chính xác.
-            
-            Khả năng của bạn:
-            1. Giải thích kiến thức học tập (toán, lý, hóa, văn, anh, v.v.)
-            2. Giải bài tập và hướng dẫn từng bước
-            3. Trả lời câu hỏi thường thức
-            4. Hỗ trợ học tập và nghiên cứu
-            5. Giải thích khái niệm phức tạp một cách đơn giản
-            
-            Hãy luôn:
-            - Trả lời bằng tiếng Việt
-            - Giải thích chi tiết và dễ hiểu
-            - Đưa ra ví dụ cụ thể khi cần thiết
-            - Thân thiện và khích lệ người học
-            - Nếu không chắc chắn, hãy thừa nhận và đưa ra gợi ý'''
-        else:
-            # Conversation đã có lịch sử - system prompt nhấn mạnh context
-            system_prompt = '''Bạn đang trong cuộc trò chuyện với người dùng. 
-            Hãy tiếp tục hỗ trợ dựa trên context cuộc trò chuyện trước đó.
-            Trả lời một cách tự nhiên, hữu ích và chi tiết bằng tiếng Việt.
-            
-            Hãy nhớ:
-            - Tham khảo các tin nhắn trước đó trong cuộc trò chuyện
-            - Duy trì tính liên tục và logic trong đối thoại
-            - Trả lời phù hợp với ngữ cảnh đã thiết lập
-            - Giải thích chi tiết khi cần thiết'''
         
-        messages = [
-            {
-                'role': 'system',
-                'content': system_prompt
-            }
-        ]
+        messages = []
         
-        # Thêm lịch sử conversation - FIXED: Giới hạn số lượng để tránh token limit
+        # Thêm lịch sử conversation
         recent_messages = conversation_messages[-10:] if len(conversation_messages) > 10 else conversation_messages
         
         for msg in recent_messages:
@@ -3132,16 +3612,11 @@ def ai_text_chat_api(request):
             'content': user_message
         })
         
-        print("Total messages for API:", len(messages))
-        print("Recent messages count:", len(recent_messages))
-        
-        # Gọi Gemini API
-        print("Calling Gemini API...")
-        api_response = call_gemini_api(messages, image_data=None)
-        print("API response success:", api_response.get('success'))
+        # ENHANCED: Gọi API với database integration
+        print("Calling enhanced Gemini API with DB context...")
+        api_response = call_gemini_api_enhanced(messages, image_data=None, user=request.user)
         
         if not api_response['success']:
-            print("API call failed:", api_response.get('error'))
             return JsonResponse({
                 'success': False,
                 'error': api_response['error']
@@ -3150,25 +3625,9 @@ def ai_text_chat_api(request):
         processing_time = int((time.time() - start_time) * 1000)
         ai_response = api_response['content']
         
-        print("Processing time:", processing_time, "ms")
-        print("AI response length:", len(ai_response))
-        print("Is new conversation:", is_new_conversation)
-        
         # Tạo solution cho conversation chưa có solution
         if not conversation.image_solution:
-            print("=== CREATING SOLUTION FOR CONVERSATION WITHOUT SOLUTION ===")
-            print("Conversation ID:", conversation.id)
-            print("Conversation has solution:", bool(conversation.image_solution))
-            print("Title will be:", f"Text Chat - {time.strftime('%d/%m/%Y %H:%M')}")
-            print("AI response preview:", ai_response[:100] + "..." if len(ai_response) > 100 else ai_response)
-            print("Processing time:", processing_time)
-            
-            # Check model choices first
-            from home.models import AIImageSolution
-            print("Available solution type choices:", AIImageSolution.SOLUTION_TYPE_CHOICES)
-            
             try:
-                print("Attempting to create AIImageSolution...")
                 solution = AIImageSolution.objects.create(
                     user=request.user,
                     title=f"Text Chat - {time.strftime('%d/%m/%Y %H:%M')}",
@@ -3177,36 +3636,20 @@ def ai_text_chat_api(request):
                     processing_time=processing_time,
                     original_filename='text_chat.txt'
                 )
-                print("SUCCESS: Created solution ID:", solution.id)
-                print("Solution type:", solution.solution_type)
-                print("Solution title:", solution.title)
                 
-                # Cập nhật conversation với solution
-                print("Updating conversation with solution...")
                 conversation.image_solution = solution
                 conversation.save()
-                print("SUCCESS: Updated conversation", conversation.id, "with solution", solution.id)
                 
             except Exception as e:
-                print("ERROR creating text chat solution:", str(e))
-                print("Exception type:", type(e).__name__)
-                import traceback
-                traceback.print_exc()
-                # Continue without solution
-        else:
-            print("Conversation already has solution, not creating new one")
-            print("Existing solution ID:", conversation.image_solution.id if conversation.image_solution else "None")
+                print("ERROR creating enhanced text chat solution:", str(e))
         
         # Lưu messages vào database
-        print("Saving user message...")
         user_msg = AIConversationMessage.objects.create(
             conversation=conversation,
             role='user',
             content=user_message
         )
-        print("Saved user message ID:", user_msg.id)
         
-        print("Saving AI message...")
         ai_msg = AIConversationMessage.objects.create(
             conversation=conversation,
             role='assistant',
@@ -3214,13 +3657,9 @@ def ai_text_chat_api(request):
             tokens_used=api_response.get('usage', {}).get('totalTokenCount', 0),
             response_time=processing_time
         )
-        print("Saved AI message ID:", ai_msg.id)
         
-        # Update conversation timestamp
-        print("Updating conversation timestamp...")
         conversation.save()
         
-        print("=== RETURNING SUCCESS RESPONSE ===")
         return JsonResponse({
             'success': True,
             'conversation_id': conversation.id,
@@ -3232,9 +3671,8 @@ def ai_text_chat_api(request):
         })
         
     except Exception as e:
-        print("=== UNEXPECTED ERROR ===")
+        print("=== UNEXPECTED ERROR IN ENHANCED CHAT ===")
         print("Error:", str(e))
-        print("Error type:", type(e).__name__)
         import traceback
         traceback.print_exc()
         
@@ -3242,6 +3680,7 @@ def ai_text_chat_api(request):
             'success': False,
             'error': f'Server error: {str(e)}'
         })
+
 @login_required
 def ai_solution_detail_view(request, solution_id):
     """View chi tiết một AI solution với conversation history"""

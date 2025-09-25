@@ -1,0 +1,545 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+:root {
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --dark: #1f2937;
+  --light: #f9fafb;
+  --border: #e5e7eb;
+}
+
+.hero-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 24px;
+  padding: 3rem 2rem;
+  margin-bottom: 2rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 24px;
+}
+
+.hero-section > * {
+  position: relative;
+  z-index: 1;
+}
+
+.course-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.course-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+  border-color: var(--primary);
+}
+
+.difficulty-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.difficulty-beginner {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.difficulty-intermediate {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.difficulty-advanced {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.difficulty-expert {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.language-tag {
+  background: var(--primary);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.course-stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.btn-enroll {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-enroll:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  color: white;
+  text-decoration: none;
+}
+
+.btn-enrolled {
+  background: var(--success);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: default;
+}
+
+.filter-section {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  margin-bottom: 2rem;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: end;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-group label {
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.filter-group select,
+.filter-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.btn-filter {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-filter:hover {
+  background: var(--primary-dark);
+}
+
+.btn-clear {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-clear:hover {
+  background: #4b5563;
+}
+
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+.pagination {
+  margin-top: 3rem;
+}
+
+.page-link {
+  color: var(--primary);
+  border: 2px solid var(--border);
+  padding: 0.5rem 1rem;
+  margin: 0 0.25rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.page-link:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.page-item.active .page-link {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 2rem 1rem;
+  }
+  
+  .filter-row {
+    flex-direction: column;
+  }
+  
+  .filter-group {
+    min-width: 100%;
+  }
+  
+  .course-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="h2 mb-3">
+          <i class="fas fa-code me-2"></i>
+          Code with AI - Khóa Học Lập Trình
+        </h1>
+        <p class="mb-0 opacity-90">
+          Học lập trình với AI mentor thông minh. Code trực tiếp trên web, 
+          nhận feedback chi tiết và theo dõi tiến độ học tập của bạn!
+        </p>
+      </div>
+      <div class="col-md-4 text-end">
+        <div class="d-flex gap-2 justify-content-end">
+          <a href="{% url 'dashboard' %}" class="btn btn-outline-light">
+            <i class="fas fa-arrow-left me-2"></i>
+            Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <form method="GET" id="filterForm">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="language">Ngôn Ngữ</label>
+          <select name="language" id="language">
+            <option value="">Tất cả ngôn ngữ</option>
+            {% for lang in languages %}
+            <option value="{{ lang.id }}" 
+                    {% if current_filters.language == lang.id|stringformat:'s' %}selected{% endif %}>
+              {{ lang.display_name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label for="difficulty">Độ Khó</label>
+          <select name="difficulty" id="difficulty">
+            <option value="">Tất cả độ khó</option>
+            <option value="beginner" {% if current_filters.difficulty == 'beginner' %}selected{% endif %}>Beginner</option>
+            <option value="intermediate" {% if current_filters.difficulty == 'intermediate' %}selected{% endif %}>Intermediate</option>
+            <option value="advanced" {% if current_filters.difficulty == 'advanced' %}selected{% endif %}>Advanced</option>
+            <option value="expert" {% if current_filters.difficulty == 'expert' %}selected{% endif %}>Expert</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label for="university">Trường</label>
+          <select name="university" id="university">
+            <option value="">Tất cả trường</option>
+            {% for uni in universities %}
+            <option value="{{ uni.id }}" 
+                    {% if current_filters.university == uni.id|stringformat:'s' %}selected{% endif %}>
+              {{ uni.short_name|default:uni.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label for="search">Tìm Kiếm</label>
+          <input type="text" name="search" id="search" 
+                 placeholder="Tên khóa học, mô tả..." 
+                 value="{{ current_filters.search }}">
+        </div>
+        
+        <div class="filter-group">
+          <button type="submit" class="btn-filter">
+            <i class="fas fa-search me-2"></i>
+            Lọc
+          </button>
+        </div>
+        
+        <div class="filter-group">
+          <a href="{% url 'code_courses_list' %}" class="btn-clear">
+            <i class="fas fa-times me-2"></i>
+            Xóa
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Results Summary -->
+  {% if page_obj %}
+  <div class="mb-4">
+    <h5 class="text-muted">
+      <i class="fas fa-list me-2"></i>
+      Tìm thấy {{ page_obj.paginator.count }} khóa học
+      {% if current_filters.search %}
+        cho "{{ current_filters.search }}"
+      {% endif %}
+    </h5>
+  </div>
+  {% endif %}
+
+  <!-- Courses Grid -->
+  {% if page_obj %}
+  <div class="course-grid">
+    {% for course in page_obj %}
+    <div class="course-card">
+      <!-- Course Header -->
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div class="language-tag">{{ course.language.display_name }}</div>
+        <div class="difficulty-badge difficulty-{{ course.difficulty }}">
+          {{ course.get_difficulty_display }}
+        </div>
+      </div>
+      
+      <!-- Course Content -->
+      <h5 class="mb-2">
+        <a href="{% url 'code_course_detail' course.slug %}" 
+           class="text-decoration-none text-dark">
+          {{ course.title }}
+        </a>
+      </h5>
+      
+      <p class="text-muted mb-3">{{ course.description|truncatewords:20 }}</p>
+      
+      <!-- Course Meta -->
+      <div class="mb-3">
+        <small class="text-muted">
+          <i class="fas fa-user me-1"></i>
+          {{ course.created_by.get_full_name|default:course.created_by.username }}
+          {% if course.university %}
+            • <i class="fas fa-university me-1"></i>{{ course.university.short_name|default:course.university.name }}
+          {% endif %}
+        </small>
+      </div>
+      
+      <!-- Course Stats -->
+      <div class="course-stats">
+        <div class="stat-item">
+          <i class="fas fa-users"></i>
+          <span>{{ course.enrollment_count }}</span>
+        </div>
+        
+        <div class="stat-item">
+          <i class="fas fa-clock"></i>
+          <span>{{ course.estimated_hours|default:"?" }}h</span>
+        </div>
+        
+        {% if course.avg_rating %}
+        <div class="stat-item">
+          <i class="fas fa-star text-warning"></i>
+          <span>{{ course.avg_rating|floatformat:1 }}</span>
+        </div>
+        {% endif %}
+        
+        {% if course.is_free %}
+        <div class="stat-item">
+          <i class="fas fa-heart text-success"></i>
+          <span>Miễn phí</span>
+        </div>
+        {% endif %}
+      </div>
+      
+      <!-- Enroll Button -->
+      <div class="mt-3">
+        {% if course.id in user_enrollments %}
+          <a href="{% url 'code_course_detail' course.slug %}" class="btn-enrolled w-100">
+            <i class="fas fa-check me-2"></i>
+            Đã Đăng Ký
+          </a>
+        {% else %}
+          {% if course.requires_premium and not user.is_premium %}
+            <a href="{% url 'code_course_detail' course.slug %}" class="btn-enroll w-100" 
+               style="background: #f59e0b;">
+              <i class="fas fa-crown me-2"></i>
+              Premium
+            </a>
+          {% else %}
+            <a href="{% url 'code_course_detail' course.slug %}" class="btn-enroll w-100">
+              <i class="fas fa-play me-2"></i>
+              Xem Khóa Học
+            </a>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <nav aria-label="Course pagination" class="pagination">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page=1{% if current_filters.language %}&language={{ current_filters.language }}{% endif %}{% if current_filters.difficulty %}&difficulty={{ current_filters.difficulty }}{% endif %}{% if current_filters.university %}&university={{ current_filters.university }}{% endif %}{% if current_filters.search %}&search={{ current_filters.search }}{% endif %}">
+            <i class="fas fa-angle-double-left"></i>
+          </a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_filters.language %}&language={{ current_filters.language }}{% endif %}{% if current_filters.difficulty %}&difficulty={{ current_filters.difficulty }}{% endif %}{% if current_filters.university %}&university={{ current_filters.university }}{% endif %}{% if current_filters.search %}&search={{ current_filters.search }}{% endif %}">
+            <i class="fas fa-angle-left"></i>
+          </a>
+        </li>
+      {% endif %}
+      
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+          </li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ num }}{% if current_filters.language %}&language={{ current_filters.language }}{% endif %}{% if current_filters.difficulty %}&difficulty={{ current_filters.difficulty }}{% endif %}{% if current_filters.university %}&university={{ current_filters.university }}{% endif %}{% if current_filters.search %}&search={{ current_filters.search }}{% endif %}">{{ num }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+      
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_filters.language %}&language={{ current_filters.language }}{% endif %}{% if current_filters.difficulty %}&difficulty={{ current_filters.difficulty }}{% endif %}{% if current_filters.university %}&university={{ current_filters.university }}{% endif %}{% if current_filters.search %}&search={{ current_filters.search }}{% endif %}">
+            <i class="fas fa-angle-right"></i>
+          </a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_filters.language %}&language={{ current_filters.language }}{% endif %}{% if current_filters.difficulty %}&difficulty={{ current_filters.difficulty }}{% endif %}{% if current_filters.university %}&university={{ current_filters.university }}{% endif %}{% if current_filters.search %}&search={{ current_filters.search }}{% endif %}">
+            <i class="fas fa-angle-double-right"></i>
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+  
+  {% else %}
+  <!-- No Courses -->
+  <div class="text-center py-5">
+    <i class="fas fa-code text-muted mb-3" style="font-size: 4rem;"></i>
+    <h4 class="text-muted">Không tìm thấy khóa học nào</h4>
+    <p class="text-muted">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+    <a href="{% url 'code_courses_list' %}" class="btn btn-primary">
+      <i class="fas fa-refresh me-2"></i>
+      Xem Tất Cả Khóa Học
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+// Auto-submit form on filter change
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('filterForm');
+  const selects = form.querySelectorAll('select');
+  
+  selects.forEach(select => {
+    select.addEventListener('change', () => {
+      form.submit();
+    });
+  });
+  
+  // Search input with debounce
+  const searchInput = document.getElementById('search');
+  let searchTimeout;
+  
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      form.submit();
+    }, 500);
+  });
+});
+</script>
+{% endblock %}

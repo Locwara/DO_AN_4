@@ -84,7 +84,7 @@ class Document(models.Model):
         blank=True
     )
     file_size = models.BigIntegerField(null=True, blank=True)
-    file_type = models.CharField(max_length=50, null=True, blank=True)
+    file_type = models.CharField(max_length=150, null=True, blank=True)
     thumbnail = CloudinaryField('thumbnail', blank=True, null=True, folder="thumbnails/")
     
     university = models.ForeignKey(University, on_delete=models.CASCADE)
@@ -115,6 +115,22 @@ class Document(models.Model):
 
     class Meta:
         db_table = 'documents'
+        indexes = [
+            models.Index(fields=['status', 'is_public', '-view_count']),
+            models.Index(fields=['course', '-created_at']),
+            models.Index(fields=['university', '-created_at']),
+        ]
+    
+    def get_search_keywords(self):
+        """Extract keywords for better search"""
+        keywords = []
+        if self.title:
+            keywords.extend(self.title.split())
+        if self.course:
+            keywords.extend([self.course.name, self.course.code])
+        if self.university:
+            keywords.append(self.university.name)
+        return keywords
 
 
 class DocumentTag(models.Model):
@@ -220,7 +236,11 @@ class ChatRoom(models.Model):
 
     class Meta:
         db_table = 'chat_rooms'
-
+        indexes = [
+            models.Index(fields=['is_active', 'room_type', '-created_at']),
+            models.Index(fields=['course', '-created_at']),
+            models.Index(fields=['university', '-created_at']),
+        ]
 
 class ChatRoomMember(models.Model):
     ROLE_CHOICES = [
@@ -669,3 +689,497 @@ class PremiumTransaction(models.Model):
 
     class Meta:
         db_table = 'premium_transactions'
+
+
+##### code 
+# Thêm vào models.py của bạn
+
+class CodeLanguage(models.Model):
+    """Các ngôn ngữ lập trình được hỗ trợ"""
+    name = models.CharField(max_length=50, unique=True)  # python, javascript, java, c++
+    display_name = models.CharField(max_length=100)  # Python 3.9, JavaScript ES6
+    version = models.CharField(max_length=20, null=True, blank=True)
+    file_extension = models.CharField(max_length=10)  # .py, .js, .java
+    syntax_highlight = models.CharField(max_length=50)  # For code editor
+    docker_image = models.CharField(max_length=200, null=True, blank=True)  # Để run code
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.display_name
+    
+    class Meta:
+        db_table = 'code_languages'
+
+
+class CodeCourse(models.Model):
+    """Khóa học lập trình"""
+    DIFFICULTY_CHOICES = [
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'), 
+        ('advanced', 'Advanced'),
+        ('expert', 'Expert'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('published', 'Published'),
+        ('archived', 'Archived'),
+    ]
+    
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    description = models.TextField()
+    thumbnail = CloudinaryField('thumbnail', blank=True, null=True, folder="course_thumbnails/")
+    
+    # Course info
+    language = models.ForeignKey(CodeLanguage, on_delete=models.CASCADE)
+    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default='beginner')
+    estimated_hours = models.IntegerField(null=True, blank=True)
+    
+    # Author & publishing
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_courses')
+    university = models.ForeignKey(University, on_delete=models.SET_NULL, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    
+    # Stats
+    enrollment_count = models.IntegerField(default=0)
+    rating_average = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    rating_count = models.IntegerField(default=0)
+    
+    # Settings
+    is_free = models.BooleanField(default=True)
+    requires_premium = models.BooleanField(default=False)
+    is_featured = models.BooleanField(default=False)
+    
+    # SEO & Search
+    tags = models.ManyToManyField('CodeCourseTag', blank=True)
+    search_vector = SearchVectorField(null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    published_at = models.DateTimeField(null=True, blank=True)
+    
+    def __str__(self):
+        return self.title
+    
+    class Meta:
+        db_table = 'code_courses'
+        indexes = [
+            models.Index(fields=['status', 'is_featured', '-created_at']),
+            models.Index(fields=['language', 'difficulty', '-enrollment_count']),
+        ]
+
+
+class CodeCourseTag(models.Model):
+    """Tags cho khóa học"""
+    name = models.CharField(max_length=50, unique=True)
+    color = models.CharField(max_length=7, default='#6B7280')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        db_table = 'code_course_tags'
+
+
+class CodeLesson(models.Model):
+    """Bài học trong khóa học"""
+    LESSON_TYPE_CHOICES = [
+        ('theory', 'Theory'),           # Lý thuyết
+        ('coding', 'Coding Exercise'),  # Bài tập code
+        ('project', 'Project'),         # Dự án
+        ('quiz', 'Quiz'),              # Trắc nghiệm
+    ]
+    
+    course = models.ForeignKey(CodeCourse, on_delete=models.CASCADE, related_name='lessons')
+    title = models.CharField(max_length=255)
+    slug = models.SlugField()
+    description = models.TextField(null=True, blank=True)
+    
+    # Content
+    lesson_type = models.CharField(max_length=20, choices=LESSON_TYPE_CHOICES, default='coding')
+    theory_content = models.TextField(null=True, blank=True)  # HTML content cho theory
+    
+    # Coding exercise
+    problem_statement = models.TextField(null=True, blank=True)  # Đề bài
+    starter_code = models.TextField(null=True, blank=True)       # Code mẫu ban đầu
+    solution_code = models.TextField(null=True, blank=True)      # Lời giải mẫu
+    hints = models.JSONField(null=True, blank=True)             # Gợi ý theo bước
+    
+    # Test cases
+    test_cases = models.JSONField(null=True, blank=True)        # Input/Output test cases
+    hidden_test_cases = models.JSONField(null=True, blank=True) # Hidden tests
+    
+    # AI Configuration
+    ai_prompt_template = models.TextField(null=True, blank=True) # Template cho AI feedback
+    ai_difficulty_level = models.IntegerField(default=1)        # 1-10 độ khó cho AI
+    
+    # Settings
+    order_index = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=False)
+    estimated_time = models.IntegerField(null=True, blank=True)  # phút
+    points_reward = models.IntegerField(default=10)
+    
+    # Stats
+    completion_count = models.IntegerField(default=0)
+    average_attempts = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.course.title} - {self.title}"
+    
+    class Meta:
+        db_table = 'code_lessons'
+        unique_together = ['course', 'slug']
+        indexes = [
+            models.Index(fields=['course', 'order_index']),
+            models.Index(fields=['lesson_type', 'is_published']),
+        ]
+
+
+class CodeEnrollment(models.Model):
+    """Đăng ký học khóa học"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ForeignKey(CodeCourse, on_delete=models.CASCADE)
+    enrolled_at = models.DateTimeField(auto_now_add=True)
+    last_accessed = models.DateTimeField(auto_now=True)
+    
+    # Progress tracking
+    current_lesson = models.ForeignKey(
+        CodeLesson, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='current_enrollments'
+    )
+    completed_lessons = models.ManyToManyField(
+        CodeLesson, 
+        through='CodeLessonProgress', 
+        blank=True,
+        related_name='completed_enrollments'
+    )
+    
+    # Stats
+    total_time_spent = models.IntegerField(default=0)  # minutes
+    total_points = models.IntegerField(default=0)
+    completion_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    
+    is_completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        db_table = 'code_enrollments'
+        unique_together = ['user', 'course']
+
+
+class CodeLessonProgress(models.Model):
+    """Tiến độ từng bài học"""
+    STATUS_CHOICES = [
+        ('not_started', 'Not Started'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('skipped', 'Skipped'),
+    ]
+    
+    enrollment = models.ForeignKey(CodeEnrollment, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(CodeLesson, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
+    
+    # Stats
+    attempts_count = models.IntegerField(default=0)
+    time_spent = models.IntegerField(default=0)  # seconds
+    points_earned = models.IntegerField(default=0)
+    best_score = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    last_attempt_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'code_lesson_progress'
+        unique_together = ['enrollment', 'lesson']
+
+
+class CodeSubmission(models.Model):
+    """Bài nộp code của học viên"""
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),         # Đang chờ chấm
+        ('running', 'Running'),         # Đang run code
+        ('passed', 'Passed'),           # Đạt
+        ('failed', 'Failed'),           # Sai
+        ('error', 'Error'),             # Lỗi runtime
+        ('timeout', 'Timeout'),         # Quá thời gian
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(CodeLesson, on_delete=models.CASCADE)
+    enrollment = models.ForeignKey(CodeEnrollment, on_delete=models.CASCADE)
+    
+    # Code content
+    submitted_code = models.TextField()
+    language = models.ForeignKey(CodeLanguage, on_delete=models.CASCADE)
+    
+    # Execution results
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    execution_output = models.TextField(null=True, blank=True)
+    error_message = models.TextField(null=True, blank=True)
+    execution_time = models.DecimalField(max_digits=8, decimal_places=3, null=True, blank=True)  # seconds
+    memory_used = models.IntegerField(null=True, blank=True)  # KB
+    
+    # Test results
+    test_results = models.JSONField(null=True, blank=True)  # Results for each test case
+    tests_passed = models.IntegerField(default=0)
+    tests_total = models.IntegerField(default=0)
+    score = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    
+    # AI Feedback
+    ai_feedback = models.TextField(null=True, blank=True)
+    ai_suggestions = models.JSONField(null=True, blank=True)
+    ai_code_review = models.TextField(null=True, blank=True)
+    ai_response_time = models.IntegerField(null=True, blank=True)  # ms
+    
+    # Metadata
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+    submission_count = models.IntegerField(default=1)  # Lần thử thứ mấy
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.lesson.title} #{self.submission_count}"
+    
+    class Meta:
+        db_table = 'code_submissions'
+        indexes = [
+            models.Index(fields=['user', 'lesson', '-created_at']),
+            models.Index(fields=['status', '-created_at']),
+        ]
+
+
+class CodeExecutionSession(models.Model):
+    """Session để chạy code - tracking real-time"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(CodeLesson, on_delete=models.SET_NULL, null=True, blank=True)
+    session_id = models.CharField(max_length=100, unique=True)
+    
+    # Current state
+    current_code = models.TextField(null=True, blank=True)
+    language = models.ForeignKey(CodeLanguage, on_delete=models.CASCADE)
+    
+    # Session metadata
+    is_active = models.BooleanField(default=True)
+    last_activity = models.DateTimeField(auto_now=True)
+    total_keystrokes = models.IntegerField(default=0)
+    total_runs = models.IntegerField(default=0)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        db_table = 'code_execution_sessions'
+
+
+class CodeHint(models.Model):
+    """Gợi ý cho bài tập"""
+    lesson = models.ForeignKey(CodeLesson, on_delete=models.CASCADE, related_name='lesson_hints')
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    hint_type = models.CharField(max_length=50, default='general')  # general, syntax, logic, optimization
+    order_index = models.IntegerField(default=0)
+    
+    # Conditions to show hint
+    show_after_attempts = models.IntegerField(default=3)
+    show_after_minutes = models.IntegerField(default=10)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'code_hints'
+
+
+class CodeDiscussion(models.Model):
+    """Discussion/Comments cho từng bài học"""
+    lesson = models.ForeignKey(CodeLesson, on_delete=models.CASCADE, related_name='discussions')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
+    
+    title = models.CharField(max_length=255, null=True, blank=True)
+    content = models.TextField()
+    code_snippet = models.TextField(null=True, blank=True)  # Nếu có share code
+    
+    # Voting system
+    upvotes = models.IntegerField(default=0)
+    downvotes = models.IntegerField(default=0)
+    
+    # Status
+    is_solution = models.BooleanField(default=False)  # Được đánh dấu là solution
+    is_pinned = models.BooleanField(default=False)
+    is_edited = models.BooleanField(default=False)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    edited_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        db_table = 'code_discussions'
+
+
+class CodeDiscussionVote(models.Model):
+    """Vote cho discussion"""
+    VOTE_CHOICES = [
+        (1, 'Upvote'),
+        (-1, 'Downvote'),
+    ]
+    
+    discussion = models.ForeignKey(CodeDiscussion, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    vote = models.SmallIntegerField(choices=VOTE_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'code_discussion_votes'
+        unique_together = ['discussion', 'user']
+
+
+class CodeReviewRequest(models.Model):
+    """Yêu cầu review code từ AI hoặc mentor"""
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('reviewing', 'Reviewing'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    REVIEWER_CHOICES = [
+        ('ai', 'AI Review'),
+        ('mentor', 'Mentor Review'),
+        ('peer', 'Peer Review'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    submission = models.ForeignKey(CodeSubmission, on_delete=models.CASCADE)
+    reviewer_type = models.CharField(max_length=20, choices=REVIEWER_CHOICES, default='ai')
+    
+    # Request details
+    specific_questions = models.TextField(null=True, blank=True)
+    focus_areas = models.JSONField(null=True, blank=True)  # performance, readability, logic
+    
+    # Review results
+    review_content = models.TextField(null=True, blank=True)
+    suggestions = models.JSONField(null=True, blank=True)
+    rating = models.IntegerField(null=True, blank=True)  # 1-5 stars
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviews_given')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        db_table = 'code_review_requests'
+
+
+class CodeCourseRating(models.Model):
+    """Đánh giá khóa học"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ForeignKey(CodeCourse, on_delete=models.CASCADE)
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])  # 1-5 stars
+    review = models.TextField(null=True, blank=True)
+    
+    # Detailed ratings
+    content_quality = models.IntegerField(null=True, blank=True)
+    difficulty_appropriate = models.IntegerField(null=True, blank=True)
+    instructor_helpful = models.IntegerField(null=True, blank=True)
+    
+    is_recommended = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'code_course_ratings'
+        unique_together = ['user', 'course']
+
+
+class CodeAchievement(models.Model):
+    """Thành tựu/Badges cho user"""
+    ACHIEVEMENT_TYPE_CHOICES = [
+        ('completion', 'Completion'),   # Hoàn thành khóa học
+        ('streak', 'Streak'),          # Streak ngày học
+        ('mastery', 'Mastery'),        # Thành thạo ngôn ngữ
+        ('helping', 'Helping'),        # Giúp đỡ người khác
+        ('challenge', 'Challenge'),    # Thử thách đặc biệt
+    ]
+    
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    icon = models.CharField(max_length=50)  # Font awesome class
+    achievement_type = models.CharField(max_length=20, choices=ACHIEVEMENT_TYPE_CHOICES)
+    
+    # Conditions
+    required_value = models.IntegerField(default=1)  # Số lượng cần đạt
+    language = models.ForeignKey(CodeLanguage, on_delete=models.CASCADE, null=True, blank=True)
+    course = models.ForeignKey(CodeCourse, on_delete=models.CASCADE, null=True, blank=True)
+    
+    # Rewards
+    points_reward = models.IntegerField(default=0)
+    is_rare = models.BooleanField(default=False)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        db_table = 'code_achievements'
+
+
+class UserCodeAchievement(models.Model):
+    """Thành tựu của user"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    achievement = models.ForeignKey(CodeAchievement, on_delete=models.CASCADE)
+    earned_at = models.DateTimeField(auto_now_add=True)
+    
+    # Context
+    related_course = models.ForeignKey(CodeCourse, on_delete=models.SET_NULL, null=True, blank=True)
+    related_submission = models.ForeignKey(CodeSubmission, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    class Meta:
+        db_table = 'user_code_achievements'
+        unique_together = ['user', 'achievement']
+
+
+# Cập nhật User model để thêm coding stats
+class UserCodingProfile(models.Model):
+    """Profile mở rộng cho coding"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='coding_profile')
+    
+    # Stats
+    total_submissions = models.IntegerField(default=0)
+    successful_submissions = models.IntegerField(default=0)
+    total_courses_enrolled = models.IntegerField(default=0)
+    total_courses_completed = models.IntegerField(default=0)
+    total_coding_time = models.IntegerField(default=0)  # minutes
+    total_points = models.IntegerField(default=0)
+    current_streak = models.IntegerField(default=0)  # days
+    longest_streak = models.IntegerField(default=0)
+    
+    # Preferences
+    preferred_language = models.ForeignKey(CodeLanguage, on_delete=models.SET_NULL, null=True, blank=True)
+    coding_theme = models.CharField(max_length=20, default='vs-dark')  # vs-dark, vs-light, monokai
+    font_size = models.IntegerField(default=14)
+    auto_save = models.BooleanField(default=True)
+    
+    # Learning path
+    skill_level = models.CharField(max_length=20, default='beginner')
+    learning_goals = models.JSONField(null=True, blank=True)
+    
+    last_coding_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'user_coding_profiles'

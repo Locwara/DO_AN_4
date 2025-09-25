@@ -1,0 +1,690 @@
+{% extends 'dashboard/index.html' %}
+
+{% block content %}
+ <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<div class="container mt-4">
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Header Section -->
+    <div class="welcome-card">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h3 mb-2">
+                    <i class="fas fa-comments"></i> Phòng Chat Học Tập
+                </h1>
+                <p class="mb-0 opacity-90">
+                    Tham gia thảo luận, chia sẻ kiến thức và kết nối với cộng đồng sinh viên
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'chat_room_create' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-plus"></i> Tạo phòng mới
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <div class="text-primary mb-2">
+                    <i class="fas fa-door-open fa-2x"></i>
+                </div>
+                <h4 class="h5 mb-1">{{ page_obj.paginator.count }}</h4>
+                <small class="text-muted">Tổng phòng chat</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <div class="text-success mb-2">
+                    <i class="fas fa-users fa-2x"></i>
+                </div>
+                <h4 class="h5 mb-1">{{ user_rooms|length }}</h4>
+                <small class="text-muted">Phòng đã tham gia</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <div class="text-info mb-2">
+                    <i class="fas fa-globe fa-2x"></i>
+                </div>
+                <h4 class="h5 mb-1">{{ public_rooms_count }}</h4>
+                <small class="text-muted">Phòng công khai</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <div class="text-warning mb-2">
+                    <i class="fas fa-comment-dots fa-2x"></i>
+                </div>
+                <h4 class="h5 mb-1">{{ total_messages_today }}</h4>
+                <small class="text-muted">Tin nhắn hôm nay</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <form method="GET" id="filterForm">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Loại phòng</label>
+                    <select name="room_type" class="form-select">
+                        <option value="">Tất cả loại</option>
+                        <option value="public" {% if current_filters.room_type == 'public' %}selected{% endif %}>Công khai</option>
+                        <option value="private" {% if current_filters.room_type == 'private' %}selected{% endif %}>Riêng tư</option>
+                        <option value="group" {% if current_filters.room_type == 'group' %}selected{% endif %}>Nhóm</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Trường</label>
+                    <select name="university" class="form-select" id="universityFilter">
+                        <option value="">Tất cả trường</option>
+                        {% for university in universities %}
+                            <option value="{{ university.id }}" {% if current_filters.university == university.id|stringformat:"s" %}selected{% endif %}>
+                                {{ university.short_name|default:university.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Môn học</label>
+                    <select name="course" class="form-select" id="courseFilter">
+                        <option value="">Tất cả môn</option>
+                        {% for course in courses %}
+                            <option value="{{ course.id }}" data-university="{{ course.university.id }}" 
+                                    {% if current_filters.course == course.id|stringformat:"s" %}selected{% endif %}>
+                                {{ course.code }} - {{ course.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Tìm kiếm</label>
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="Tên phòng..." value="{{ current_filters.search }}">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Filter Buttons -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="btn-group" role="group">
+                        <a href="?room_type=public" class="btn btn-outline-primary btn-sm {% if current_filters.room_type == 'public' %}active{% endif %}">
+                            <i class="fas fa-globe"></i> Công khai
+                        </a>
+                        <a href="?room_type=private" class="btn btn-outline-warning btn-sm {% if current_filters.room_type == 'private' %}active{% endif %}">
+                            <i class="fas fa-lock"></i> Riêng tư
+                        </a>
+                        <a href="?room_type=group" class="btn btn-outline-info btn-sm {% if current_filters.room_type == 'group' %}active{% endif %}">
+                            <i class="fas fa-users"></i> Nhóm
+                        </a>
+                        {% if user.university %}
+                        <a href="?university={{ user.university.id }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-university"></i> Trường tôi
+                        </a>
+                        {% endif %}
+                        {% if current_filters.room_type or current_filters.university or current_filters.course or current_filters.search %}
+                        <a href="{% url 'chat_rooms_list' %}" class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-times"></i> Xóa bộ lọc
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sort Options -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center">
+            <span class="text-muted me-3">Sắp xếp theo:</span>
+            <div class="btn-group" role="group">
+                <a href="?{{ current_filters_url }}&sort=latest" 
+                   class="btn btn-outline-secondary btn-sm {% if request.GET.sort == 'latest' or not request.GET.sort %}active{% endif %}">
+                    <i class="fas fa-clock"></i> Mới nhất
+                </a>
+                <a href="?{{ current_filters_url }}&sort=popular" 
+                   class="btn btn-outline-secondary btn-sm {% if request.GET.sort == 'popular' %}active{% endif %}">
+                    <i class="fas fa-fire"></i> Phổ biến
+                </a>
+                <a href="?{{ current_filters_url }}&sort=members" 
+                   class="btn btn-outline-secondary btn-sm {% if request.GET.sort == 'members' %}active{% endif %}">
+                    <i class="fas fa-users"></i> Nhiều thành viên
+                </a>
+            </div>
+        </div>
+        <div class="text-muted">
+            Hiển thị {{ page_obj.start_index }}-{{ page_obj.end_index }} trong {{ page_obj.paginator.count }} phòng
+        </div>
+    </div>
+
+    <!-- Chat Rooms Grid -->
+    <div class="row g-4" id="roomsContainer">
+        {% if page_obj %}
+            {% for room in page_obj %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="stats-card h-100 chat-room-card" data-room-type="{{ room.room_type }}">
+                        <!-- Room Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 d-flex align-items-center">
+                                    {% if room.room_type == 'public' %}
+                                        <i class="fas fa-globe text-success me-2"></i>
+                                    {% elif room.room_type == 'private' %}
+                                        <i class="fas fa-lock text-warning me-2"></i>
+                                    {% else %}
+                                        <i class="fas fa-users text-info me-2"></i>
+                                    {% endif %}
+                                    {{ room.name|truncatechars:25 }}
+                                </h6>
+                                <small class="text-muted">
+                                    Bởi {{ room.created_by.get_full_name|default:room.created_by.username }}
+                                </small>
+                            </div>
+                            {% if room.id in user_rooms %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check"></i> Đã tham gia
+                                </span>
+                            {% elif room.room_type == 'private' %}
+                                <span class="badge bg-warning">
+                                    <i class="fas fa-key"></i> Cần mật khẩu
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Room Description -->
+                        {% if room.description %}
+                        <div class="mb-3">
+                            <p class="text-muted small mb-0">{{ room.description|truncatewords:12 }}</p>
+                        </div>
+                        {% endif %}
+
+                        <!-- Room Meta -->
+                        <div class="mb-3">
+                            {% if room.university %}
+                                <div class="mb-1">
+                                    <small class="text-muted">
+                                        <i class="fas fa-university"></i> {{ room.university.short_name|default:room.university.name }}
+                                    </small>
+                                </div>
+                            {% endif %}
+                            {% if room.course %}
+                                <div class="mb-1">
+                                    <small class="text-muted">
+                                        <i class="fas fa-book"></i> {{ room.course.code }} - {{ room.course.name|truncatechars:20 }}
+                                    </small>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Room Stats -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-4 text-center">
+                                <div class="text-primary">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <small class="text-muted d-block">Thành viên</small>
+                                <strong class="small">{{ room.members_count }}/{{ room.max_members }}</strong>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="text-info">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <small class="text-muted d-block">Hoạt động</small>
+                                <strong class="small">
+                                    {% if room.last_message_time %}
+                                        {{ room.last_message_time|timesince|truncatewords:1 }}
+                                    {% else %}
+                                        Mới
+                                    {% endif %}
+                                </strong>
+                            </div>
+                            <div class="col-4 text-center">
+                                {% if room.members_count >= room.max_members %}
+                                    <div class="text-danger">
+                                        <i class="fas fa-ban"></i>
+                                    </div>
+                                    <small class="text-muted d-block">Trạng thái</small>
+                                    <strong class="small text-danger">Đầy</strong>
+                                {% else %}
+                                    <div class="text-success">
+                                        <i class="fas fa-signal"></i>
+                                    </div>
+                                    <small class="text-muted d-block">Trạng thái</small>
+                                    <strong class="small text-success">Hoạt động</strong>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Online Members Preview -->
+                        {% if room.online_members %}
+                        <div class="mb-3">
+                            <small class="text-muted">Đang online:</small>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                {% for member in room.online_members|slice:":5" %}
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success">
+                                        <i class="fas fa-circle" style="font-size: 0.5em;"></i>
+                                        {{ member.user.get_full_name|default:member.user.username|truncatechars:10 }}
+                                    </span>
+                                {% endfor %}
+                                {% if room.online_members|length > 5 %}
+                                    <span class="badge bg-secondary">+{{ room.online_members|length|add:"-5" }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'chat_room_detail' room.id %}" 
+                               class="btn btn-primary btn-sm flex-fill">
+                                {% if room.id in user_rooms %}
+                                    <i class="fas fa-comment-dots"></i> Trò chuyện
+                                {% elif room.members_count >= room.max_members %}
+                                    <i class="fas fa-ban"></i> Phòng đầy
+                                {% else %}
+                                    <i class="fas fa-sign-in-alt"></i> Tham gia
+                                {% endif %}
+                            </a>
+                            {% if room.created_by == user %}
+                                <a href="{% url 'chat_room_edit' room.id %}" 
+                                   class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-comments fa-4x text-muted opacity-25"></i>
+                    </div>
+                    <h5 class="text-muted">
+                        {% if current_filters.room_type or current_filters.university or current_filters.course or current_filters.search %}
+                            Không tìm thấy phòng chat nào
+                        {% else %}
+                            Chưa có phòng chat nào
+                        {% endif %}
+                    </h5>
+                    <p class="text-muted mb-4">
+                        {% if current_filters.room_type or current_filters.university or current_filters.course or current_filters.search %}
+                            Hãy thử thay đổi bộ lọc hoặc tạo phòng mới!
+                        {% else %}
+                            Hãy tạo phòng đầu tiên để bắt đầu thảo luận!
+                        {% endif %}
+                    </p>
+                    <div>
+                        {% if current_filters.room_type or current_filters.university or current_filters.course or current_filters.search %}
+                        <a href="{% url 'chat_rooms_list' %}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-times"></i> Xóa bộ lọc
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'chat_room_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Tạo phòng ngay
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Load More Button (if using AJAX pagination) -->
+    {% if page_obj.has_next %}
+    <div class="text-center mt-4" id="loadMoreContainer">
+        <button class="btn btn-outline-primary" id="loadMoreBtn" data-next-page="{{ page_obj.next_page_number }}">
+            <i class="fas fa-arrow-down"></i> Tải thêm phòng
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if current_filters.room_type %}room_type={{ current_filters.room_type }}&{% endif %}{% if current_filters.university %}university={{ current_filters.university }}&{% endif %}{% if current_filters.course %}course={{ current_filters.course }}&{% endif %}{% if current_filters.search %}search={{ current_filters.search }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page=1">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if current_filters.room_type %}room_type={{ current_filters.room_type }}&{% endif %}{% if current_filters.university %}university={{ current_filters.university }}&{% endif %}{% if current_filters.course %}course={{ current_filters.course }}&{% endif %}{% if current_filters.search %}search={{ current_filters.search }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if current_filters.room_type %}room_type={{ current_filters.room_type }}&{% endif %}{% if current_filters.university %}university={{ current_filters.university }}&{% endif %}{% if current_filters.course %}course={{ current_filters.course }}&{% endif %}{% if current_filters.search %}search={{ current_filters.search }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if current_filters.room_type %}room_type={{ current_filters.room_type }}&{% endif %}{% if current_filters.university %}university={{ current_filters.university }}&{% endif %}{% if current_filters.course %}course={{ current_filters.course }}&{% endif %}{% if current_filters.search %}search={{ current_filters.search }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.next_page_number }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if current_filters.room_type %}room_type={{ current_filters.room_type }}&{% endif %}{% if current_filters.university %}university={{ current_filters.university }}&{% endif %}{% if current_filters.course %}course={{ current_filters.course }}&{% endif %}{% if current_filters.search %}search={{ current_filters.search }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.paginator.num_pages }}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.chat-room-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.chat-room-card:hover {
+    transform: translateY(-4px);
+    border-color: #6366f1;
+    box-shadow: 0 12px 30px rgba(99, 102, 241, 0.2);
+}
+
+.chat-room-card[data-room-type="private"] {
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+}
+
+.chat-room-card[data-room-type="private"]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, #f59e0b, #d97706);
+}
+
+.chat-room-card[data-room-type="group"] {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+.chat-room-card[data-room-type="group"]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, #3b82f6, #1d4ed8);
+}
+
+.chat-room-card[data-room-type="public"]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, #10b981, #047857);
+}
+
+.badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+}
+
+.filter-section {
+    background: var(--bs-light);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stats-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.welcome-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+
+.btn-group .btn.active {
+    background-color: #6366f1;
+    border-color: #6366f1;
+    color: white;
+}
+
+/* Loading animation */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #6366f1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .welcome-card {
+        text-align: center;
+        padding: 1.5rem;
+    }
+    
+    .welcome-card .col-md-4 {
+        margin-top: 1rem;
+    }
+    
+    .filter-section .row > div {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-group {
+        flex-wrap: wrap;
+    }
+    
+    .btn-group .btn {
+        margin-bottom: 0.25rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // University filter affects course filter
+    const universityFilter = document.getElementById('universityFilter');
+    const courseFilter = document.getElementById('courseFilter');
+    
+    if (universityFilter && courseFilter) {
+        universityFilter.addEventListener('change', function() {
+            const universityId = this.value;
+            const courseOptions = courseFilter.querySelectorAll('option');
+            
+            courseOptions.forEach(option => {
+                if (option.value === '') {
+                    option.style.display = 'block';
+                } else {
+                    const courseUniversityId = option.dataset.university;
+                    if (!universityId || courseUniversityId === universityId) {
+                        option.style.display = 'block';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                }
+            });
+            
+            // Reset course selection if current selection is not available
+            const currentCourse = courseFilter.value;
+            if (currentCourse) {
+                const currentOption = courseFilter.querySelector(`option[value="${currentCourse}"]`);
+                if (currentOption && currentOption.style.display === 'none') {
+                    courseFilter.value = '';
+                }
+            }
+        });
+        
+        // Trigger on load
+        universityFilter.dispatchEvent(new Event('change'));
+    }
+
+    // Auto-submit form on select change
+    const selectElements = document.querySelectorAll('#filterForm select');
+    selectElements.forEach(select => {
+        select.addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+    });
+
+    // Load more functionality (AJAX)
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            const nextPage = this.dataset.nextPage;
+            const currentUrl = new URL(window.location);
+            currentUrl.searchParams.set('page', nextPage);
+            
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
+            this.disabled = true;
+            
+            fetch(currentUrl.toString())
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newRooms = doc.querySelectorAll('#roomsContainer .col-lg-4');
+                    
+                    // Append new rooms
+                    const container = document.getElementById('roomsContainer');
+                    newRooms.forEach(room => {
+                        container.appendChild(room.cloneNode(true));
+                    });
+                    
+                    // Update load more button
+                    const newLoadMoreBtn = doc.getElementById('loadMoreBtn');
+                    if (newLoadMoreBtn) {
+                        loadMoreBtn.dataset.nextPage = newLoadMoreBtn.dataset.nextPage;
+                        loadMoreBtn.innerHTML = '<i class="fas fa-arrow-down"></i> Tải thêm phòng';
+                        loadMoreBtn.disabled = false;
+                    } else {
+                        // No more pages
+                        document.getElementById('loadMoreContainer').remove();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loadMoreBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Lỗi tải dữ liệu';
+                    setTimeout(() => {
+                        loadMoreBtn.innerHTML = '<i class="fas fa-arrow-down"></i> Tải thêm phòng';
+                        loadMoreBtn.disabled = false;
+                    }, 2000);
+                });
+        });
+    }
+
+    // Auto-refresh room stats every 30 seconds
+    setInterval(function() {
+        const roomCards = document.querySelectorAll('.chat-room-card');
+        roomCards.forEach(card => {
+            // Add subtle animation to indicate refresh
+            card.classList.add('loading');
+            setTimeout(() => {
+                card.classList.remove('loading');
+            }, 500);
+        });
+    }, 30000);
+
+    // Search form enhancements
+    const searchInput = document.querySelector('input[name="search"]');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (this.value.length >= 3 || this.value.length === 0) {
+                    document.getElementById('filterForm').submit();
+                }
+            }, 500);
+        });
+    }
+
+    // Room card hover effects
+    const roomCards = document.querySelectorAll('.chat-room-card');
+    roomCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-4px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Tooltip initialization for truncated text
+    const tooltipElements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltipElements.forEach(el => {
+        new bootstrap.Tooltip(el);
+    });
+});
+</script>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap JS (đặt trước closing body tag) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

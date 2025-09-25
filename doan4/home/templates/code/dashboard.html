@@ -1,0 +1,547 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+:root {
+  --primary: #6366f1;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --dark: #1f2937;
+  --border: #e5e7eb;
+}
+
+.coding-hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 24px;
+  padding: 3rem 2rem;
+  margin-bottom: 2rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.coding-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 24px;
+}
+
+.coding-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.stat-primary {
+  color: var(--primary);
+}
+
+.stat-success {
+  color: var(--success);
+}
+
+.stat-warning {
+  color: var(--warning);
+}
+
+.stat-danger {
+  color: var(--danger);
+}
+
+.course-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.course-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.progress-bar-custom {
+  background: #e5e7eb;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+
+.progress-fill-custom {
+  height: 100%;
+  transition: width 0.8s ease;
+}
+
+.progress-beginner {
+  background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+}
+
+.progress-intermediate {
+  background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+}
+
+.progress-advanced {
+  background: linear-gradient(90deg, #ef4444 0%, #f87171 100%);
+}
+
+.progress-expert {
+  background: linear-gradient(90deg, #8b5cf6 0%, #a78bfa 100%);
+}
+
+.submission-item {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+.submission-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.score-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.score-excellent {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.score-good {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.score-poor {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.skill-chart {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.skill-item {
+  margin-bottom: 1.5rem;
+}
+
+.skill-label {
+  display: flex;
+  justify-content: between;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.quick-action-btn {
+  background: white;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  border-radius: 12px;
+  padding: 1rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.quick-action-btn:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .coding-hero {
+    padding: 2rem 1rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .stat-card {
+    padding: 1.5rem;
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+  <!-- Hero Section -->
+  <div class="coding-hero">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="h2 mb-3">
+          <i class="fas fa-terminal me-2"></i>
+          Coding Dashboard
+        </h1>
+        <p class="mb-0 opacity-90">
+          Chào mừng trở lại, {{ user.get_full_name|default:user.username }}! 
+          Theo dõi tiến độ học lập trình và khám phá khóa học mới.
+        </p>
+      </div>
+      <div class="col-md-4 text-end">
+        <div class="d-flex gap-2 justify-content-end">
+          <a href="{% url 'code_courses_list' %}" class="btn btn-outline-light">
+            <i class="fas fa-search me-2"></i>
+            Tìm Khóa Học
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number stat-primary">{{ active_courses }}</div>
+      <div class="text-muted">Khóa Đang Học</div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-number stat-success">{{ completed_courses }}</div>
+      <div class="text-muted">Khóa Hoàn Thành</div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-number stat-warning">{{ profile.total_points }}</div>
+      <div class="text-muted">Tổng Điểm</div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-number stat-danger">{{ profile.current_streak }}</div>
+      <div class="text-muted">Streak Hiện Tại</div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-number stat-primary">{{ success_rate|floatformat:0 }}%</div>
+      <div class="text-muted">Tỷ Lệ Thành Công</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Current Courses -->
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+          <h5 class="card-title mb-4">
+            <i class="fas fa-graduation-cap text-primary me-2"></i>
+            Khóa Học Của Bạn
+          </h5>
+          
+          {% if enrollments %}
+          <div class="row">
+            {% for enrollment in enrollments %}
+            <div class="col-md-6 mb-3">
+              <div class="course-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <span class="badge bg-primary">{{ enrollment.course.language.display_name }}</span>
+                  <span class="badge bg-secondary">{{ enrollment.course.get_difficulty_display }}</span>
+                </div>
+                
+                <h6 class="mb-2">
+                  <a href="{% url 'code_course_detail' enrollment.course.slug %}" 
+                     class="text-decoration-none text-dark">
+                    {{ enrollment.course.title }}
+                  </a>
+                </h6>
+                
+                <div class="progress-bar-custom">
+                  <div class="progress-fill-custom progress-{{ enrollment.course.difficulty }}" 
+                       style="width: {{ enrollment.completion_percentage }}%"></div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">{{ enrollment.completion_percentage|floatformat:0 }}% hoàn thành</small>
+                  <small class="text-muted">{{ enrollment.total_points }} pts</small>
+                </div>
+                
+                <div class="mt-3">
+                  {% if enrollment.is_completed %}
+                    <a href="{% url 'code_course_detail' enrollment.course.slug %}" 
+                       class="btn btn-outline-success btn-sm w-100">
+                      <i class="fas fa-trophy me-1"></i>
+                      Hoàn Thành
+                    </a>
+                  {% else %}
+                    <a href="{% url 'code_course_detail' enrollment.course.slug %}" 
+                       class="btn btn-primary btn-sm w-100">
+                      <i class="fas fa-play me-1"></i>
+                      Tiếp Tục
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-4">
+            <i class="fas fa-code text-muted mb-3" style="font-size: 3rem;"></i>
+            <h6 class="text-muted">Chưa có khóa học nào</h6>
+            <p class="text-muted mb-3">Bắt đầu hành trình học lập trình ngay!</p>
+            <a href="{% url 'code_courses_list' %}" class="btn btn-primary">
+              <i class="fas fa-search me-2"></i>
+              Khám Phá Khóa Học
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- Recent Submissions -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <h5 class="card-title mb-4">
+            <i class="fas fa-history text-primary me-2"></i>
+            Lần Nộp Gần Đây
+          </h5>
+          
+          {% if recent_submissions %}
+          {% for submission in recent_submissions %}
+          <div class="submission-item">
+            <div class="d-flex justify-content-between align-items-start">
+              <div class="flex-grow-1">
+                <h6 class="mb-1">{{ submission.lesson.title }}</h6>
+                <small class="text-muted">{{ submission.lesson.course.title }}</small>
+                <div class="mt-1">
+                  <small class="text-muted">{{ submission.created_at|date:"d/m/Y H:i" }}</small>
+                </div>
+              </div>
+              
+              <div class="text-end">
+                {% if submission.score >= 80 %}
+                  <span class="score-badge score-excellent">{{ submission.score|floatformat:0 }}%</span>
+                {% elif submission.score >= 60 %}
+                  <span class="score-badge score-good">{{ submission.score|floatformat:0 }}%</span>
+                {% else %}
+                  <span class="score-badge score-poor">{{ submission.score|floatformat:0 }}%</span>
+                {% endif %}
+                
+                <div class="mt-1">
+                  <small class="text-muted">{{ submission.tests_passed }}/{{ submission.tests_total }} tests</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+          {% else %}
+          <div class="text-center py-3">
+            <i class="fas fa-code text-muted mb-2" style="font-size: 2rem;"></i>
+            <p class="text-muted mb-0">Chưa có bài nộp nào</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Right Sidebar -->
+    <div class="col-lg-4">
+      <!-- User Profile Card -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 text-center">
+          {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" alt="Avatar" 
+                 class="rounded-circle mb-3" 
+                 style="width: 80px; height: 80px; object-fit: cover;">
+          {% else %}
+            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center mx-auto mb-3" 
+                 style="width: 80px; height: 80px;">
+              <i class="fas fa-user text-white" style="font-size: 2rem;"></i>
+            </div>
+          {% endif %}
+          
+          <h5 class="mb-1">{{ user.get_full_name|default:user.username }}</h5>
+          <p class="text-muted mb-3">{{ profile.get_skill_level_display|default:"Beginner" }} Developer</p>
+          
+          <div class="row text-center">
+            <div class="col-6">
+              <div class="h6 text-primary mb-0">{{ profile.total_submissions }}</div>
+              <small class="text-muted">Submissions</small>
+            </div>
+            <div class="col-6">
+              <div class="h6 text-success mb-0">{{ profile.longest_streak }}</div>
+              <small class="text-muted">Longest Streak</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Skills Progress -->
+      <div class="skill-chart mb-4">
+        <h5 class="mb-3">
+          <i class="fas fa-chart-radar text-primary me-2"></i>
+          Kỹ Năng Lập Trình
+        </h5>
+        
+        {% for lang, stats in languages_stats.items %}
+        <div class="skill-item">
+          <div class="skill-label">
+            <span>{{ lang }}</span>
+            <span>{{ stats.avg_progress|floatformat:0 }}%</span>
+          </div>
+          <div class="progress-bar-custom">
+            <div class="progress-fill-custom progress-primary" 
+                 style="width: {{ stats.avg_progress }}%; background: var(--primary);"></div>
+          </div>
+          <small class="text-muted">{{ stats.courses }} khóa học</small>
+        </div>
+        {% empty %}
+        <div class="text-center py-3">
+          <i class="fas fa-chart-bar text-muted mb-2" style="font-size: 2rem;"></i>
+          <p class="text-muted mb-0">Chưa có dữ liệu kỹ năng</p>
+        </div>
+        {% endfor %}
+      </div>
+      
+      <!-- Quick Actions -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+          <h5 class="card-title mb-3">
+            <i class="fas fa-bolt text-warning me-2"></i>
+            Thao Tác Nhanh
+          </h5>
+          
+          <div class="d-grid gap-2">
+            <a href="{% url 'code_courses_list' %}" class="quick-action-btn">
+              <i class="fas fa-search"></i>
+              <span>Tìm Khóa Học Mới</span>
+            </a>
+            
+            <a href="{% url 'ai_image_solver' %}" class="quick-action-btn">
+              <i class="fas fa-robot"></i>
+              <span>AI Trợ Lý</span>
+            </a>
+            
+            <a href="{% url 'chat_rooms_list' %}" class="quick-action-btn">
+              <i class="fas fa-comments"></i>
+              <span>Phòng Chat Code</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Recommended Courses -->
+      {% if recommended_courses %}
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <h5 class="card-title mb-3">
+            <i class="fas fa-lightbulb text-warning me-2"></i>
+            Khóa Học Đề Xuất
+          </h5>
+          
+          {% for course in recommended_courses %}
+          <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+            <h6 class="mb-1">
+              <a href="{% url 'code_course_detail' course.slug %}" 
+                 class="text-decoration-none text-dark">
+                {{ course.title }}
+              </a>
+            </h6>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="text-muted">{{ course.language.display_name }}</small>
+              <span class="badge bg-{{ course.difficulty }}" 
+                    style="
+                      {% if course.difficulty == 'beginner' %}background: #d1fae5 !important; color: #065f46;
+                      {% elif course.difficulty == 'intermediate' %}background: #fef3c7 !important; color: #92400e;
+                      {% elif course.difficulty == 'advanced' %}background: #fecaca !important; color: #991b1b;
+                      {% else %}background: #e0e7ff !important; color: #3730a3;{% endif %}
+                    ">
+                {{ course.get_difficulty_display }}
+              </span>
+            </div>
+            <div class="mt-2">
+              <small class="text-muted">
+                <i class="fas fa-users me-1"></i>{{ course.enrollment_count }} học viên
+              </small>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+// Add some interactive features
+document.addEventListener('DOMContentLoaded', function() {
+  // Animate progress bars on load
+  const progressBars = document.querySelectorAll('.progress-fill-custom');
+  progressBars.forEach((bar, index) => {
+    setTimeout(() => {
+      bar.style.width = bar.getAttribute('data-width') || bar.style.width;
+    }, index * 200);
+  });
+  
+  // Add click handlers for stat cards
+  const statCards = document.querySelectorAll('.stat-card');
+  statCards.forEach(card => {
+    card.addEventListener('click', function() {
+      this.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        this.style.transform = 'translateY(-4px)';
+      }, 150);
+    });
+  });
+});
+</script>
+{% endblock %}

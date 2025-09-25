@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ lesson.title }} - {{ course.title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --sidebar-bg: #f8fafc;
+            --editor-bg: #1e1e1e;
+            --output-bg: #263238;
+        }
+        
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            overflow: hidden;
+        }
+        
+        .editor-container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+        
+        /* Left Sidebar - Problem Statement */
+        .sidebar {
+            width: 350px;
+            min-width: 300px;
+            max-width: 500px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            resize: horizontal;
+            overflow: auto;
+        }
+        
+        .sidebar-header {
+            padding: 1rem;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .sidebar-content {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .problem-statement {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .test-cases {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .hints-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        /* Main Editor Area */
+        .editor-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--editor-bg);
+        }
+        
+        .editor-toolbar {
+            background: #2d2d2d;
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #404040;
+        }
+        
+        .toolbar-left {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .toolbar-right {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .language-selector {
+            background: #404040;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .editor-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        
+        #monaco-editor {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Right Panel - Output & AI */
+        .output-panel {
+            width: 400px;
+            min-width: 300px;
+            max-width: 600px;
+            background: var(--output-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            resize: horizontal;
+            overflow: hidden;
+        }
+        
+        .output-header {
+            background: #37474f;
+            padding: 1rem;
+            border-bottom: 1px solid #546e7a;
+        }
+        
+        .output-tabs {
+            display: flex;
+            background: #37474f;
+            border-bottom: 1px solid #546e7a;
+        }
+        
+        .output-tab {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #b0bec5;
+            transition: all 0.3s ease;
+        }
+        
+        .output-tab.active {
+            background: var(--output-bg);
+            color: white;
+        }
+        
+        .output-content {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .test-result {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .test-passed {
+            border-left: 4px solid var(--success);
+        }
+        
+        .test-failed {
+            border-left: 4px solid var(--danger);
+        }
+        
+        /* AI Chat Panel */
+        .ai-chat {
+            height: 50%;
+            display: flex;
+            flex-direction: column;
+            border-top: 2px solid #546e7a;
+        }
+        
+        .ai-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background: #2c393f;
+        }
+        
+        .ai-message {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            background: rgba(99, 102, 241, 0.2);
+        }
+        
+        .user-message {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            text-align: right;
+        }
+        
+        .ai-input-container {
+            padding: 1rem;
+            background: #37474f;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .ai-input {
+            flex: 1;
+            background: #263238;
+            border: 1px solid #546e7a;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 6px;
+            resize: none;
+        }
+        
+        .ai-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        /* Buttons */
+        .btn-run {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-run:hover {
+            background: #059669;
+        }
+        
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-submit:hover {
+            background: #4f46e5;
+        }
+        
+        .btn-hint {
+            background: var(--warning);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-hint:hover {
+            background: #d97706;
+        }
+        
+        .btn-ai {
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-ai:hover {
+            background: #7c3aed;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 300px;
+            }
+            .output-panel {
+                width: 350px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: 40vh;
+                resize: none;
+            }
+            .editor-main {
+                height: 60vh;
+            }
+            .output-panel {
+                display: none;
+            }
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .progress-bar {
+            background: #e5e7eb;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: var(--success);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">{{ lesson.title }}</h6>
+                    <a href="{% url 'code_course_detail' course.slug %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">{{ course.title }}</small>
+                    {% if progress %}
+                    <div class="progress-bar mt-2">
+                        <div class="progress-fill" style="width: {{ progress.best_score }}%"></div>
+                    </div>
+                    <small class="text-muted">Best Score: {{ progress.best_score|floatformat:0 }}%</small>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="sidebar-content">
+                <!-- Problem Statement -->
+                <div class="problem-statement">
+                    <h6 class="mb-3">
+                        <i class="fas fa-puzzle-piece text-primary me-2"></i>
+                        Đề Bài
+                    </h6>
+                    <div class="problem-content">
+                        {{ lesson.problem_statement|linebreaks|default:"Chưa có đề bài" }}
+                    </div>
+                </div>
+                
+                <!-- Test Cases Examples -->
+                {% if lesson.test_cases %}
+                <div class="test-cases">
+                    <h6 class="mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Ví Dụ Test Cases
+                    </h6>
+                    {% for test_case in lesson.test_cases|slice:":3" %}
+                    <div class="mb-3">
+                        <strong>Test {{ forloop.counter }}:</strong>
+                        <div class="mt-1">
+                            <small class="text-muted">Input:</small>
+                            <code class="d-block bg-light p-2 rounded">{{ test_case.input }}</code>
+                        </div>
+                        <div class="mt-1">
+                            <small class="text-muted">Expected Output:</small>
+                            <code class="d-block bg-light p-2 rounded">{{ test_case.expected_output }}</code>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Hints Section -->
+                {% if available_hints %}
+                <div class="hints-section">
+                    <h6 class="mb-3">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Gợi Ý ({{ available_hints|length }})
+                    </h6>
+                    {% for hint in available_hints %}
+                    <div class="mb-2">
+                        <strong>{{ hint.title }}</strong>
+                        <p class="text-muted mb-0">{{ hint.content }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="hints-section">
+                    <h6 class="mb-3">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Gợi Ý
+                    </h6>
+                    <p class="text-muted">Gợi ý sẽ hiện sau {{ lesson.hints.0.show_after_attempts|default:3 }} lần thử</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Main Editor -->
+        <div class="editor-main">
+            <div class="editor-toolbar">
+                <div class="toolbar-left">
+                    <select class="language-selector" id="languageSelector">
+                        <option value="{{ course.language.name }}">{{ course.language.display_name }}</option>
+                    </select>
+                    <span class="text-light ms-3">
+                        <i class="fas fa-file-code me-1"></i>
+                        main{{ course.language.file_extension }}
+                    </span>
+                </div>
+                
+                <div class="toolbar-right">
+                    <button class="btn-run" id="runBtn">
+                        <i class="fas fa-play me-1"></i>
+                        Run
+                    </button>
+                    <button class="btn-submit" id="submitBtn">
+                        <i class="fas fa-upload me-1"></i>
+                        Submit
+                    </button>
+                    <button class="btn-hint" id="hintBtn">
+                        <i class="fas fa-lightbulb me-1"></i>
+                        Hint
+                    </button>
+                    <button class="btn-ai" id="aiHelpBtn">
+                        <i class="fas fa-robot me-1"></i>
+                        AI Help
+                    </button>
+                </div>
+            </div>
+            
+            <div class="editor-wrapper">
+                <div id="monaco-editor"></div>
+            </div>
+        </div>
+        
+        <!-- Right Panel - Output & AI -->
+        <div class="output-panel">
+            <div class="output-tabs">
+                <button class="output-tab active" onclick="switchTab('console')">Console</button>
+                <button class="output-tab" onclick="switchTab('tests')">Tests</button>
+                <button class="output-tab" onclick="switchTab('ai')">AI Chat</button>
+            </div>
+            
+            <!-- Console Output -->
+            <div class="output-content" id="consoleOutput">
+                <div class="mb-3">
+                    <strong>Console Output:</strong>
+                </div>
+                <div id="consoleContent">
+                    <p class="text-muted">Nhấn "Run" để xem kết quả...</p>
+                </div>
+            </div>
+            
+            <!-- Test Results -->
+            <div class="output-content" id="testResults" style="display: none;">
+                <div class="mb-3">
+                    <strong>Test Results:</strong>
+                </div>
+                <div id="testContent">
+                    <p class="text-muted">Nhấn "Submit" để chạy test cases...</p>
+                </div>
+            </div>
+            
+            <!-- AI Chat -->
+            <div class="ai-chat" id="aiChat" style="display: none;">
+                <div class="ai-messages" id="aiMessages">
+                    <div class="ai-message">
+                        <strong>🤖 AI Mentor:</strong><br>
+                        Chào bạn! Tôi có thể giúp bạn debug code, giải thích concepts, 
+                        hoặc đưa ra gợi ý cải thiện. Hãy hỏi tôi bất kỳ điều gì!
+                    </div>
+                </div>
+                
+                <div class="ai-input-container">
+                    <textarea class="ai-input" id="aiInput" 
+                              placeholder="Hỏi AI mentor..." rows="2"></textarea>
+                    <button class="btn-ai" id="aiSendBtn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monaco Editor -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.34.0/min/vs/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let editor;
+        let currentTab = 'console';
+        let autoSaveInterval;
+        
+        // Initialize Monaco Editor
+        require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.34.0/min/vs' } });
+        require(['vs/editor/editor.main'], function () {
+            editor = monaco.editor.create(document.getElementById('monaco-editor'), {
+                value: `{{ starter_code|escapejs }}`,
+                language: '{{ course.language.name }}',
+                theme: 'vs-dark',
+                fontSize: 14,
+                minimap: { enabled: true },
+                wordWrap: 'on',
+                automaticLayout: true,
+                scrollBeyondLastLine: false,
+                lineNumbers: 'on',
+                renderWhitespace: 'boundary',
+                contextmenu: true,
+                quickSuggestions: true,
+                suggestOnTriggerCharacters: true,
+                acceptSuggestionOnEnter: 'on'
+            });
+            
+            // Auto-save functionality
+            editor.onDidChangeModelContent(() => {
+                clearTimeout(autoSaveInterval);
+                autoSaveInterval = setTimeout(saveCodeToSession, 2000);
+            });
+            
+            // Keyboard shortcuts
+            editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+                runCode();
+            });
+            
+            editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter, () => {
+                submitCode();
+            });
+        });
+        
+        // Event Listeners
+        document.getElementById('runBtn').addEventListener('click', runCode);
+        document.getElementById('submitBtn').addEventListener('click', submitCode);
+        document.getElementById('hintBtn').addEventListener('click', requestHint);
+        document.getElementById('aiHelpBtn').addEventListener('click', () => switchTab('ai'));
+        document.getElementById('aiSendBtn').addEventListener('click', sendAIMessage);
+        
+        // AI Input enter key
+        document.getElementById('aiInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendAIMessage();
+            }
+        });
+        
+        // Functions
+        function saveCodeToSession() {
+            if (editor) {
+                sessionStorage.setItem('lesson_{{ lesson.id }}_code', editor.getValue());
+            }
+        }
+        
+        function runCode() {
+            const code = editor.getValue();
+            if (!code.trim()) {
+                alert('Vui lòng nhập code!');
+                return;
+            }
+            
+            const runBtn = document.getElementById('runBtn');
+            runBtn.disabled = true;
+            runBtn.innerHTML = '<div class="loading-spinner"></div> Running...';
+            
+            switchTab('console');
+            document.getElementById('consoleContent').innerHTML = '<p class="text-warning">Đang chạy code...</p>';
+            
+            fetch('/code/api/execute/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    code: code,
+                    language_id: {{ course.language.id }},
+                    lesson_id: {{ lesson.id }}
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                runBtn.disabled = false;
+                runBtn.innerHTML = '<i class="fas fa-play me-1"></i> Run';
+                
+                if (data.success) {
+                    const result = data.result;
+                    let output = '';
+                    
+                    if (result.status === 'success') {
+                        output = `<div class="text-success mb-2"><strong>✅ Execution successful</strong></div>`;
+                        output += `<div class="mb-2"><strong>Output:</strong></div>`;
+                        output += `<pre class="bg-dark p-3 rounded">${result.output || 'No output'}</pre>`;
+                        output += `<small class="text-muted">Execution time: ${(result.execution_time * 1000).toFixed(0)}ms</small>`;
+                    } else {
+                        output = `<div class="text-danger mb-2"><strong>❌ Execution failed</strong></div>`;
+                        output += `<div class="mb-2"><strong>Error:</strong></div>`;
+                        output += `<pre class="bg-danger p-3 rounded text-white">${result.error || 'Unknown error'}</pre>`;
+                    }
+                    
+                    document.getElementById('consoleContent').innerHTML = output;
+                } else {
+                    document.getElementById('consoleContent').innerHTML = 
+                        `<div class="text-danger">❌ ${data.error}</div>`;
+                }
+            })
+            .catch(error => {
+                runBtn.disabled = false;
+                runBtn.innerHTML = '<i class="fas fa-play me-1"></i> Run';
+                document.getElementById('consoleContent').innerHTML = 
+                    `<div class="text-danger">❌ Network error: ${error.message}</div>`;
+            });
+        }
+        
+        function submitCode() {
+            const code = editor.getValue();
+            if (!code.trim()) {
+                alert('Vui lòng nhập code!');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="loading-spinner"></div> Submitting...';
+            
+            switchTab('tests');
+            document.getElementById('testContent').innerHTML = '<p class="text-warning">Đang chấm bài...</p>';
+            
+            fetch('/code/api/submit/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    code: code,
+                    language_id: {{ course.language.id }},
+                    lesson_id: {{ lesson.id }}
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-upload me-1"></i> Submit';
+                
+                if (data.success) {
+                    displayTestResults(data.submission);
+                    
+                    // Show AI feedback if available
+                    if (data.submission.ai_feedback) {
+                        setTimeout(() => {
+                            addAIMessage(data.submission.ai_feedback);
+                        }, 1000);
+                    }
+                } else {
+                    document.getElementById('testContent').innerHTML = 
+                        `<div class="text-danger">❌ ${data.error}</div>`;
+                }
+            })
+            .catch(error => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-upload me-1"></i> Submit';
+                document.getElementById('testContent').innerHTML = 
+                    `<div class="text-danger">❌ Network error: ${error.message}</div>`;
+            });
+        }
+        
+        function displayTestResults(submission) {
+            let content = `
+                <div class="mb-3">
+                    <h6>Score: ${submission.score.toFixed(1)}% 
+                        ${submission.score >= 80 ? '🎉' : submission.score >= 60 ? '😊' : '😔'}
+                    </h6>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${submission.score}%"></div>
+                    </div>
+                    <small class="text-muted">
+                        ${submission.tests_passed}/${submission.tests_total} tests passed
+                        • ${(submission.execution_time * 1000).toFixed(0)}ms
+                    </small>
+                </div>
+            `;
+            
+            if (submission.test_results) {
+                submission.test_results.forEach(test => {
+                    content += `
+                        <div class="test-result ${test.passed ? 'test-passed' : 'test-failed'}">
+                            <strong>Test ${test.test_number}: ${test.passed ? '✅ Passed' : '❌ Failed'}</strong>
+                            <div class="mt-2">
+                                <small>Input: <code>${test.input}</code></small><br>
+                                <small>Expected: <code>${test.expected_output}</code></small><br>
+                                <small>Actual: <code>${test.actual_output}</code></small>
+                                ${test.error ? `<br><small class="text-danger">Error: ${test.error}</small>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById('testContent').innerHTML = content;
+        }
+        
+        function requestHint() {
+            addAIMessage('💡 Gợi ý: Hãy thử chia bài toán thành các bước nhỏ hơn. Đọc kỹ đề bài và xác định input/output cần thiết.');
+        }
+        
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.output-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+            
+            // Hide all content
+            document.getElementById('consoleOutput').style.display = 'none';
+            document.getElementById('testResults').style.display = 'none';
+            document.getElementById('aiChat').style.display = 'none';
+            
+            // Show selected content
+            if (tab === 'console') {
+                document.getElementById('consoleOutput').style.display = 'block';
+            } else if (tab === 'tests') {
+                document.getElementById('testResults').style.display = 'block';
+            } else if (tab === 'ai') {
+                document.getElementById('aiChat').style.display = 'flex';
+                document.getElementById('aiInput').focus();
+            }
+            
+            currentTab = tab;
+        }
+        
+        function sendAIMessage() {
+            const input = document.getElementById('aiInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addUserMessage(message);
+            input.value = '';
+            
+            // Add typing indicator
+            const typingDiv = addAIMessage('🤖 AI đang suy nghĩ...', true);
+            
+            // Prepare AI prompt
+            const code = editor.getValue();
+            const aiPrompt = `
+                Bài tập: ${lesson.title}
+                
+                Code hiện tại:
+                \`\`\`{{ course.language.name }}
+                ${code}
+                \`\`\`
+                
+                Câu hỏi của học viên: ${message}
+                
+                Hãy trả lời ngắn gọn và hữu ích.
+            `;
+            
+            // Call AI API (using existing text chat endpoint)
+            fetch('/ai/text-chat/', {
+                method: 'POST',
+                body: new FormData(Object.assign(document.createElement('form'), {
+                    innerHTML: `<input name="message" value="${aiPrompt.replace(/"/g, '&quot;')}">`
+                })),
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                typingDiv.remove();
+                
+                if (data.success) {
+                    addAIMessage(data.response.content);
+                } else {
+                    addAIMessage('Xin lỗi, tôi không thể trả lời lúc này: ' + data.error);
+                }
+            })
+            .catch(error => {
+                typingDiv.remove();
+                addAIMessage('Lỗi kết nối: ' + error.message);
+            });
+        }
+        
+        function addUserMessage(message) {
+            const messagesContainer = document.getElementById('aiMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'user-message';
+            messageDiv.innerHTML = `<strong>👤 Bạn:</strong><br>${message}`;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function addAIMessage(message, isTemporary = false) {
+            const messagesContainer = document.getElementById('aiMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'ai-message';
+            
+            if (isTemporary) {
+                messageDiv.setAttribute('data-temporary', 'true');
+            }
+            
+            messageDiv.innerHTML = `<strong>🤖 AI:</strong><br>${message.replace(/\n/g, '<br>')}`;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            return messageDiv;
+        }
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Load saved code from session
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedCode = sessionStorage.getItem('lesson_{{ lesson.id }}_code');
+            if (savedCode && editor) {
+                editor.setValue(savedCode);
+            }
+        });
+    </script>
+</body>
+</html>
