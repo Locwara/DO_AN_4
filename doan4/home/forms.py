@@ -1,8 +1,11 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate
-from .models import User, University
-
+from .models import (
+    User, University, CodeCourse, CodeLesson, 
+    CodeLanguage, CodeCourseTag
+)
+import json
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(
@@ -280,3 +283,177 @@ class SetPasswordForm(BaseSetPasswordForm):
             'placeholder': 'Nhập lại mật khẩu mới'
         })
         self.fields['new_password2'].label = 'Xác nhận mật khẩu mới'
+
+
+# Course Management Forms
+class CodeCourseForm(forms.ModelForm):
+    """Form tạo/chỉnh sửa khóa học"""
+    class Meta:
+        model = CodeCourse
+        fields = [
+            'title', 'description', 'thumbnail', 'language', 
+            'difficulty', 'estimated_hours', 'university',
+            'is_free', 'requires_premium', 'tags'
+        ]
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Tên khóa học'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5,
+                'placeholder': 'Mô tả khóa học...'
+            }),
+            'language': forms.Select(attrs={'class': 'form-select'}),
+            'difficulty': forms.Select(attrs={'class': 'form-select'}),
+            'estimated_hours': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 1,
+                'max': 1000
+            }),
+            'university': forms.Select(attrs={'class': 'form-select'}),
+            'tags': forms.CheckboxSelectMultiple(attrs={
+                'class': 'form-check-input'
+            }),
+            'is_free': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'requires_premium': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['language'].queryset = CodeLanguage.objects.filter(is_active=True)
+        self.fields['university'].queryset = University.objects.filter(is_active=True)
+        self.fields['tags'].queryset = CodeCourseTag.objects.all()
+        
+        # Make some fields optional
+        self.fields['university'].required = False
+        self.fields['estimated_hours'].required = False
+        self.fields['thumbnail'].required = False
+
+class CodeLessonForm(forms.ModelForm):
+    """Form tạo/chỉnh sửa bài học"""
+    class Meta:
+        model = CodeLesson
+        fields = [
+            'title', 'description', 'lesson_type', 'theory_content',
+            'problem_statement', 'starter_code', 'solution_code',
+            'hints', 'test_cases', 'estimated_time', 'points_reward'
+        ]
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Tên bài học'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Mô tả ngắn về bài học...'
+            }),
+            'lesson_type': forms.Select(attrs={'class': 'form-select'}),
+            'theory_content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 8,
+                'placeholder': 'Nội dung lý thuyết (HTML)...'
+            }),
+            'problem_statement': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 6,
+                'placeholder': 'Đề bài - mô tả vấn đề cần giải...'
+            }),
+            'starter_code': forms.Textarea(attrs={
+                'class': 'form-control code-editor',
+                'rows': 10,
+                'placeholder': '# Code mẫu ban đầu cho học viên\nprint("Hello World")'
+            }),
+            'solution_code': forms.Textarea(attrs={
+                'class': 'form-control code-editor',
+                'rows': 10,
+                'placeholder': '# Lời giải mẫu (không hiển thị cho học viên)'
+            }),
+            'hints': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Gợi ý dạng JSON: [{"title": "Gợi ý 1", "content": "Nội dung..."}]'
+            }),
+            'test_cases': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 6,
+                'placeholder': 'Test cases dạng JSON: [{"input": "5", "expected_output": "5"}]'
+            }),
+            'estimated_time': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 1,
+                'max': 300,
+                'placeholder': 'Thời gian ước tính (phút)'
+            }),
+            'points_reward': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 1,
+                'max': 100,
+                'value': 10
+            })
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make some fields optional
+        self.fields['description'].required = False
+        self.fields['theory_content'].required = False
+        self.fields['starter_code'].required = False
+        self.fields['solution_code'].required = False
+        self.fields['hints'].required = False
+        self.fields['estimated_time'].required = False
+    
+def clean_hints(self):
+        """Validate hints JSON format"""
+        hints = self.cleaned_data.get('hints')
+        if hints:   
+            try:
+                # FIX: Kiểm tra type trước khi parse
+                if isinstance(hints, str):
+                    parsed_hints = json.loads(hints)
+                elif isinstance(hints, (list, dict)):
+                    parsed_hints = hints
+                else:
+                    raise forms.ValidationError('Hints phải là JSON string, list hoặc dict')
+                
+                # Validate structure nếu cần
+                if parsed_hints and isinstance(parsed_hints, list):
+                    for hint in parsed_hints:
+                        if not isinstance(hint, dict) or 'title' not in hint or 'content' not in hint:
+                            raise forms.ValidationError('Mỗi hint phải có "title" và "content"')
+                            
+                return hints
+            except json.JSONDecodeError as e:
+                raise forms.ValidationError(f'Hints phải ở định dạng JSON hợp lệ: {str(e)}')
+            except TypeError as e:
+                raise forms.ValidationError(f'Lỗi định dạng hints: {str(e)}')
+        return hints
+    
+def clean_test_cases(self):
+        """Validate test cases JSON format"""
+        test_cases = self.cleaned_data.get('test_cases')
+        if test_cases:
+            try:
+                # FIX: Kiểm tra type trước khi parse
+                if isinstance(test_cases, str):
+                    parsed_cases = json.loads(test_cases)
+                elif isinstance(test_cases, (list, dict)):
+                    parsed_cases = test_cases
+                else:
+                    raise forms.ValidationError('Test cases phải là JSON string, list hoặc dict')
+                    
+                if not isinstance(parsed_cases, list):
+                    raise forms.ValidationError('Test cases phải là một mảng JSON')
+                    
+                for case in parsed_cases:
+                    if not isinstance(case, dict) or 'input' not in case or 'expected_output' not in case:
+                        raise forms.ValidationError('Mỗi test case phải có "input" và "expected_output"')
+                        
+                return test_cases
+            except json.JSONDecodeError as e:
+                raise forms.ValidationError(f'Test cases phải ở định dạng JSON hợp lệ: {str(e)}')
+            except TypeError as e:
+                raise forms.ValidationError(f'Lỗi định dạng test cases: {str(e)}')
+        return test_cases

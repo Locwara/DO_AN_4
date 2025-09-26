@@ -285,7 +285,7 @@
       </div>
       <div class="col-md-4 text-end">
         <div class="d-flex gap-2 justify-content-end">
-          <a href="{% url 'dashboard' %}" class="btn btn-outline-light">
+          <a href="{% url 'code_dashboard' %}" class="btn btn-outline-light">
             <i class="fas fa-arrow-left me-2"></i>
             Dashboard
           </a>
@@ -542,4 +542,8 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap JS (đặt trước closing body tag) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}

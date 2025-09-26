@@ -1,0 +1,376 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+.lessons-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.lesson-item {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  border-left: 4px solid #6366f1;
+}
+
+.lesson-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.lesson-item.published {
+  border-left-color: #10b981;
+}
+
+.lesson-item.draft {
+  border-left-color: #f59e0b;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status-published {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-draft {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.drag-handle {
+  cursor: move;
+  color: #6b7280;
+  font-size: 1.2rem;
+}
+
+.drag-handle:hover {
+  color: #374151;
+}
+
+.lesson-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.course-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 24px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.sortable-list {
+  min-height: 100px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #6b7280;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lessons-container">
+  <!-- Course Header -->
+  <div class="course-header">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="h3 mb-2">
+          <i class="fas fa-tasks me-2"></i>
+          Quản Lý Bài Học
+        </h1>
+        <p class="mb-0 opacity-90">{{ course.title }}</p>
+      </div>
+      <div class="col-md-4 text-end">
+        <div class="d-flex gap-2 justify-content-end">
+          <a href="{% url 'lesson_create' course.id %}" class="btn btn-light">
+            <i class="fas fa-plus me-2"></i>
+            Thêm Bài Học
+          </a>
+          <a href="{% url 'course_management_edit' course.id %}" class="btn btn-outline-light">
+            <i class="fas fa-arrow-left me-2"></i>
+            Quay lại
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lessons List -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-list text-primary me-2"></i>
+          Danh Sách Bài Học ({{ lessons.count }})
+        </h5>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary btn-sm" onclick="toggleSortMode()">
+            <i class="fas fa-sort me-1"></i>
+            Sắp xếp
+          </button>
+          <a href="{% url 'lesson_create' course.id %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus me-1"></i>
+            Thêm bài học
+          </a>
+        </div>
+      </div>
+      
+      {% if lessons %}
+      <div id="lessons-list" class="sortable-list">
+        {% for lesson in lessons %}
+        <div class="lesson-item {% if lesson.is_published %}published{% else %}draft{% endif %}" data-lesson-id="{{ lesson.id }}">
+          <div class="row align-items-center">
+            <div class="col-auto">
+              <div class="drag-handle d-none">
+                <i class="fas fa-grip-vertical"></i>
+              </div>
+              <div class="fw-bold text-muted">#{{ lesson.order_index }}</div>
+            </div>
+            
+            <div class="col">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="mb-0">{{ lesson.title }}</h6>
+                <span class="status-badge status-{% if lesson.is_published %}published{% else %}draft{% endif %}">
+                  {% if lesson.is_published %}
+                    <i class="fas fa-check me-1"></i>Published
+                  {% else %}
+                    <i class="fas fa-edit me-1"></i>Draft
+                  {% endif %}
+                </span>
+              </div>
+              
+              <div class="text-muted small mb-2">
+                <span class="badge bg-secondary me-2">{{ lesson.get_lesson_type_display }}</span>
+                {% if lesson.estimated_time %}
+                  <i class="fas fa-clock me-1"></i>{{ lesson.estimated_time }} phút
+                {% endif %}
+                <span class="mx-2">•</span>
+                <i class="fas fa-star me-1"></i>{{ lesson.points_reward }} điểm
+              </div>
+              
+              {% if lesson.description %}
+              <p class="text-muted small mb-3">{{ lesson.description|truncatewords:20 }}</p>
+              {% endif %}
+              
+              <div class="lesson-actions">
+                <a href="{% url 'lesson_edit' course.id lesson.id %}" class="btn btn-outline-primary btn-sm">
+                  <i class="fas fa-edit me-1"></i>
+                  Chỉnh sửa
+                </a>
+                
+                {% if lesson.is_published %}
+                <form method="post" action="{% url 'lesson_publish' course.id lesson.id %}" class="d-inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="unpublish">
+                  <button type="submit" class="btn btn-outline-warning btn-sm">
+                    <i class="fas fa-pause me-1"></i>
+                    Unpublish
+                  </button>
+                </form>
+                {% else %}
+                <form method="post" action="{% url 'lesson_publish' course.id lesson.id %}" class="d-inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="publish">
+                  <button type="submit" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-rocket me-1"></i>
+                    Publish
+                  </button>
+                </form>
+                {% endif %}
+                
+                
+                
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDelete('{{ lesson.title }}', '{{ lesson.id }}')">
+                  <i class="fas fa-trash me-1"></i>
+                  Xóa
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      
+      <div class="mt-4 p-3 bg-light rounded">
+        <div class="row text-center">
+          <div class="col-md-3">
+            <div class="h5 text-primary mb-0">{{ lesson_stats.total_lessons }}</div>
+            <small class="text-muted">Tổng bài học</small>
+          </div>
+          <div class="col-md-3">
+            <div class="h5 text-success mb-0">{{ lesson_stats.published_lessons }}</div>
+            <small class="text-muted">Đã publish</small>
+          </div>
+          <div class="col-md-3">
+            <div class="h5 text-warning mb-0">{{ lesson_stats.draft_lessons }}</div>
+            <small class="text-muted">Bản nháp</small>
+          </div>
+          <div class="col-md-3">
+            <div class="h5 text-info mb-0">{{ lesson_stats.total_points }}</div>
+            <small class="text-muted">Tổng điểm</small>
+          </div>
+        </div>
+      </div>
+      
+      {% else %}
+      <div class="empty-state">
+        <i class="fas fa-book-open mb-3" style="font-size: 3rem;"></i>
+        <h5 class="text-muted">Chưa có bài học nào</h5>
+        <p class="text-muted mb-4">Bắt đầu tạo nội dung cho khóa học của bạn!</p>
+        <a href="{% url 'lesson_create' course.id %}" class="btn btn-primary">
+          <i class="fas fa-plus me-2"></i>
+          Tạo Bài Học Đầu Tiên
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Xác nhận xóa</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Bạn có chắc chắn muốn xóa bài học <strong id="lessonName"></strong>?</p>
+        <p class="text-danger small">Hành động này không thể hoàn tác!</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-danger" onclick="deleteLesson()">Xóa bài học</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let sortMode = false;
+let lessonToDelete = null;
+
+function toggleSortMode() {
+  sortMode = !sortMode;
+  const dragHandles = document.querySelectorAll('.drag-handle');
+  const sortButton = document.querySelector('button[onclick="toggleSortMode()"]');
+  
+  if (sortMode) {
+    dragHandles.forEach(handle => handle.classList.remove('d-none'));
+    sortButton.innerHTML = '<i class="fas fa-save me-1"></i>Lưu thứ tự';
+    sortButton.classList.remove('btn-outline-primary');
+    sortButton.classList.add('btn-success');
+    initSortable();
+  } else {
+    dragHandles.forEach(handle => handle.classList.add('d-none'));
+    sortButton.innerHTML = '<i class="fas fa-sort me-1"></i>Sắp xếp';
+    sortButton.classList.remove('btn-success');
+    sortButton.classList.add('btn-outline-primary');
+    saveLessonOrder();
+  }
+}
+
+function initSortable() {
+  // Simple drag and drop implementation
+  const lessonsList = document.getElementById('lessons-list');
+  let draggedElement = null;
+  
+  lessonsList.addEventListener('dragstart', function(e) {
+    if (e.target.closest('.lesson-item')) {
+      draggedElement = e.target.closest('.lesson-item');
+      e.dataTransfer.effectAllowed = 'move';
+    }
+  });
+  
+  lessonsList.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  });
+  
+  lessonsList.addEventListener('drop', function(e) {
+    e.preventDefault();
+    const dropTarget = e.target.closest('.lesson-item');
+    if (dropTarget && draggedElement && dropTarget !== draggedElement) {
+      const parent = dropTarget.parentNode;
+      const nextSibling = dropTarget.nextSibling;
+      parent.insertBefore(draggedElement, nextSibling);
+    }
+  });
+  
+  // Make lessons draggable
+  document.querySelectorAll('.lesson-item').forEach(item => {
+    item.draggable = true;
+  });
+}
+
+function saveLessonOrder() {
+  const lessons = document.querySelectorAll('.lesson-item');
+  const orders = [];
+  
+  lessons.forEach((lesson, index) => {
+    orders.push({
+      id: lesson.dataset.lessonId,
+      order: index + 1
+    });
+  });
+  
+  // Send AJAX request to save order
+  fetch('{% url "lesson_reorder" course.id %}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+    },
+    body: JSON.stringify({ orders: orders })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      location.reload();
+    } else {
+      alert('Lỗi khi lưu thứ tự: ' + data.error);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Lỗi khi lưu thứ tự');
+  });
+}
+
+function confirmDelete(lessonName, lessonId) {
+  document.getElementById('lessonName').textContent = lessonName;
+  lessonToDelete = lessonId;
+  new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+function deleteLesson() {
+  if (lessonToDelete) {
+    // In a real implementation, you'd send an AJAX request to delete
+    alert('Chức năng xóa bài học chưa được implement.');
+    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+  }
+}
+</script>
+{% endblock %}

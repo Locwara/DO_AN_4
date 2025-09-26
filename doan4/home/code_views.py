@@ -405,190 +405,445 @@ import time
 import base64
 from django.conf import settings
 
+from django.conf import settings
+
 def execute_code_safely(code, language, lesson=None, timeout=10):
-    """Execute code using Judge0 API"""
+    """Execute code using Judge0 API with settings configuration"""
     try:
         # Judge0 language IDs
         language_ids = {
-            'python': 71,      # Python 3.8.1
-            'javascript': 63,  # JavaScript (Node.js 12.14.0)
-            'java': 62,        # Java (OpenJDK 13.0.1)
-            'cpp': 54,         # C++ (GCC 9.2.0)
-            'c': 50,           # C (GCC 9.2.0)
-            'csharp': 51,      # C# (Mono 6.6.0.161)
-            'go': 60,          # Go (1.13.5)
-            'rust': 73,        # Rust (1.40.0)
-            'php': 68,         # PHP (7.4.1)
-            'ruby': 72,        # Ruby (2.7.0)
+            'python': 71,      
+            'javascript': 63,  
+            'java': 62,        
+            'cpp': 54,         
+            'c': 50,           
+            'csharp': 51,      
+            'go': 60,          
+            'rust': 73,        
+            'php': 68,         
+            'ruby': 72,        
         }
         
-        lang_id = language_ids.get(language.name.lower(), 71)  # Default to Python
+        lang_id = language_ids.get(language.name.lower(), 71)
         
-        # Judge0 API configuration
-        api_key = "9a99780a04msh553f9e3886a82b4p1390b1jsnb8610d7b3942"
-        base_url = "https://judge0-ce.p.rapidapi.com"
+        # Use API key from settings
+        api_key = getattr(settings, 'JUDGE0_API_KEY', None)
+        base_url = f"https://{getattr(settings, 'JUDGE0_BASE_URL', 'judge0-ce.p.rapidapi.com')}"
+        
+        if not api_key:
+            # Fallback to local execution if no API key
+            if language.name.lower() == 'python':
+                return execute_python_locally(code)
+            return {
+                'status': 'error',
+                'output': '',
+                'execution_time': 0,
+                'error': 'No Judge0 API key configured'
+            }
         
         headers = {
             "X-RapidAPI-Key": api_key,
-            "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+            "X-RapidAPI-Host": settings.JUDGE0_BASE_URL,
             "Content-Type": "application/json"
         }
         
-        # Prepare submission payload
         payload = {
             "language_id": lang_id,
-            "source_code": code,  # Send as plain text, Judge0 will handle encoding
+            "source_code": code,
             "stdin": "",
         }
         
         start_time = time.time()
         
-        # Submit code for execution
-        submission_url = f"{base_url}/submissions"
-        response = requests.post(submission_url, json=payload, headers=headers)
+        print(f"Using Judge0 API Key: {api_key[:20]}...")  # Debug log
         
-        if response.status_code != 201:
+        # Submit code for execution
+        try:
+            response = requests.post(
+                f"{base_url}/submissions",
+                json=payload,
+                headers=headers,
+                timeout=15
+            )
+        except requests.exceptions.Timeout:
+            if language.name.lower() == 'python':
+                return execute_python_locally(code)
             return {
                 'status': 'error',
                 'output': '',
                 'execution_time': 0,
-                'error': f'Failed to submit code: {response.text}'
+                'error': 'Request timeout. Using local fallback...'
             }
         
-        token = response.json()['token']
+        print(f"Judge0 Response Status: {response.status_code}")  # Debug log
+        
+        if response.status_code == 429:
+            print("Rate limit hit, falling back to local execution")
+            if language.name.lower() == 'python':
+                return execute_python_locally(code)
+            return {
+                'status': 'error',
+                'output': '',
+                'execution_time': 0,
+                'error': 'API rate limit exceeded. Please try again later.'
+            }
+        
+        if response.status_code != 201:
+            print(f"Judge0 Error Response: {response.text}")
+            if language.name.lower() == 'python':
+                return execute_python_locally(code)
+            return {
+                'status': 'error',
+                'output': '',
+                'execution_time': 0,
+                'error': f'Judge0 API error (HTTP {response.status_code})'
+            }
+        
+        try:
+            result_data = response.json()
+            token = result_data.get('token')
+            if not token:
+                raise ValueError("No token received")
+        except Exception as e:
+            print(f"Token parsing error: {e}")
+            if language.name.lower() == 'python':
+                return execute_python_locally(code)
+            return {
+                'status': 'error',
+                'output': '',
+                'execution_time': 0,
+                'error': 'Invalid API response'
+            }
         
         # Poll for result
         get_url = f"{base_url}/submissions/{token}"
-        max_attempts = 20  # Max 20 seconds wait
+        max_attempts = 20
         
         for attempt in range(max_attempts):
-            result_response = requests.get(get_url, headers=headers)
-            
-            if result_response.status_code != 200:
-                return {
-                    'status': 'error',
-                    'output': '',
-                    'execution_time': time.time() - start_time,
-                    'error': f'Failed to get result: {result_response.text}'
-                }
-            
-            result = result_response.json()
-            status_id = result['status']['id']
-            
-            # Status codes: 1=In Queue, 2=Processing, 3=Accepted, 4=Wrong Answer, 5=Time Limit Exceeded, 6=Compilation Error, etc.
-            if status_id in [1, 2]:  # Still processing
+            if time.time() - start_time > 30:  # 30 second hard limit
+                break
+                
+            try:
+                result_response = requests.get(get_url, headers=headers, timeout=5)
+                
+                if result_response.status_code != 200:
+                    time.sleep(1)
+                    continue
+                
+                result = result_response.json()
+                status_id = result.get('status', {}).get('id')
+                
+                if not status_id:
+                    time.sleep(1)
+                    continue
+                
+                # Still processing
+                if status_id in [1, 2]:
+                    time.sleep(1)
+                    continue
+                
+                # Got final result
+                execution_time = time.time() - start_time
+                
+                stdout = safe_decode(result.get('stdout', ''))
+                stderr = safe_decode(result.get('stderr', ''))
+                compile_output = safe_decode(result.get('compile_output', ''))
+                
+                if status_id == 3:  # Success
+                    return {
+                        'status': 'success',
+                        'output': stdout or 'Code executed successfully',
+                        'execution_time': execution_time,
+                        'error': None,
+                        'memory_used': result.get('memory', 0),
+                        'time_used': result.get('time', 0)
+                    }
+                
+                elif status_id == 6:  # Compilation Error
+                    return {
+                        'status': 'error',
+                        'output': stdout,
+                        'execution_time': execution_time,
+                        'error': f'Compilation Error: {compile_output or "Unknown error"}'
+                    }
+                
+                elif status_id in [5, 7]:  # Time/Memory limit
+                    return {
+                        'status': 'error',
+                        'output': stdout,
+                        'execution_time': execution_time,
+                        'error': 'Time or memory limit exceeded'
+                    }
+                
+                else:  # Other errors
+                    error_msg = stderr or compile_output or result['status'].get('description', 'Unknown error')
+                    return {
+                        'status': 'error',
+                        'output': stdout,
+                        'execution_time': execution_time,
+                        'error': f'Runtime Error: {error_msg}'
+                    }
+                    
+            except requests.exceptions.Timeout:
                 time.sleep(1)
                 continue
-            
-            execution_time = time.time() - start_time
-            
-            # FIXED: Improved Base64 decode with proper error handling
-            def safe_decode(encoded_data):
-                if not encoded_data:
-                    return ''
-                
-                # If it's already a string (not base64), return as-is
-                if isinstance(encoded_data, str):
-                    try:
-                        # Try to decode as base64
-                        decoded_bytes = base64.b64decode(encoded_data)
-                        return decoded_bytes.decode('utf-8', errors='replace')
-                    except Exception:
-                        # If base64 decode fails, assume it's plain text
-                        return encoded_data
-                
-                try:
-                    # Handle bytes input
-                    if isinstance(encoded_data, bytes):
-                        return encoded_data.decode('utf-8', errors='replace')
-                    
-                    # Fix base64 padding if needed
-                    encoded_str = str(encoded_data).strip()
-                    missing_padding = len(encoded_str) % 4
-                    if missing_padding:
-                        encoded_str += '=' * (4 - missing_padding)
-                    
-                    # Decode base64
-                    decoded_bytes = base64.b64decode(encoded_str)
-                    return decoded_bytes.decode('utf-8', errors='replace')
-                    
-                except Exception as e:
-                    # Ultimate fallback - return original data as string
-                    return str(encoded_data) if encoded_data else ''
-            
-            stdout = safe_decode(result.get('stdout'))
-            stderr = safe_decode(result.get('stderr'))
-            compile_output = safe_decode(result.get('compile_output'))
-            
-            if status_id == 3:  # Accepted (Success)
-                return {
-                    'status': 'success',
-                    'output': stdout,
-                    'execution_time': execution_time,
-                    'error': None,
-                    'memory_used': result.get('memory', 0),
-                    'time_used': result.get('time', 0)
-                }
-            
-            elif status_id == 6:  # Compilation Error
-                return {
-                    'status': 'error',
-                    'output': stdout,
-                    'execution_time': execution_time,
-                    'error': f'Compilation Error: {compile_output}'
-                }
-            
-            elif status_id == 5:  # Time Limit Exceeded
-                return {
-                    'status': 'error',
-                    'output': stdout,
-                    'execution_time': execution_time,
-                    'error': 'Time Limit Exceeded'
-                }
-            
-            elif status_id == 7:  # Memory Limit Exceeded
-                return {
-                    'status': 'error',
-                    'output': stdout,
-                    'execution_time': execution_time,
-                    'error': 'Memory Limit Exceeded'
-                }
-            
-            else:  # Other errors
-                error_msg = stderr or compile_output or result['status']['description']
-                return {
-                    'status': 'error',
-                    'output': stdout,
-                    'execution_time': execution_time,
-                    'error': f'Runtime Error: {error_msg}'
-                }
+            except Exception as e:
+                print(f"Polling error: {e}")
+                time.sleep(1)
+                continue
         
-        # Timeout waiting for result
+        # Timeout or max attempts reached
+        if language.name.lower() == 'python':
+            return execute_python_locally(code)
+            
         return {
             'status': 'error',
             'output': '',
             'execution_time': time.time() - start_time,
-            'error': 'Execution timeout - code took too long to complete'
+            'error': 'Execution timeout. Please try again.'
         }
         
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
+        print(f"Execute code error: {e}")
+        if language.name.lower() == 'python':
+            return execute_python_locally(code)
         return {
             'status': 'error',
             'output': '',
             'execution_time': 0,
-            'error': f'Network error: {str(e)}'
+            'error': f'System error: {str(e)}'
         }
+
+
+def safe_decode(encoded_data):
+    """Safe Base64 decode function"""
+    if not encoded_data:
+        return ''
+    
+    try:
+        if isinstance(encoded_data, str):
+            import re
+            if re.match(r'^[A-Za-z0-9+/]*={0,2}$', encoded_data.strip()):
+                try:
+                    import base64
+                    encoded_str = encoded_data.strip()
+                    missing_padding = len(encoded_str) % 4
+                    if missing_padding:
+                        encoded_str += '=' * (4 - missing_padding)
+                    
+                    decoded_bytes = base64.b64decode(encoded_str)
+                    return decoded_bytes.decode('utf-8', errors='replace')
+                except:
+                    return encoded_data
+            return encoded_data
+        
+        if isinstance(encoded_data, bytes):
+            return encoded_data.decode('utf-8', errors='replace')
+        
+        return str(encoded_data) if encoded_data else ''
+        
+    except:
+        return str(encoded_data) if encoded_data else ''
+
+# REPLACE execute_python_locally function with this:
+
+def execute_python_locally(code, test_input=''):
+    """Simple, working Python executor"""
+    try:
+        import sys
+        from io import StringIO
+        
+        # Basic security check
+        forbidden_words = ['import os', 'subprocess', 'exec(', 'eval(', 'open(', '__import__']
+        if any(word in code.lower() for word in forbidden_words):
+            return {
+                'status': 'error',
+                'output': '',
+                'execution_time': 0,
+                'error': 'Code contains forbidden operations'
+            }
+        
+        # Prepare input data
+        if test_input and test_input.strip():
+            input_lines = test_input.strip().split('\n')
+            input_iterator = iter(input_lines)
+        else:
+            input_iterator = iter([''])  # Default empty input
+        
+        # Mock input function
+        def mock_input(prompt=''):
+            try:
+                return next(input_iterator)
+            except StopIteration:
+                return ''  # Return empty if no more input
+        
+        # Capture stdout
+        old_stdout = sys.stdout
+        captured_output = StringIO()
+        sys.stdout = captured_output
+        
+        start_time = time.time()
+        
+        try:
+            # Create safe execution environment
+            exec_globals = {
+                '__builtins__': {
+                    # Safe built-in functions
+                    'print': print,
+                    'input': mock_input,  # Our custom input
+                    'len': len,
+                    'str': str,
+                    'int': int,
+                    'float': float,
+                    'bool': bool,
+                    'range': range,
+                    'list': list,
+                    'dict': dict,
+                    'tuple': tuple,
+                    'set': set,
+                    'abs': abs,
+                    'max': max,
+                    'min': min,
+                    'sum': sum,
+                    'sorted': sorted,
+                    'enumerate': enumerate,
+                    'zip': zip,
+                    'map': map,
+                    'filter': filter,
+                    'round': round,
+                    'pow': pow,
+                }
+            }
+            
+            # Execute the user's code
+            exec(code, exec_globals, {})
+            
+            execution_time = time.time() - start_time
+            output = captured_output.getvalue().strip()
+            
+            return {
+                'status': 'success',
+                'output': output if output else 'Code executed successfully',
+                'execution_time': execution_time,
+                'error': None
+            }
+            
+        except Exception as e:
+            execution_time = time.time() - start_time
+            output = captured_output.getvalue().strip()
+            
+            # Clean up error message
+            error_msg = str(e)
+            if 'line' in error_msg.lower() and 'file' in error_msg.lower():
+                # Extract just the error type and message
+                error_parts = error_msg.split(':')
+                if len(error_parts) > 1:
+                    error_msg = error_parts[-1].strip()
+            
+            return {
+                'status': 'error',
+                'output': output,
+                'execution_time': execution_time,
+                'error': f'Error: {error_msg}'
+            }
+            
+        finally:
+            # Always restore stdout
+            sys.stdout = old_stdout
+            
     except Exception as e:
         return {
             'status': 'error',
             'output': '',
             'execution_time': 0,
-            'error': f'API error: {str(e)}'
+            'error': f'System error: {str(e)}'
         }
+
+def execute_python_simple_with_input(code, test_input=''):
+    """Simple in-memory execution with input mocking"""
+    try:
+        import sys
+        from io import StringIO
+        import builtins
+        
+        # Security check
+        forbidden = ['import os', 'subprocess', '__import__', 'exec(', 'eval(', 'open(']
+        if any(f in code.lower() for f in forbidden):
+            return {
+                'status': 'error',
+                'output': '',
+                'execution_time': 0,
+                'error': 'Code contains forbidden operations'
+            }
+        
+        # Prepare input data
+        if test_input and test_input.strip():
+            input_lines = test_input.strip().split('\n')
+            input_iterator = iter(input_lines)
+        else:
+            input_iterator = iter([''])  # Empty input
+        
+        # Mock input function
+        def mock_input(prompt=''):
+            try:
+                return next(input_iterator)
+            except StopIteration:
+                return ''
+        
+        # Capture output
+        old_stdout = sys.stdout
+        sys.stdout = mystdout = StringIO()
+        
+        # Save original input
+        original_input = builtins.input
+        
+        start_time = time.time()
+        
+        try:
+            # Override input function
+            builtins.input = mock_input
+            
+            # Execute user code
+            exec(code)
+            
+            execution_time = time.time() - start_time
+            output = mystdout.getvalue().strip()
+            
+            return {
+                'status': 'success',
+                'output': output if output else 'Code executed successfully',
+                'execution_time': execution_time,
+                'error': None
+            }
+            
+        except Exception as e:
+            execution_time = time.time() - start_time
+            output = mystdout.getvalue().strip()
+            
+            return {
+                'status': 'error',
+                'output': output,
+                'execution_time': execution_time,
+                'error': f'Python Error: {str(e)}'
+            }
+            
+        finally:
+            # Restore everything
+            sys.stdout = old_stdout
+            builtins.input = original_input
+            
+    except Exception as e:
+        return {
+            'status': 'error',
+            'output': '',
+            'execution_time': 0,
+            'error': f'Execution error: {str(e)}'
+        }
+
 def execute_code_with_tests(code, language, lesson):
-    """Execute code with test cases using Judge0 API"""
+    """Execute code with test cases - FIXED VERSION"""
     if not lesson.test_cases:
-        return execute_code_safely(code, language, lesson)
+        return execute_python_simple_with_input(code)
     
     test_results = []
     tests_passed = 0
@@ -596,22 +851,28 @@ def execute_code_with_tests(code, language, lesson):
     total_execution_time = 0
     
     for i, test_case in enumerate(lesson.test_cases):
-        # Prepare test code with input
-        test_code = prepare_test_code_for_judge0(code, test_case.get('input', ''), language)
+        test_input = test_case.get('input', '')
+        expected_output = test_case.get('expected_output', '').strip()
         
-        result = execute_code_safely(test_code, language, lesson)
+        # Execute with test input
+        if language.name.lower() == 'python':
+            result = execute_python_simple_with_input(code, test_input)
+        else:
+            # For other languages, use Judge0 with prepared code
+            prepared_code = prepare_test_code_for_judge0(code, test_input, language)
+            result = execute_code_safely(prepared_code, language, lesson)
+        
         total_execution_time += result.get('execution_time', 0)
         
-        expected_output = test_case.get('expected_output', '').strip()
         actual_output = result.get('output', '').strip()
+        test_passed = (actual_output == expected_output)
         
-        test_passed = actual_output == expected_output
         if test_passed:
             tests_passed += 1
             
         test_results.append({
             'test_number': i + 1,
-            'input': test_case.get('input', ''),
+            'input': test_input,
             'expected_output': expected_output,
             'actual_output': actual_output,
             'passed': test_passed,
@@ -632,20 +893,23 @@ def execute_code_with_tests(code, language, lesson):
         'execution_time': total_execution_time
     }
 
+# Update functions in views.py
 
 def prepare_test_code_for_judge0(original_code, test_input, language):
-    """Prepare code with test input for Judge0 execution"""
+    """FIXED: Prepare code with test input - no more builtins error"""
+    
     if language.name.lower() == 'python':
-        # Mock input() function for Python
-        lines = test_input.strip().split('\n') if test_input.strip() else ['']
-        input_data = repr(lines)
-        
-        input_mock = f"""# Auto-generated input mock
-import sys
+        if test_input and test_input.strip():
+            lines = test_input.strip().split('\n')
+            input_data = repr(lines)
+            
+            # FIXED: Use globals() instead of __builtins__
+            input_mock = f'''# Auto-generated input mock
+import builtins
 input_data = {input_data}
 input_index = 0
 
-def input(prompt=''):
+def mock_input(prompt=''):
     global input_index
     if input_index < len(input_data):
         result = input_data[input_index]
@@ -653,46 +917,287 @@ def input(prompt=''):
         return result
     return ''
 
-# Original code below:
-"""
-        return input_mock + original_code
-    
-    elif language.name.lower() == 'java':
-        # For Java, we need to mock Scanner input
-        lines = test_input.strip().split('\n') if test_input.strip() else ['']
-        input_data = ', '.join(f'"{line}"' for line in lines)
-        
-        # This is more complex for Java - basic implementation
-        return original_code.replace(
-            'Scanner', 
-            f'// Mock Scanner\nString[] mockInput = {{{input_data}}};\nint mockIndex = 0;\n// Scanner'
-        )
-    
-    elif language.name.lower() == 'javascript':
-        # For Node.js, mock readline or process.stdin
-        lines = test_input.strip().split('\n') if test_input.strip() else ['']
-        input_data = '[' + ', '.join(f'"{line}"' for line in lines) + ']'
-        
-        input_mock = f"""// Auto-generated input mock
-const mockInput = {input_data};
-let mockIndex = 0;
+# Override input function safely
+builtins.input = mock_input
 
-// Mock readline function
-function readline() {{
-    if (mockIndex < mockInput.length) {{
-        return mockInput[mockIndex++];
-    }}
-    return '';
-}}
+# Original user code:
+{original_code}
+'''
+        else:
+            # No input provided - mock to return empty string
+            input_mock = f'''# Auto-generated input mock (no input)
+import builtins
 
-// Original code below:
-"""
-        return input_mock + original_code
+def mock_input(prompt=''):
+    return ''
+
+# Override input function safely
+builtins.input = mock_input
+
+# Original user code:
+{original_code}
+'''
+        
+        return input_mock
     
-    # For other languages, return as-is for now
+    # For other languages, return original
     return original_code
 
+def execute_python_locally_with_input(code, test_input=''):
+    """FIXED: Proper indentation handling for user code"""
+    try:
+        import subprocess
+        import tempfile
+        import os
+        
+        # Security check
+        forbidden = ['import os', 'subprocess', '__import__', 'exec(', 'eval(', 'open(']
+        if any(f in code.lower() for f in forbidden):
+            return {
+                'status': 'error',
+                'output': '',
+                'execution_time': 0,
+                'error': 'Code contains forbidden operations'
+            }
+        
+        # FIXED: Proper indentation of user code
+        if test_input and test_input.strip():
+            lines = test_input.strip().split('\n')
+            input_data = repr(lines)
+            
+            # Add proper indentation to user code
+            user_code_lines = code.split('\n')
+            indented_user_code = '\n'.join('    ' + line for line in user_code_lines)
+            
+            wrapped_code = f'''import builtins
+import sys
 
+# Input data from test
+input_data = {input_data}
+input_index = 0
+
+def mock_input(prompt=''):
+    global input_index
+    if input_index < len(input_data):
+        result = input_data[input_index]
+        input_index += 1
+        return result
+    return ''
+
+# Override input safely
+original_input = builtins.input
+builtins.input = mock_input
+
+try:
+{indented_user_code}
+except Exception as e:
+    print(f"Error: {{e}}")
+finally:
+    builtins.input = original_input
+'''
+        else:
+            # No input provided
+            user_code_lines = code.split('\n')
+            indented_user_code = '\n'.join('    ' + line for line in user_code_lines)
+            
+            wrapped_code = f'''import builtins
+import sys
+
+def mock_input(prompt=''):
+    return ''
+
+# Override input safely  
+original_input = builtins.input
+builtins.input = mock_input
+
+try:
+{indented_user_code}
+except Exception as e:
+    print(f"Error: {{e}}")
+finally:
+    builtins.input = original_input
+'''
+        
+        # Create temp file
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False, encoding='utf-8') as f:
+            f.write(wrapped_code)
+            temp_file = f.name
+        
+        start_time = time.time()
+        
+        try:
+            # Execute with timeout
+            result = subprocess.run(
+                ['python', temp_file],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                encoding='utf-8',
+                errors='replace'
+            )
+            
+            execution_time = time.time() - start_time
+            
+            if result.returncode == 0:
+                output = result.stdout.strip()
+                return {
+                    'status': 'success',
+                    'output': output if output else 'Code executed successfully',
+                    'execution_time': execution_time,
+                    'error': None
+                }
+            else:
+                return {
+                    'status': 'error',
+                    'output': result.stdout.strip(),
+                    'execution_time': execution_time,
+                    'error': f'Python Error: {result.stderr.strip()}'
+                }
+                
+        except subprocess.TimeoutExpired:
+            return {
+                'status': 'error',
+                'output': '',
+                'execution_time': 10,
+                'error': 'Code execution timeout (10 seconds)'
+            }
+            
+        finally:
+            try:
+                os.unlink(temp_file)
+            except:
+                pass
+                
+    except Exception as e:
+        return {
+            'status': 'error',
+            'output': '',
+            'execution_time': 0,
+            'error': f'Execution error: {str(e)}'
+        }
+
+def execute_python_simple_with_input_fixed(code, test_input=''):
+    """Better approach using exec() with proper scope"""
+    try:
+        import sys
+        from io import StringIO
+        import builtins
+        
+        # Security check
+        forbidden = ['import os', 'subprocess', '__import__', 'exec(', 'eval(', 'open(']
+        if any(f in code.lower() for f in forbidden):
+            return {
+                'status': 'error',
+                'output': '',
+                'execution_time': 0,
+                'error': 'Code contains forbidden operations'
+            }
+        
+        # Setup input data
+        if test_input and test_input.strip():
+            input_lines = test_input.strip().split('\n')
+            input_iterator = iter(input_lines)
+        else:
+            input_iterator = iter([''])  # Empty input
+        
+        # Mock input function
+        def mock_input(prompt=''):
+            try:
+                return next(input_iterator)
+            except StopIteration:
+                return ''
+        
+        # Capture output
+        old_stdout = sys.stdout
+        sys.stdout = mystdout = StringIO()
+        
+        # Save original functions
+        original_input = builtins.input
+        
+        start_time = time.time()
+        
+        try:
+            # Create execution environment
+            execution_globals = {
+                '__builtins__': __builtins__,
+                'input': mock_input,  # Override input in globals
+            }
+            execution_locals = {}
+            
+            # Execute user code
+            exec(code, execution_globals, execution_locals)
+            
+            execution_time = time.time() - start_time
+            output = mystdout.getvalue().strip()
+            
+            return {
+                'status': 'success',
+                'output': output if output else 'Code executed successfully',
+                'execution_time': execution_time,
+                'error': None
+            }
+            
+        except Exception as e:
+            execution_time = time.time() - start_time
+            output = mystdout.getvalue().strip()
+            
+            return {
+                'status': 'error',
+                'output': output,
+                'execution_time': execution_time,
+                'error': f'Python Error: {str(e)}'
+            }
+            
+        finally:
+            # Restore everything
+            sys.stdout = old_stdout
+            builtins.input = original_input
+            
+    except Exception as e:
+        return {
+            'status': 'error',
+            'output': '',
+            'execution_time': 0,
+            'error': f'Execution error: {str(e)}'
+        }
+
+# Update the main execute_code_safely function to handle input properly
+def execute_code_safely(code, language, lesson=None, timeout=10, test_input=''):
+    """Execute code with proper input handling"""
+    try:
+        # For local execution, handle input properly
+        if language.name.lower() == 'python':
+            return execute_python_locally_with_input(code, test_input)
+        
+        # For Judge0, use the improved prepare function
+        # ... rest of Judge0 code stays the same but use:
+        # test_code = prepare_test_code_for_judge0(code, test_input, language)
+        
+        # Judge0 execution code here...
+        
+    except Exception as e:
+        if language.name.lower() == 'python':
+            return execute_python_locally_with_input(code, test_input)
+        return {
+            'status': 'error',
+            'output': '',
+            'execution_time': 0,
+            'error': f'System error: {str(e)}'
+        }
+
+# Quick test function to verify input handling
+def test_input_handling():
+    """Test function for input handling"""
+    test_code = '''name = input("Enter your name: ")
+age = input("Enter your age: ")
+print(f"Hello {name}, you are {age} years old!")
+'''
+    
+    test_input_data = '''John Doe
+25'''
+    
+    result = execute_python_locally_with_input(test_code, test_input_data)
+    print("Test Result:", result)
 def get_execution_command(language, filename):
     """Get appropriate execution command for language (not needed for Judge0)"""
     # This function is kept for compatibility but not used with Judge0

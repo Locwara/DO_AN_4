@@ -1,0 +1,885 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+.course-form-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.form-section {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  padding: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.code-editor {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+}
+
+.btn-primary {
+  background: #6366f1;
+  border-color: #6366f1;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: #4f46e5;
+  border-color: #4f46e5;
+}
+
+.lesson-item {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.lesson-item:hover {
+  background: #f3f4f6;
+  transform: translateX(4px);
+}
+
+.tag-checkbox {
+  display: inline-block;
+  margin: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: #f3f4f6;
+  border-radius: 20px;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tag-checkbox:hover {
+  background: #e5e7eb;
+}
+
+.tag-checkbox.selected {
+  background: #6366f1;
+  color: white;
+  border-color: #6366f1;
+}
+
+.stats-card {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+}
+
+.stats-number {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.publish-form {
+  display: inline-block;
+  width: 100%;
+}
+
+.publish-form button {
+  width: 100%;
+}
+
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="course-form-container">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">{{ page_title }}</h1>
+      <p class="text-muted">Tạo và quản lý nội dung khóa học lập trình</p>
+    </div>
+    <div>
+      <a href="{% url 'course_management_dashboard' %}" class="btn btn-outline-secondary me-2">
+        <i class="fas fa-arrow-left me-2"></i>
+        Quay lại
+      </a>
+      {% if course %}
+      <a href="{% url 'course_analytics' course.id %}" class="btn btn-outline-info">
+        <i class="fas fa-chart-bar me-2"></i>
+        Thống kê
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" id="courseForm">
+    {% csrf_token %}
+    
+    <div class="row">
+      <div class="col-lg-8">
+        <!-- Basic Information -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <i class="fas fa-info-circle text-primary me-2"></i>
+            Thông Tin Cơ Bản
+          </h3>
+          
+          <div class="row">
+            <div class="col-12 mb-3">
+              <label for="{{ form.title.id_for_label }}" class="form-label">
+                Tên khóa học *
+              </label>
+              {{ form.title }}
+              {% if form.title.errors %}
+                <div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="col-12 mb-3">
+              <label for="{{ form.description.id_for_label }}" class="form-label">
+                Mô tả khóa học *
+              </label>
+              {{ form.description }}
+              {% if form.description.errors %}
+                <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label for="{{ form.language.id_for_label }}" class="form-label">
+                Ngôn ngữ lập trình *
+              </label>
+              {{ form.language }}
+              {% if form.language.errors %}
+                <div class="text-danger small mt-1">{{ form.language.errors.0 }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label for="{{ form.difficulty.id_for_label }}" class="form-label">
+                Độ khó *
+              </label>
+              {{ form.difficulty }}
+              {% if form.difficulty.errors %}
+                <div class="text-danger small mt-1">{{ form.difficulty.errors.0 }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label for="{{ form.estimated_hours.id_for_label }}" class="form-label">
+                Thời gian ước tính (giờ)
+              </label>
+              {{ form.estimated_hours }}
+              {% if form.estimated_hours.errors %}
+                <div class="text-danger small mt-1">{{ form.estimated_hours.errors.0 }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label for="{{ form.university.id_for_label }}" class="form-label">
+                Trường đại học
+              </label>
+              {{ form.university }}
+              {% if form.university.errors %}
+                <div class="text-danger small mt-1">{{ form.university.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Course Settings -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <i class="fas fa-cog text-primary me-2"></i>
+            Cài Đặt Khóa Học
+          </h3>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="form-check">
+                {{ form.is_free }}
+                <label class="form-check-label" for="{{ form.is_free.id_for_label }}">
+                  Khóa học miễn phí
+                </label>
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <div class="form-check">
+                {{ form.requires_premium }}
+                <label class="form-check-label" for="{{ form.requires_premium.id_for_label }}">
+                  Yêu cầu tài khoản Premium
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Tags -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <i class="fas fa-tags text-primary me-2"></i>
+            Tags
+          </h3>
+          
+          <div class="mb-3">
+            <label class="form-label">Chọn tags phù hợp:</label>
+            <div class="mt-2">
+              {% for choice in form.tags %}
+                <div class="tag-checkbox">
+                  {{ choice.tag }}
+                  <label for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Thumbnail -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <i class="fas fa-image text-primary me-2"></i>
+            Hình Ảnh
+          </h3>
+          
+          <div class="mb-3">
+            <label for="{{ form.thumbnail.id_for_label }}" class="form-label">
+              Thumbnail khóa học
+            </label>
+            {{ form.thumbnail }}
+            {% if form.thumbnail.errors %}
+              <div class="text-danger small mt-1">{{ form.thumbnail.errors.0 }}</div>
+            {% endif %}
+            <div class="form-text">Ảnh đại diện cho khóa học (khuyến nghị: 1200x600px)</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4">
+        <!-- Course Status -->
+        {% if course %}
+        <div class="form-section">
+          <h3 class="section-title">
+            <i class="fas fa-flag text-primary me-2"></i>
+            Trạng Thái
+          </h3>
+          
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span>Trạng thái hiện tại:</span>
+              <span class="badge bg-{% if course.status == 'published' %}success{% else %}warning{% endif %} fs-6" id="status-badge">
+                {% if course.status == 'published' %}
+                  <i class="fas fa-check me-1"></i>Published
+                {% else %}
+                  <i class="fas fa-edit me-1"></i>Draft
+                {% endif %}
+              </span>
+            </div>
+            
+            <div id="publish-button-container">
+              {% if course.status == 'draft' %}
+              <button type="button" class="btn btn-success w-100" onclick="publishCourse({{ course.id }}, 'publish')" id="publish-btn">
+                <i class="fas fa-rocket me-2"></i>
+                <span class="btn-text">Publish Khóa Học</span>
+              </button>
+              {% else %}
+              <button type="button" class="btn btn-warning w-100" onclick="publishCourse({{ course.id }}, 'unpublish')" id="publish-btn">
+                <i class="fas fa-pause me-2"></i>
+                <span class="btn-text">Unpublish</span>
+              </button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Course Stats -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <i class="fas fa-chart-bar text-primary me-2"></i>
+            Thống Kê
+          </h3>
+          
+          <div class="row">
+            <div class="col-6 mb-3">
+              <div class="stats-card">
+                <div class="stats-number text-primary">{{ course_stats.enrollments }}</div>
+                <div class="text-muted small">Học viên</div>
+              </div>
+            </div>
+            
+            <div class="col-6 mb-3">
+              <div class="stats-card">
+                <div class="stats-number text-info">{{ course_stats.total_lessons }}</div>
+                <div class="text-muted small">Bài học</div>
+              </div>
+            </div>
+            
+            <div class="col-6">
+              <div class="stats-card">
+                <div class="stats-number text-success">{{ course_stats.published_lessons }}</div>
+                <div class="text-muted small">Đã publish</div>
+              </div>
+            </div>
+            
+            <div class="col-6">
+              <div class="stats-card">
+                <div class="stats-number text-warning">{{ course_stats.avg_completion|floatformat:0 }}%</div>
+                <div class="text-muted small">Hoàn thành TB</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Lessons Management -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <i class="fas fa-list text-primary me-2"></i>
+            Bài Học
+          </h3>
+          
+          <div class="d-grid gap-2 mb-3">
+            <a href="{% url 'lesson_create' course.id %}" class="btn btn-primary">
+              <i class="fas fa-plus me-2"></i>
+              Thêm Bài Học
+            </a>
+            
+            <a href="{% url 'course_lessons_manage' course.id %}" class="btn btn-outline-primary">
+              <i class="fas fa-tasks me-2"></i>
+              Quản Lý Bài Học
+            </a>
+          </div>
+          
+          {% if lessons %}
+          <div class="small text-muted mb-2">Bài học gần đây:</div>
+          {% for lesson in lessons|slice:":5" %}
+          <div class="lesson-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold small">{{ lesson.title }}</div>
+                <div class="text-muted small">{{ lesson.get_lesson_type_display }}</div>
+              </div>
+              <div>
+                {% if lesson.is_published %}
+                  <i class="fas fa-check text-success"></i>
+                {% else %}
+                  <i class="fas fa-edit text-warning"></i>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- Submit Buttons -->
+    <div class="form-section">
+      <div class="d-flex justify-content-between">
+        <a href="{% url 'course_management_dashboard' %}" class="btn btn-outline-secondary">
+          <i class="fas fa-times me-2"></i>
+          Hủy
+        </a>
+        
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save me-2"></i>
+          {% if course %}Cập nhật{% else %}Tạo khóa học{% endif %}
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  function handlePublishSubmit(form) {
+  return handlePublishAjax(form, false);
+}
+function handleLessonPublishSubmit(form) {
+  return handlePublishAjax(form, true);
+}
+
+// Main AJAX handler for both course and lesson publish/unpublish
+function handlePublishAjax(form, isLesson = false) {
+  console.log(`=== ${isLesson ? 'LESSON' : 'COURSE'} PUBLISH AJAX START ===`);
+  
+  const button = form.querySelector('button[type="submit"]');
+  const btnText = button.querySelector('.btn-text');
+  const icon = button.querySelector('i');
+  const actionInput = form.querySelector('input[name="action"]');
+  
+  if (!actionInput) {
+    console.error('Action input not found');
+    return false;
+  }
+  
+  const action = actionInput.value;
+  console.log(`Current action: ${action}`);
+  
+  // Prevent double submission
+  if (button.disabled) {
+    console.log('Button already disabled, preventing double submit');
+    return false;
+  }
+  
+  // Show loading state
+  button.disabled = true;
+  const originalText = btnText ? btnText.textContent : '';
+  const originalIconClass = icon ? icon.className : '';
+  const originalButtonClass = button.className;
+  
+  console.log(`Original state - Text: "${originalText}", Icon: "${originalIconClass}"`);
+  
+  if (btnText) btnText.textContent = 'Đang xử lý...';
+  if (icon) icon.className = 'fas fa-spinner fa-spin me-2';
+  
+  // Prepare form data
+  const formData = new FormData(form);
+  
+  fetch(form.action, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+  })
+  .then(response => {
+    console.log('Response status:', response.status);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('Response data:', data);
+    
+    if (data.success) {
+      console.log('Success! Updating UI...');
+      
+      // Determine new state
+      const newAction = action === 'publish' ? 'unpublish' : 'publish';
+      const isPublishing = action === 'publish';
+      
+      // Update form action input
+      actionInput.value = newAction;
+      console.log(`Action updated to: ${newAction}`);
+      
+      // Update button text and icon
+      let newText, newIcon, newButtonClass;
+      
+      if (isLesson) {
+        newText = isPublishing ? 'Unpublish' : 'Publish Bài Học';
+        newIcon = isPublishing ? 'fas fa-pause me-2' : 'fas fa-rocket me-2';
+        newButtonClass = isPublishing ? 'btn btn-warning w-100' : 'btn btn-success w-100';
+      } else {
+        newText = isPublishing ? 'Unpublish' : 'Publish Khóa Học';  
+        newIcon = isPublishing ? 'fas fa-pause me-2' : 'fas fa-rocket me-2';
+        newButtonClass = isPublishing ? 'btn btn-warning' : 'btn btn-success';
+      }
+      
+      // Apply updates
+      button.className = newButtonClass;
+      if (btnText) btnText.textContent = newText;
+      if (icon) icon.className = newIcon;
+      
+      console.log(`Updated - Text: "${newText}", Icon: "${newIcon}", Class: "${newButtonClass}"`);
+      
+      // Update status badge if exists
+      updateStatusBadge(isPublishing);
+      
+      // Show success notification
+      showNotification(data.message, 'success');
+      
+    } else {
+      console.log('Server returned error:', data.error);
+      // Restore original state on error
+      restoreButtonState(button, btnText, icon, originalText, originalIconClass, originalButtonClass);
+      showNotification(data.error || 'Có lỗi xảy ra', 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Fetch error:', error);
+    // Restore original state on error
+    restoreButtonState(button, btnText, icon, originalText, originalIconClass, originalButtonClass);
+    showNotification('Có lỗi xảy ra khi xử lý yêu cầu', 'error');
+  })
+  .finally(() => {
+    // Re-enable button
+    button.disabled = false;
+    console.log(`=== ${isLesson ? 'LESSON' : 'COURSE'} PUBLISH AJAX END ===`);
+  });
+  
+  // Prevent default form submission
+  return false;
+}
+
+// Helper function to restore button state
+function restoreButtonState(button, btnText, icon, originalText, originalIconClass, originalButtonClass) {
+  console.log('Restoring button state...');
+  button.className = originalButtonClass;
+  if (btnText) btnText.textContent = originalText;
+  if (icon) icon.className = originalIconClass;
+}
+
+// Helper function to update status badge
+function updateStatusBadge(isPublished) {
+  const statusBadge = document.querySelector('.badge.bg-success, .badge.bg-warning');
+  if (statusBadge) {
+    console.log('Updating status badge...');
+    if (isPublished) {
+      statusBadge.className = 'badge bg-success fs-6';
+      statusBadge.innerHTML = '<i class="fas fa-check me-1"></i>Published';
+    } else {
+      statusBadge.className = 'badge bg-warning fs-6';
+      statusBadge.innerHTML = '<i class="fas fa-edit me-1"></i>Draft';
+    }
+  }
+}
+
+// Utility function to show notifications
+function showNotification(message, type = 'info') {
+  console.log(`Showing notification: ${type} - ${message}`);
+  
+  // Remove existing notifications
+  const existingNotifications = document.querySelectorAll('.toast-notification');
+  existingNotifications.forEach(n => n.remove());
+  
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed toast-notification`;
+  notification.style.cssText = 'top: 20px; right: 20px; z-index: 1060; min-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+  
+  const iconMap = {
+    'success': 'fa-check-circle',
+    'error': 'fa-exclamation-circle', 
+    'warning': 'fa-exclamation-triangle',
+    'info': 'fa-info-circle'
+  };
+  
+  notification.innerHTML = `
+    <div class="d-flex align-items-center">
+      <i class="fas ${iconMap[type] || iconMap.info} me-2"></i>
+      <div class="flex-grow-1">${message}</div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.style.opacity = '0';
+      setTimeout(() => notification.remove(), 300);
+    }
+  }, 5000);
+}
+
+// DOM Ready - Initialize everything
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM loaded, initializing...');
+  
+  // Tags selection functionality
+  initializeTagSelection();
+  
+  // JSON validation for lesson forms
+  initializeJSONValidation();
+  
+  // Form validation
+  initializeFormValidation();
+});
+
+// Initialize tag selection
+function initializeTagSelection() {
+  const tagCheckboxes = document.querySelectorAll('.tag-checkbox');
+  console.log(`Found ${tagCheckboxes.length} tag checkboxes`);
+  
+  tagCheckboxes.forEach(checkbox => {
+    const input = checkbox.querySelector('input[type="checkbox"]');
+    
+    if (input && input.checked) {
+      checkbox.classList.add('selected');
+    }
+    
+    checkbox.addEventListener('click', function(e) {
+      // Prevent double handling if user clicks directly on input
+      if (e.target.type === 'checkbox') return;
+      
+      if (input) {
+        input.checked = !input.checked;
+        
+        if (input.checked) {
+          checkbox.classList.add('selected');
+        } else {
+          checkbox.classList.remove('selected');
+        }
+      }
+    });
+  });
+}
+
+// Initialize JSON validation
+function initializeJSONValidation() {
+  const jsonFields = [
+    document.getElementById('id_test_cases'),
+    document.getElementById('id_hints')
+  ];
+  
+  jsonFields.forEach(field => {
+    if (field) {
+      field.addEventListener('blur', function() {
+        validateJSONField(this);
+      });
+      
+      // Also validate on input for immediate feedback
+      field.addEventListener('input', function() {
+        // Clear validation classes while typing
+        this.classList.remove('is-valid', 'is-invalid');
+      });
+    }
+  });
+}
+
+// Validate individual JSON field
+function validateJSONField(field) {
+  if (!field.value.trim()) {
+    field.classList.remove('is-valid', 'is-invalid');
+    return;
+  }
+  
+  try {
+    const parsed = JSON.parse(field.value);
+    console.log('Valid JSON:', parsed);
+    field.classList.remove('is-invalid');
+    field.classList.add('is-valid');
+    
+    // Additional validation for specific fields
+    if (field.id === 'id_test_cases') {
+      if (!Array.isArray(parsed)) {
+        throw new Error('Test cases must be an array');
+      }
+    } else if (field.id === 'id_hints') {
+      if (parsed && Array.isArray(parsed)) {
+        parsed.forEach((hint, index) => {
+          if (!hint.title || !hint.content) {
+            throw new Error(`Hint ${index + 1} missing title or content`);
+          }
+        });
+      }
+    }
+    
+  } catch (e) {
+    console.log('Invalid JSON:', e.message);
+    field.classList.remove('is-valid');
+    field.classList.add('is-invalid');
+  }
+}
+
+// Initialize form validation
+function initializeFormValidation() {
+  const courseForm = document.getElementById('courseForm');
+  if (courseForm) {
+    courseForm.addEventListener('submit', function(e) {
+      // Basic validation for course form
+      const title = this.querySelector('input[name="title"]');
+      const description = this.querySelector('textarea[name="description"]');
+      
+      if (title && !title.value.trim()) {
+        e.preventDefault();
+        showNotification('Vui lòng nhập tên khóa học', 'error');
+        title.focus();
+        return false;
+      }
+      
+      if (description && !description.value.trim()) {
+        e.preventDefault();
+        showNotification('Vui lòng nhập mô tả khóa học', 'error');
+        description.focus();
+        return false;
+      }
+    });
+  }
+}
+
+// Handle page visibility change (optional - for better UX)
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    // Page became visible - could refresh status if needed
+    console.log('Page became visible');
+  }
+});
+
+// Keyboard shortcuts (optional enhancement)
+document.addEventListener('keydown', function(e) {
+  // Ctrl+S to save form
+  if (e.ctrlKey && e.key === 's') {
+    e.preventDefault();
+    const submitBtn = document.querySelector('button[type="submit"]:not([data-action])');
+    if (submitBtn && !submitBtn.disabled) {
+      submitBtn.click();
+    }
+  }
+});
+
+// AJAX Publish/Unpublish functionality
+function publishCourse(courseId, action) {
+  console.log('=== COURSE PUBLISH AJAX START ===');
+  console.log('Course ID:', courseId);
+  console.log('Action:', action);
+  
+  const button = document.getElementById('publish-btn');
+  const btnText = button.querySelector('.btn-text');
+  const icon = button.querySelector('i');
+  const statusBadge = document.getElementById('status-badge');
+  
+  if (button.disabled) {
+    console.log('Button already disabled, preventing double click');
+    return;
+  }
+  
+  // Show loading state
+  console.log('Setting button to loading state...');
+  button.disabled = true;
+  
+  const originalText = btnText.textContent;
+  const originalIconClass = icon.className;
+  
+  btnText.textContent = 'Đang xử lý...';
+  icon.className = 'fas fa-spinner fa-spin me-2';
+  
+  // Get CSRF token
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  
+  // Prepare form data
+  const formData = new FormData();
+  formData.append('action', action);
+  formData.append('csrfmiddlewaretoken', csrfToken);
+  
+  console.log('Sending AJAX request...');
+  
+  // Send AJAX request
+  fetch(`/code/manage/${courseId}/publish/`, {
+    method: 'POST',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('AJAX response:', data);
+    
+    if (data.success) {
+      // Update UI based on new status
+      updateCourseStatusUI(data.new_status, courseId);
+      
+      // Show success message
+      showMessage(data.message, 'success');
+    } else {
+      // Restore original button state on error
+      btnText.textContent = originalText;
+      icon.className = originalIconClass;
+      
+      // Show error message
+      showMessage(data.error, 'error');
+    }
+  })
+  .catch(error => {
+    console.error('AJAX error:', error);
+    
+    // Restore original button state
+    btnText.textContent = originalText;
+    icon.className = originalIconClass;
+    
+    showMessage('Có lỗi xảy ra khi gửi yêu cầu!', 'error');
+  })
+  .finally(() => {
+    // Re-enable button
+    button.disabled = false;
+    console.log('=== COURSE PUBLISH AJAX END ===');
+  });
+}
+
+function updateCourseStatusUI(newStatus, courseId) {
+  const button = document.getElementById('publish-btn');
+  const btnText = button.querySelector('.btn-text');
+  const icon = button.querySelector('i');
+  const statusBadge = document.getElementById('status-badge');
+  
+  if (newStatus === 'published') {
+    button.className = 'btn btn-warning w-100';
+    button.onclick = () => publishCourse(courseId, 'unpublish');
+    btnText.textContent = 'Unpublish';
+    icon.className = 'fas fa-pause me-2';
+    statusBadge.className = 'badge bg-success fs-6';
+    statusBadge.innerHTML = '<i class="fas fa-check me-1"></i>Published';
+  } else {
+    button.className = 'btn btn-success w-100';
+    button.onclick = () => publishCourse(courseId, 'publish');
+    btnText.textContent = 'Publish Khóa Học';
+    icon.className = 'fas fa-rocket me-2';
+    statusBadge.className = 'badge bg-warning fs-6';
+    statusBadge.innerHTML = '<i class="fas fa-edit me-1"></i>Draft';
+  }
+  button.disabled = false;
+}
+
+// Helper function to show messages
+function showMessage(message, type) {
+  // Create alert element
+  const alertDiv = document.createElement('div');
+  alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+  alertDiv.innerHTML = `
+    ${message}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  `;
+  
+  // Insert at top of form
+  const form = document.getElementById('courseForm');
+  form.insertBefore(alertDiv, form.firstChild);
+  
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    if (alertDiv.parentNode) {
+      alertDiv.remove();
+    }
+  }, 5000);
+}
+</script>
+{% endblock %}

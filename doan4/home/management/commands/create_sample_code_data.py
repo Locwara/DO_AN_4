@@ -1,236 +1,271 @@
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
+from django.utils import timezone
 from home.models import (
-    CodeLanguage, CodeCourse, CodeLesson, University, User
+    CodeLanguage, CodeCourse, CodeLesson, CodeCourseTag,
+    User, University
 )
 import json
 
 class Command(BaseCommand):
-    help = 'Create sample data for Code with AI feature'
-    
+    help = 'Create sample coding courses and lessons'
+
     def handle(self, *args, **options):
-        self.stdout.write('Creating sample coding data...')
+        self.stdout.write('Creating sample coding courses and lessons...')
         
-        # Create code languages
-        languages_data = [
-            {
-                'name': 'python',
-                'display_name': 'Python 3.9',
-                'version': '3.9',
-                'file_extension': '.py',
-                'syntax_highlight': 'python',
-                'docker_image': 'python:3.9-slim'
-            },
-            {
-                'name': 'javascript',
-                'display_name': 'JavaScript ES6',
-                'version': 'ES6',
-                'file_extension': '.js',
-                'syntax_highlight': 'javascript',
-                'docker_image': 'node:16-slim'
-            },
-            {
-                'name': 'java',
-                'display_name': 'Java 11',
-                'version': '11',
-                'file_extension': '.java',
-                'syntax_highlight': 'java',
-                'docker_image': 'openjdk:11-slim'
+        # Create/get admin user
+        admin_user, created = User.objects.get_or_create(
+            username='admin',
+            defaults={
+                'email': 'admin@example.com',
+                'first_name': 'Admin',
+                'last_name': 'User',
+                'is_staff': True,
+                'is_superuser': True
             }
+        )
+        if created:
+            admin_user.set_password('admin123')
+            admin_user.save()
+            self.stdout.write(f'Created admin user: {admin_user.username}')
+        
+        # Create/get university
+        university, created = University.objects.get_or_create(
+            name='Đại học Công nghệ Thông tin',
+            defaults={
+                'short_name': 'UIT',
+                'address': 'TP.HCM, Việt Nam',
+                'website': 'https://uit.edu.vn'
+            }
+        )
+        
+        # Create programming languages
+        languages_data = [
+            {'name': 'python', 'display_name': 'Python 3.9', 'file_extension': '.py', 'syntax_highlight': 'python'},
+            {'name': 'javascript', 'display_name': 'JavaScript ES6', 'file_extension': '.js', 'syntax_highlight': 'javascript'},
+            {'name': 'java', 'display_name': 'Java 11', 'file_extension': '.java', 'syntax_highlight': 'java'},
+            {'name': 'cpp', 'display_name': 'C++ 17', 'file_extension': '.cpp', 'syntax_highlight': 'cpp'},
+            {'name': 'csharp', 'display_name': 'C# 9.0', 'file_extension': '.cs', 'syntax_highlight': 'csharp'},
         ]
         
+        languages = {}
         for lang_data in languages_data:
-            language, created = CodeLanguage.objects.get_or_create(
+            lang, created = CodeLanguage.objects.get_or_create(
                 name=lang_data['name'],
                 defaults=lang_data
             )
+            languages[lang_data['name']] = lang
             if created:
-                self.stdout.write(f'Created language: {language.display_name}')
+                self.stdout.write(f'Created language: {lang.display_name}')
         
-        # Get or create university
-        university = University.objects.first()
-        if not university:
-            university = University.objects.create(
-                name='Tech University',
-                short_name='TU',
-                is_active=True
+        # Create course tags
+        tags_data = [
+            {'name': 'Beginner', 'color': '#10B981'},
+            {'name': 'Web Development', 'color': '#3B82F6'}, 
+            {'name': 'Data Structures', 'color': '#F59E0B'},
+            {'name': 'Algorithms', 'color': '#EF4444'},
+            {'name': 'OOP', 'color': '#8B5CF6'},
+            {'name': 'Game Development', 'color': '#EC4899'},
+        ]
+        
+        tags = {}
+        for tag_data in tags_data:
+            tag, created = CodeCourseTag.objects.get_or_create(
+                name=tag_data['name'],
+                defaults=tag_data
             )
+            tags[tag_data['name']] = tag
         
-        # Get or create admin user
-        admin_user = User.objects.filter(is_superuser=True).first()
-        if not admin_user:
-            admin_user = User.objects.filter(is_staff=True).first()
-        if not admin_user:
-            admin_user = User.objects.create_user(
-                username='admin',
-                email='admin@example.com',
-                password='admin123',
-                is_staff=True,
-                is_superuser=True
+        # Create 5 sample courses
+        courses_data = [
+            {
+                'title': 'Python cho Người Mới Bắt Đầu',
+                'description': 'Khóa học Python từ cơ bản đến nâng cao, bao gồm cú pháp, cấu trúc dữ liệu, và lập trình hướng đối tượng.',
+                'language': 'python',
+                'difficulty': 'beginner',
+                'estimated_hours': 40,
+                'tags': ['Beginner'],
+                'lessons': [
+                    {
+                        'title': 'Hello World và Biến',
+                        'description': 'Học cách in ra màn hình và làm việc với biến',
+                        'lesson_type': 'coding',
+                        'theory_content': '<h3>Chào mừng đến với Python!</h3><p>Python là ngôn ngữ lập trình đơn giản và mạnh mẽ.</p>',
+                        'problem_statement': 'Viết chương trình in ra "Hello, World!" và tạo biến để lưu tên của bạn.',
+                        'starter_code': '# Viết code của bạn ở đây\nprint("Hello, World!")\n\n# Tạo biến name và in ra\nname = ""\nprint(f"Xin chào, {name}!")',
+                        'solution_code': 'print("Hello, World!")\n\nname = "Python"\nprint(f"Xin chào, {name}!")',
+                        'test_cases': [
+                            {'input': '', 'expected_output': 'Hello, World!\nXin chào, Python!'},
+                        ],
+                        'hints': [
+                            {'title': 'Gợi ý 1', 'content': 'Sử dụng hàm print() để in ra màn hình'},
+                            {'title': 'Gợi ý 2', 'content': 'Gán giá trị cho biến name bằng dấu ='}
+                        ]
+                    },
+                    {
+                        'title': 'Vòng lặp For',
+                        'description': 'Học cách sử dụng vòng lặp for',
+                        'lesson_type': 'coding',
+                        'problem_statement': 'Viết chương trình in ra các số từ 1 đến 10.',
+                        'starter_code': '# Sử dụng vòng lặp for để in số từ 1 đến 10\nfor i in range(?, ?):\n    print(?)',
+                        'solution_code': 'for i in range(1, 11):\n    print(i)',
+                        'test_cases': [
+                            {'input': '', 'expected_output': '1\n2\n3\n4\n5\n6\n7\n8\n9\n10'},
+                        ]
+                    }
+                ]
+            },
+            {
+                'title': 'JavaScript Cơ Bản',
+                'description': 'Học JavaScript từ đầu: biến, hàm, DOM và các khái niệm cơ bản của web development.',
+                'language': 'javascript',
+                'difficulty': 'beginner',
+                'estimated_hours': 35,
+                'tags': ['Beginner', 'Web Development'],
+                'lessons': [
+                    {
+                        'title': 'Biến và Kiểu Dữ Liệu',
+                        'description': 'Học về var, let, const và các kiểu dữ liệu',
+                        'lesson_type': 'coding',
+                        'problem_statement': 'Tạo các biến với kiểu dữ liệu khác nhau và in ra.',
+                        'starter_code': '// Tạo biến số\nlet number = 42;\n\n// Tạo biến chuỗi\nlet text = "Hello";\n\n// Tạo biến boolean\nlet isTrue = true;\n\nconsole.log(number);\nconsole.log(text);\nconsole.log(isTrue);',
+                        'solution_code': 'let number = 42;\nlet text = "Hello";\nlet isTrue = true;\n\nconsole.log(number);\nconsole.log(text);\nconsole.log(isTrue);',
+                        'test_cases': [
+                            {'input': '', 'expected_output': '42\nHello\ntrue'},
+                        ]
+                    },
+                    {
+                        'title': 'Hàm JavaScript',
+                        'description': 'Học cách tạo và sử dụng hàm',
+                        'lesson_type': 'coding',
+                        'problem_statement': 'Tạo hàm tính tổng hai số.',
+                        'starter_code': 'function sum(a, b) {\n    // Viết code ở đây\n}\n\nconsole.log(sum(5, 3));',
+                        'solution_code': 'function sum(a, b) {\n    return a + b;\n}\n\nconsole.log(sum(5, 3));',
+                        'test_cases': [
+                            {'input': '', 'expected_output': '8'},
+                        ]
+                    }
+                ]
+            },
+            {
+                'title': 'Cấu Trúc Dữ Liệu với C++',
+                'description': 'Khóa học về cấu trúc dữ liệu cơ bản: mảng, danh sách liên kết, stack, queue.',
+                'language': 'cpp',
+                'difficulty': 'intermediate',
+                'estimated_hours': 50,
+                'tags': ['Data Structures', 'Algorithms'],
+                'lessons': [
+                    {
+                        'title': 'Mảng và Vector',
+                        'description': 'Học cách sử dụng mảng và vector trong C++',
+                        'lesson_type': 'coding',
+                        'problem_statement': 'Tạo vector số nguyên và in ra tất cả phần tử.',
+                        'starter_code': '#include <iostream>\n#include <vector>\nusing namespace std;\n\nint main() {\n    vector<int> numbers = {1, 2, 3, 4, 5};\n    \n    // In ra tất cả phần tử\n    for(int i = 0; i < numbers.size(); i++) {\n        cout << numbers[i] << " ";\n    }\n    \n    return 0;\n}',
+                        'solution_code': '#include <iostream>\n#include <vector>\nusing namespace std;\n\nint main() {\n    vector<int> numbers = {1, 2, 3, 4, 5};\n    \n    for(int i = 0; i < numbers.size(); i++) {\n        cout << numbers[i] << " ";\n    }\n    \n    return 0;\n}',
+                        'test_cases': [
+                            {'input': '', 'expected_output': '1 2 3 4 5 '},
+                        ]
+                    }
+                ]
+            },
+            {
+                'title': 'Lập Trình Hướng Đối Tượng với Java',
+                'description': 'Học các khái niệm OOP: class, object, inheritance, polymorphism trong Java.',
+                'language': 'java',
+                'difficulty': 'intermediate',
+                'estimated_hours': 45,
+                'tags': ['OOP'],
+                'lessons': [
+                    {
+                        'title': 'Class và Object',
+                        'description': 'Tạo class đầu tiên trong Java',
+                        'lesson_type': 'coding',
+                        'problem_statement': 'Tạo class Student với thuộc tính name và method introduce().',
+                        'starter_code': 'public class Student {\n    String name;\n    \n    public Student(String name) {\n        this.name = name;\n    }\n    \n    public void introduce() {\n        System.out.println("Hello, I am " + name);\n    }\n    \n    public static void main(String[] args) {\n        Student student = new Student("John");\n        student.introduce();\n    }\n}',
+                        'solution_code': 'public class Student {\n    String name;\n    \n    public Student(String name) {\n        this.name = name;\n    }\n    \n    public void introduce() {\n        System.out.println("Hello, I am " + name);\n    }\n    \n    public static void main(String[] args) {\n        Student student = new Student("John");\n        student.introduce();\n    }\n}',
+                        'test_cases': [
+                            {'input': '', 'expected_output': 'Hello, I am John'},
+                        ]
+                    }
+                ]
+            },
+            {
+                'title': 'Game Development với C#',
+                'description': 'Khóa học phát triển game cơ bản với C# và Unity engine.',
+                'language': 'csharp',
+                'difficulty': 'advanced',
+                'estimated_hours': 60,
+                'tags': ['Game Development'],
+                'lessons': [
+                    {
+                        'title': 'Player Controller',
+                        'description': 'Tạo script điều khiển nhân vật',
+                        'lesson_type': 'coding',
+                        'problem_statement': 'Tạo class Player với method Move().',
+                        'starter_code': 'using System;\n\npublic class Player {\n    public string name;\n    public int health;\n    \n    public Player(string playerName) {\n        name = playerName;\n        health = 100;\n    }\n    \n    public void Move(string direction) {\n        Console.WriteLine($"{name} moves {direction}");\n    }\n}\n\nclass Program {\n    static void Main() {\n        Player player = new Player("Hero");\n        player.Move("forward");\n    }\n}',
+                        'solution_code': 'using System;\n\npublic class Player {\n    public string name;\n    public int health;\n    \n    public Player(string playerName) {\n        name = playerName;\n        health = 100;\n    }\n    \n    public void Move(string direction) {\n        Console.WriteLine($"{name} moves {direction}");\n    }\n}\n\nclass Program {\n    static void Main() {\n        Player player = new Player("Hero");\n        player.Move("forward");\n    }\n}',
+                        'test_cases': [
+                            {'input': '', 'expected_output': 'Hero moves forward'},
+                        ]
+                    }
+                ]
+            }
+        ]
+        
+        # Create courses and lessons
+        for course_data in courses_data:
+            # Create course
+            course, created = CodeCourse.objects.get_or_create(
+                title=course_data['title'],
+                defaults={
+                    'slug': slugify(course_data['title']),
+                    'description': course_data['description'],
+                    'language': languages[course_data['language']],
+                    'difficulty': course_data['difficulty'],
+                    'estimated_hours': course_data['estimated_hours'],
+                    'created_by': admin_user,
+                    'university': university,
+                    'status': 'published',
+                    'published_at': timezone.now(),
+                    'is_free': True
+                }
             )
-        
-        # Create Python course
-        python_lang = CodeLanguage.objects.get(name='python')
-        python_course, created = CodeCourse.objects.get_or_create(
-            slug='python-fundamentals',
-            defaults={
-                'title': 'Python Fundamentals',
-                'description': 'Learn Python programming from basics to advanced concepts. Perfect for beginners who want to start their coding journey.',
-                'language': python_lang,
-                'difficulty': 'beginner',
-                'estimated_hours': 20,
-                'created_by': admin_user,
-                'university': university,
-                'status': 'published',
-                'is_free': True,
-                'is_featured': True
-            }
-        )
-        
-        if created:
-            self.stdout.write(f'Created course: {python_course.title}')
             
-            # Create lessons for Python course
-            lessons_data = [
-                {
-                    'title': 'Hello World',
-                    'slug': 'hello-world',
-                    'description': 'Your first Python program',
-                    'lesson_type': 'coding',
-                    'problem_statement': '''Viết chương trình Python đầu tiên của bạn!
-
-Hãy tạo một chương trình in ra màn hình dòng chữ "Hello, World!".
-
-Đây là bài tập truyền thống để bắt đầu học lập trình.''',
-                    'starter_code': '# Viết code Python của bạn ở đây\n# In ra "Hello, World!"\n',
-                    'solution_code': 'print("Hello, World!")',
-                    'test_cases': [
-                        {
-                            'input': '',
-                            'expected_output': 'Hello, World!'
+            if created:
+                # Add tags
+                for tag_name in course_data['tags']:
+                    if tag_name in tags:
+                        course.tags.add(tags[tag_name])
+                
+                self.stdout.write(f'Created course: {course.title}')
+                
+                # Create lessons
+                for i, lesson_data in enumerate(course_data['lessons']):
+                    lesson, lesson_created = CodeLesson.objects.get_or_create(
+                        course=course,
+                        title=lesson_data['title'],
+                        defaults={
+                            'slug': slugify(lesson_data['title']),
+                            'description': lesson_data.get('description', ''),
+                            'lesson_type': lesson_data['lesson_type'],
+                            'theory_content': lesson_data.get('theory_content', ''),
+                            'problem_statement': lesson_data.get('problem_statement', ''),
+                            'starter_code': lesson_data.get('starter_code', ''),
+                            'solution_code': lesson_data.get('solution_code', ''),
+                            'test_cases': lesson_data.get('test_cases', []),
+                            'hints': lesson_data.get('hints', []),
+                            'order_index': i + 1,
+                            'is_published': True,
+                            'estimated_time': 30,
+                            'points_reward': 10
                         }
-                    ],
-                    'order_index': 1,
-                    'points_reward': 10
-                },
-                {
-                    'title': 'Variables and Input',
-                    'slug': 'variables-and-input',
-                    'description': 'Learn about variables and user input',
-                    'lesson_type': 'coding',
-                    'problem_statement': '''Học cách sử dụng biến và nhập dữ liệu từ người dùng.
-
-Viết chương trình:
-1. Hỏi tên người dùng
-2. In ra lời chào cá nhân hóa
-
-Ví dụ:
-Input: "Alice"
-Output: "Hello, Alice!"''',
-                    'starter_code': '# Nhập tên từ người dùng\nname = input()\n\n# In lời chào\n# Viết code của bạn ở đây\n',
-                    'solution_code': 'name = input()\nprint(f"Hello, {name}!")',
-                    'test_cases': [
-                        {
-                            'input': 'Alice',
-                            'expected_output': 'Hello, Alice!'
-                        },
-                        {
-                            'input': 'Bob',
-                            'expected_output': 'Hello, Bob!'
-                        }
-                    ],
-                    'order_index': 2,
-                    'points_reward': 15
-                },
-                {
-                    'title': 'Simple Calculator',
-                    'slug': 'simple-calculator',
-                    'description': 'Create a basic calculator',
-                    'lesson_type': 'coding',
-                    'problem_statement': '''Tạo máy tính đơn giản.
-
-Nhập 2 số và tính tổng của chúng.
-
-Input: 2 dòng, mỗi dòng 1 số nguyên
-Output: Tổng của 2 số''',
-                    'starter_code': '# Nhập 2 số từ người dùng\na = int(input())\nb = int(input())\n\n# Tính và in tổng\n# Viết code của bạn ở đây\n',
-                    'solution_code': 'a = int(input())\nb = int(input())\nresult = a + b\nprint(result)',
-                    'test_cases': [
-                        {
-                            'input': '5\n3',
-                            'expected_output': '8'
-                        },
-                        {
-                            'input': '10\n-2',
-                            'expected_output': '8'
-                        },
-                        {
-                            'input': '0\n0',
-                            'expected_output': '0'
-                        }
-                    ],
-                    'order_index': 3,
-                    'points_reward': 20
-                }
-            ]
-            
-            for lesson_data in lessons_data:
-                lesson = CodeLesson.objects.create(
-                    course=python_course,
-                    **lesson_data,
-                    is_published=True
-                )
-                self.stdout.write(f'Created lesson: {lesson.title}')
+                    )
+                    
+                    if lesson_created:
+                        self.stdout.write(f'  Created lesson: {lesson.title}')
         
-        # Create JavaScript course
-        js_lang = CodeLanguage.objects.get(name='javascript')
-        js_course, created = CodeCourse.objects.get_or_create(
-            slug='javascript-basics',
-            defaults={
-                'title': 'JavaScript Basics',
-                'description': 'Master JavaScript fundamentals for web development. Learn variables, functions, and DOM manipulation.',
-                'language': js_lang,
-                'difficulty': 'beginner',
-                'estimated_hours': 15,
-                'created_by': admin_user,
-                'university': university,
-                'status': 'published',
-                'is_free': True
-            }
-        )
-        
-        if created:
-            self.stdout.write(f'Created course: {js_course.title}')
-            
-            # Create lessons for JavaScript course
-            js_lessons = [
-                {
-                    'title': 'Console Output',
-                    'slug': 'console-output',
-                    'description': 'Learn console.log and basic output',
-                    'lesson_type': 'coding',
-                    'problem_statement': '''Học cách in ra console trong JavaScript.
-
-Sử dụng console.log() để in "Hello, JavaScript!"''',
-                    'starter_code': '// Viết JavaScript code ở đây\n// Sử dụng console.log()\n',
-                    'solution_code': 'console.log("Hello, JavaScript!");',
-                    'test_cases': [
-                        {
-                            'input': '',
-                            'expected_output': 'Hello, JavaScript!'
-                        }
-                    ],
-                    'order_index': 1,
-                    'points_reward': 10
-                }
-            ]
-            
-            for lesson_data in js_lessons:
-                lesson = CodeLesson.objects.create(
-                    course=js_course,
-                    **lesson_data,
-                    is_published=True
-                )
-                self.stdout.write(f'Created lesson: {lesson.title}')
-        
-        self.stdout.write(self.style.SUCCESS('Sample coding data created successfully!'))
+        self.stdout.write(self.style.SUCCESS('\nSample data created successfully!'))
+        self.stdout.write('\nCourses created:')
+        for course in CodeCourse.objects.all():
+            lesson_count = course.lessons.count()
+            self.stdout.write(f'  • {course.title} ({lesson_count} lessons)')

@@ -37,8 +37,8 @@ INSTALLED_APPS = [
 
 
 # Judge0 API configuration
-JUDGE0_API_KEY = "9a99780a04msh553f9e3886a82b4p1390b1jsnb8610d7b3942"
-JUDGE0_BASE_URL = "https://judge0-ce.p.rapidapi.com"
+JUDGE0_API_KEY = "5d71f3174cmsh463db3f9fd800bcp15795bjsn61d7bcc37466"
+JUDGE0_BASE_URL = "judge0-ce.p.rapidapi.com"
 AI_SETTINGS = {
     'GEMINI_API_KEY': 'AIzaSyB5r_8Ou0fDq-XHoBWHGIXWcblxkoa9VgM',  # Move to environment variable
     'MAX_DOCUMENT_SUGGESTIONS': 5,

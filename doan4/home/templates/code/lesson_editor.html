@@ -1,12 +1,7 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ lesson.title }} - {{ course.title }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block extra_css %}
     <style>
         :root {
             --primary: #6366f1;
@@ -356,10 +351,574 @@
             height: 100%;
             transition: width 0.3s ease;
         }
+        /* Mobile Responsive CSS cho Code Editor Lesson Page */
+
+/* Tablet landscape and below */
+@media (max-width: 1200px) {
+    .sidebar {
+        width: 300px;
+        min-width: 280px;
+    }
+    
+    .output-panel {
+        width: 350px;
+        min-width: 320px;
+    }
+    
+    .editor-toolbar .toolbar-right {
+        gap: 0.25rem;
+    }
+    
+    .editor-toolbar button {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* Tablet portrait */
+@media (max-width: 992px) {
+    .editor-container {
+        flex-direction: column;
+        height: 100vh;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: 30vh;
+        min-width: auto;
+        max-width: none;
+        resize: vertical;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .sidebar-content {
+        padding: 1rem;
+    }
+    
+    .editor-main {
+        flex: 1;
+        height: 45vh;
+    }
+    
+    .output-panel {
+        width: 100%;
+        height: 25vh;
+        min-width: auto;
+        max-width: none;
+        resize: vertical;
+        border-left: none;
+        border-top: 1px solid #546e7a;
+    }
+    
+    /* Make AI chat take more space on tablet */
+    .ai-chat {
+        height: 60%;
+    }
+    
+    .problem-statement,
+    .test-cases,
+    .hints-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+}
+
+/* Mobile landscape */
+@media (max-width: 768px) and (orientation: landscape) {
+    .sidebar {
+        height: 35vh;
+    }
+    
+    .editor-main {
+        height: 40vh;
+    }
+    
+    .output-panel {
+        height: 25vh;
+    }
+    
+    /* Compact toolbar for landscape */
+    .editor-toolbar {
+        padding: 0.5rem;
+    }
+    
+    .editor-toolbar .toolbar-left span {
+        display: none; /* Hide filename on mobile landscape */
+    }
+    
+    .editor-toolbar button {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    .editor-toolbar button i {
+        margin-right: 0;
+    }
+    
+    .editor-toolbar button span {
+        display: none; /* Only show icons */
+    }
+}
+
+/* Mobile portrait */
+@media (max-width: 768px) and (orientation: portrait) {
+    body {
+        overflow: visible;
+    }
+    
+    .editor-container {
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+    
+    /* Mobile tabs for switching between sections */
+    .mobile-tabs {
+        display: flex;
+        background: white;
+        border-bottom: 1px solid #e5e7eb;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+    
+    .mobile-tab {
+        flex: 1;
+        padding: 0.75rem;
+        text-align: center;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .mobile-tab.active {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .mobile-tab:not(.active) {
+        color: #6b7280;
+    }
+    
+    /* Hide panels and show one at a time */
+    .sidebar,
+    .editor-main,
+    .output-panel {
+        display: none;
+        width: 100%;
+        height: calc(100vh - 50px);
+        resize: none;
+        border: none;
+    }
+    
+    .sidebar.active,
+    .editor-main.active,
+    .output-panel.active {
+        display: flex;
+    }
+    
+    /* Sidebar mobile adjustments */
+    .sidebar.active {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    
+    .sidebar-header {
+        padding: 1rem;
+        position: sticky;
+        top: 0;
+    }
+    
+    .sidebar-content {
+        flex: 1;
+        padding: 1rem;
+    }
+    
+    .sidebar-header h6 {
+        font-size: 1rem;
+        line-height: 1.3;
+    }
+    
+    .problem-statement,
+    .test-cases,
+    .hints-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+    }
+    
+    .problem-statement h6,
+    .test-cases h6,
+    .hints-section h6 {
+        font-size: 0.9rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    /* Editor mobile adjustments */
+    .editor-main.active {
+        flex-direction: column;
+    }
+    
+    .editor-toolbar {
+        padding: 0.5rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .toolbar-left {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .toolbar-right {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.25rem;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    
+    .editor-toolbar button {
+        padding: 0.6rem;
+        font-size: 0.8rem;
+        min-height: 44px; /* Touch-friendly */
+    }
+    
+    .language-selector {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.75rem;
+    }
+    
+    .toolbar-left span {
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+    }
+    
+    /* Output panel mobile adjustments */
+    .output-panel.active {
+        flex-direction: column;
+    }
+    
+    .output-tabs {
+        display: flex;
+        background: #37474f;
+    }
+    
+    .output-tab {
+        flex: 1;
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+        text-align: center;
+        min-height: 44px;
+    }
+    
+    .output-content {
+        flex: 1;
+        padding: 1rem;
+        font-size: 0.8rem;
+        overflow-y: auto;
+    }
+    
+    /* AI Chat mobile optimizations */
+    .ai-chat {
+        height: 100%;
+        display: flex !important;
+    }
+    
+    .ai-messages {
+        flex: 1;
+        padding: 1rem;
+        overflow-y: auto;
+    }
+    
+    .ai-message,
+    .user-message {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+    
+    .ai-input-container {
+        padding: 1rem;
+        background: #37474f;
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-end;
+    }
+    
+    .ai-input {
+        flex: 1;
+        background: #263238;
+        border: 1px solid #546e7a;
+        color: white;
+        padding: 0.75rem;
+        border-radius: 8px;
+        resize: none;
+        min-height: 44px;
+        max-height: 120px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-ai {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Test results mobile */
+    .test-result {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+    }
+    
+    .test-result small {
+        font-size: 0.75rem;
+        display: block;
+        margin-top: 0.25rem;
+    }
+    
+    .test-result code {
+        font-size: 0.75rem;
+        word-break: break-all;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .mobile-tab {
+        padding: 0.6rem 0.25rem;
+        font-size: 0.75rem;
+    }
+    
+    .mobile-tab i {
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    
+    .sidebar-content,
+    .output-content,
+    .ai-messages {
+        padding: 0.75rem;
+    }
+    
+    .editor-toolbar {
+        padding: 0.5rem;
+    }
+    
+    .toolbar-right {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.25rem;
+    }
+    
+    .editor-toolbar button {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.75rem;
+    }
+    
+    .editor-toolbar button span {
+        display: none;
+    }
+    
+    .problem-statement,
+    .test-cases,
+    .hints-section {
+        padding: 0.75rem;
+    }
+    
+    .ai-input {
+        font-size: 0.85rem;
+        padding: 0.6rem;
+    }
+    
+    .ai-message,
+    .user-message {
+        padding: 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Monaco editor font size adjustment for mobile */
+    #monaco-editor .monaco-editor {
+        font-size: 12px !important;
+    }
+}
+
+/* Very small devices */
+@media (max-width: 360px) {
+    .sidebar-header,
+    .sidebar-content {
+        padding: 0.5rem;
+    }
+    
+    .editor-toolbar button {
+        padding: 0.4rem 0.2rem;
+        font-size: 0.7rem;
+        min-height: 40px;
+    }
+    
+    .mobile-tab {
+        font-size: 0.7rem;
+        padding: 0.5rem 0.2rem;
+    }
+    
+    .output-content,
+    .ai-messages {
+        padding: 0.5rem;
+    }
+    
+    .ai-input-container {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    #monaco-editor .monaco-editor {
+        font-size: 11px !important;
+    }
+}
+
+/* Loading states for mobile */
+@media (max-width: 768px) {
+    .loading-spinner {
+        width: 16px;
+        height: 16px;
+        border-width: 2px;
+    }
+    
+    /* Better loading indicators for mobile */
+    button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+    
+    button:disabled .loading-spinner {
+        margin: 0 auto;
+    }
+}
+
+/* Touch optimizations */
+@media (hover: none) and (pointer: coarse) {
+    /* Remove hover effects */
+    .btn-run:hover,
+    .btn-submit:hover,
+    .btn-hint:hover,
+    .btn-ai:hover {
+        transform: none;
+    }
+    
+    /* Larger touch targets */
+    .mobile-tab,
+    .output-tab,
+    button,
+    .btn-ai {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Better scroll behavior */
+    .sidebar-content,
+    .output-content,
+    .ai-messages {
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+    }
+    
+    /* Prevent zoom on input focus */
+    input, textarea, select {
+        font-size: 16px !important;
+    }
+}
+
+/* Accessibility improvements for mobile */
+@media (max-width: 768px) {
+    /* Focus indicators */
+    button:focus,
+    .mobile-tab:focus,
+    .output-tab:focus {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+    }
+    
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+        .sidebar,
+        .problem-statement,
+        .test-cases,
+        .hints-section {
+            border: 1px solid #000;
+        }
+        
+        .editor-main {
+            border: 1px solid #fff;
+        }
+        
+        .output-panel {
+            border: 1px solid #fff;
+        }
+    }
+    
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
+/* Print styles (hide complex editor on print) */
+@media print {
+    .editor-container {
+        display: none;
+    }
+}
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
+
+    <!-- Thêm dữ liệu lesson vào script để JavaScript có thể sử dụng -->
+    <script type="text/javascript">
+        // Dữ liệu từ Django template cho JavaScript
+        const LESSON_DATA = {
+            id: {{ lesson.id }},
+            title: "{{ lesson.title|escapejs }}",
+            course: {
+                id: {{ course.id }},
+                title: "{{ course.title|escapejs }}",
+                language: {
+                    id: {{ course.language.id }},
+                    name: "{{ course.language.name|escapejs }}",
+                    display_name: "{{ course.language.display_name|escapejs }}"
+                }
+            }
+        };
+    </script>
+
     <div class="editor-container">
+        <div class="mobile-tabs" style="display: none;">
+    <button class="mobile-tab active" onclick="switchMobileSection('problem')">
+        <i class="fas fa-puzzle-piece"></i>
+        <span>Đề Bài</span>
+    </button>
+    <button class="mobile-tab" onclick="switchMobileSection('editor')">
+        <i class="fas fa-code"></i>
+        <span>Code</span>
+    </button>
+    <button class="mobile-tab" onclick="switchMobileSection('output')">
+        <i class="fas fa-terminal"></i>
+        <span>Output</span>
+    </button>
+</div>
         <!-- Left Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
@@ -536,6 +1095,7 @@
         let editor;
         let currentTab = 'console';
         let autoSaveInterval;
+        let isAIThinking = false; // Thêm biến để theo dõi trạng thái AI
         
         // Initialize Monaco Editor
         require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.34.0/min/vs' } });
@@ -591,7 +1151,7 @@
         // Functions
         function saveCodeToSession() {
             if (editor) {
-                sessionStorage.setItem('lesson_{{ lesson.id }}_code', editor.getValue());
+                sessionStorage.setItem(`lesson_${LESSON_DATA.id}_code`, editor.getValue());
             }
         }
         
@@ -617,8 +1177,8 @@
                 },
                 body: JSON.stringify({
                     code: code,
-                    language_id: {{ course.language.id }},
-                    lesson_id: {{ lesson.id }}
+                    language_id: LESSON_DATA.course.language.id,
+                    lesson_id: LESSON_DATA.id
                 })
             })
             .then(response => response.json())
@@ -677,8 +1237,8 @@
                 },
                 body: JSON.stringify({
                     code: code,
-                    language_id: {{ course.language.id }},
-                    lesson_id: {{ lesson.id }}
+                    language_id: LESSON_DATA.course.language.id,
+                    lesson_id: LESSON_DATA.id
                 })
             })
             .then(response => response.json())
@@ -771,10 +1331,19 @@
         }
         
         function sendAIMessage() {
+            // Kiểm tra xem AI có đang suy nghĩ không
+            if (isAIThinking) {
+                console.log('AI đang suy nghĩ, vui lòng đợi...');
+                return;
+            }
+            
             const input = document.getElementById('aiInput');
             const message = input.value.trim();
             
             if (!message) return;
+            
+            // Đánh dấu AI đang suy nghĩ
+            isAIThinking = true;
             
             // Add user message
             addUserMessage(message);
@@ -783,43 +1352,70 @@
             // Add typing indicator
             const typingDiv = addAIMessage('🤖 AI đang suy nghĩ...', true);
             
-            // Prepare AI prompt
+            // Disable send button
+            const sendBtn = document.getElementById('aiSendBtn');
+            const originalBtnContent = sendBtn.innerHTML;
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<div class="loading-spinner"></div>';
+            
+            // Prepare AI prompt - SỬA DỤNG LESSON_DATA thay vì lesson
             const code = editor.getValue();
             const aiPrompt = `
-                Bài tập: ${lesson.title}
+                Bài tập: ${LESSON_DATA.title}
+                Ngôn ngữ: ${LESSON_DATA.course.language.display_name}
                 
                 Code hiện tại:
-                \`\`\`{{ course.language.name }}
+                \`\`\`${LESSON_DATA.course.language.name}
                 ${code}
                 \`\`\`
                 
                 Câu hỏi của học viên: ${message}
                 
-                Hãy trả lời ngắn gọn và hữu ích.
+                Hãy trả lời ngắn gọn và hữu ích trong vai trò là AI mentor lập trình.
             `;
+            
+            // Create FormData for the request
+            const formData = new FormData();
+            formData.append('message', aiPrompt);
             
             // Call AI API (using existing text chat endpoint)
             fetch('/ai/text-chat/', {
                 method: 'POST',
-                body: new FormData(Object.assign(document.createElement('form'), {
-                    innerHTML: `<input name="message" value="${aiPrompt.replace(/"/g, '&quot;')}">`
-                })),
+                body: formData,
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')
                 }
             })
             .then(response => response.json())
             .then(data => {
-                typingDiv.remove();
+                // Xóa typing indicator
+                if (typingDiv && typingDiv.parentNode) {
+                    typingDiv.remove();
+                }
+                
+                // Khôi phục trạng thái button
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = originalBtnContent;
+                isAIThinking = false; // Đánh dấu AI đã xong
                 
                 if (data.success) {
                     addAIMessage(data.response.content);
                 } else {
-                    addAIMessage('Xin lỗi, tôi không thể trả lời lúc này: ' + data.error);
+                    addAIMessage('Xin lỗi, tôi không thể trả lời lúc này: ' + (data.error || 'Lỗi không xác định'));
                 }
             })
             .catch(error => {
-                typingDiv.remove();
+                // Xóa typing indicator nếu có lỗi
+                if (typingDiv && typingDiv.parentNode) {
+                    typingDiv.remove();
+                }
+                
+                // Khôi phục trạng thái button
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = originalBtnContent;
+                isAIThinking = false; // Đánh dấu AI đã xong
+                
+                console.error('AI API Error:', error);
                 addAIMessage('Lỗi kết nối: ' + error.message);
             });
         }
@@ -828,7 +1424,7 @@
             const messagesContainer = document.getElementById('aiMessages');
             const messageDiv = document.createElement('div');
             messageDiv.className = 'user-message';
-            messageDiv.innerHTML = `<strong>👤 Bạn:</strong><br>${message}`;
+            messageDiv.innerHTML = `<strong>👤 Bạn:</strong><br>${message.replace(/\n/g, '<br>')}`;
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
@@ -866,11 +1462,354 @@
         
         // Load saved code from session
         document.addEventListener('DOMContentLoaded', function() {
-            const savedCode = sessionStorage.getItem('lesson_{{ lesson.id }}_code');
+            const savedCode = sessionStorage.getItem(`lesson_${LESSON_DATA.id}_code`);
             if (savedCode && editor) {
                 editor.setValue(savedCode);
             }
         });
-    </script>
-</body>
-</html>
+        // Mobile Tabs JavaScript - Thêm vào cuối file JavaScript hiện tại
+
+// Mobile navigation functions
+function initMobileTabs() {
+    // Create mobile tabs if on mobile
+    if (window.innerWidth <= 768) {
+        createMobileTabs();
+    }
+}
+
+function createMobileTabs() {
+    // Check if mobile tabs already exist
+    if (document.querySelector('.mobile-tabs')) {
+        return;
+    }
+    
+    // Create mobile tabs container
+    const mobileTabs = document.createElement('div');
+    mobileTabs.className = 'mobile-tabs';
+    mobileTabs.innerHTML = `
+        <button class="mobile-tab active" onclick="switchMobileSection('problem')">
+            <i class="fas fa-puzzle-piece"></i>
+            <span>Đề Bài</span>
+        </button>
+        <button class="mobile-tab" onclick="switchMobileSection('editor')">
+            <i class="fas fa-code"></i>
+            <span>Code</span>
+        </button>
+        <button class="mobile-tab" onclick="switchMobileSection('output')">
+            <i class="fas fa-terminal"></i>
+            <span>Output</span>
+        </button>
+    `;
+    
+    // Insert mobile tabs at the beginning of editor container
+    const editorContainer = document.querySelector('.editor-container');
+    editorContainer.insertBefore(mobileTabs, editorContainer.firstChild);
+    
+    // Set initial state - show problem section first
+    switchMobileSection('problem');
+}
+
+function switchMobileSection(section) {
+    // Only apply on mobile
+    if (window.innerWidth > 768) {
+        return;
+    }
+    
+    // Update tab buttons
+    document.querySelectorAll('.mobile-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Find and activate current tab
+    const sections = ['problem', 'editor', 'output'];
+    const index = sections.indexOf(section);
+    if (index !== -1) {
+        document.querySelectorAll('.mobile-tab')[index].classList.add('active');
+    }
+    
+    // Hide all sections
+    document.querySelector('.sidebar').classList.remove('active');
+    document.querySelector('.editor-main').classList.remove('active');
+    document.querySelector('.output-panel').classList.remove('active');
+    
+    // Show selected section
+    if (section === 'problem') {
+        document.querySelector('.sidebar').classList.add('active');
+    } else if (section === 'editor') {
+        document.querySelector('.editor-main').classList.add('active');
+        // Trigger Monaco editor resize when switching to editor
+        setTimeout(() => {
+            if (editor) {
+                editor.layout();
+            }
+        }, 100);
+    } else if (section === 'output') {
+        document.querySelector('.output-panel').classList.add('active');
+    }
+}
+
+function removeMobileTabs() {
+    const mobileTabs = document.querySelector('.mobile-tabs');
+    if (mobileTabs) {
+        mobileTabs.remove();
+    }
+    
+    // Reset sections to desktop layout
+    document.querySelector('.sidebar').classList.remove('active');
+    document.querySelector('.editor-main').classList.remove('active');
+    document.querySelector('.output-panel').classList.remove('active');
+}
+
+// Enhanced resize handler
+function handleResize() {
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        // Initialize mobile layout
+        initMobileTabs();
+    } else {
+        // Remove mobile layout
+        removeMobileTabs();
+        // Trigger editor resize
+        setTimeout(() => {
+            if (editor) {
+                editor.layout();
+            }
+        }, 100);
+    }
+}
+
+// Enhanced submit function with mobile navigation
+function submitCodeMobile() {
+    submitCode();
+    // Switch to output tab on mobile after submit
+    if (window.innerWidth <= 768) {
+        setTimeout(() => {
+            switchMobileSection('output');
+        }, 500);
+    }
+}
+
+// Enhanced run function with mobile navigation  
+function runCodeMobile() {
+    runCode();
+    // Switch to output tab on mobile after run
+    if (window.innerWidth <= 768) {
+        setTimeout(() => {
+            switchMobileSection('output');
+        }, 500);
+    }
+}
+
+// Touch-friendly AI input handling
+function initMobileAI() {
+    const aiInput = document.getElementById('aiInput');
+    if (!aiInput) return;
+    
+    // Auto-resize textarea on mobile
+    aiInput.addEventListener('input', function() {
+        if (window.innerWidth <= 768) {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        }
+    });
+    
+    // Handle mobile keyboard
+    aiInput.addEventListener('focus', function() {
+        if (window.innerWidth <= 768) {
+            // Scroll to bottom when keyboard opens
+            setTimeout(() => {
+                const aiChat = document.getElementById('aiChat');
+                if (aiChat) {
+                    aiChat.scrollTop = aiChat.scrollHeight;
+                }
+            }, 300);
+        }
+    });
+}
+
+// Mobile-specific Monaco editor settings
+function configureMobileEditor() {
+    if (window.innerWidth <= 768 && editor) {
+        editor.updateOptions({
+            fontSize: 12,
+            minimap: { enabled: false },
+            lineNumbers: 'on',
+            wordWrap: 'on',
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            scrollbar: {
+                vertical: 'auto',
+                horizontal: 'auto',
+                verticalScrollbarSize: 8,
+                horizontalScrollbarSize: 8
+            }
+        });
+    }
+}
+
+// Swipe gesture support for mobile tabs
+function initMobileGestures() {
+    let startX = 0;
+    let currentSection = 'problem';
+    const sections = ['problem', 'editor', 'output'];
+    
+    const editorContainer = document.querySelector('.editor-container');
+    
+    editorContainer.addEventListener('touchstart', function(e) {
+        if (window.innerWidth > 768) return;
+        startX = e.touches[0].clientX;
+    }, { passive: true });
+    
+    editorContainer.addEventListener('touchend', function(e) {
+        if (window.innerWidth > 768) return;
+        
+        const endX = e.changedTouches[0].clientX;
+        const diffX = startX - endX;
+        const threshold = 50; // Minimum swipe distance
+        
+        if (Math.abs(diffX) > threshold) {
+            const currentIndex = sections.indexOf(currentSection);
+            
+            if (diffX > 0 && currentIndex < sections.length - 1) {
+                // Swipe left - next section
+                currentSection = sections[currentIndex + 1];
+                switchMobileSection(currentSection);
+            } else if (diffX < 0 && currentIndex > 0) {
+                // Swipe right - previous section
+                currentSection = sections[currentIndex - 1];
+                switchMobileSection(currentSection);
+            }
+        }
+    }, { passive: true });
+}
+
+// Mobile performance optimizations
+function initMobileOptimizations() {
+    if (window.innerWidth <= 768) {
+        // Reduce animation duration
+        document.documentElement.style.setProperty('--animation-duration', '0.2s');
+        
+        // Optimize Monaco editor for mobile
+        configureMobileEditor();
+        
+        // Add passive listeners for better scroll performance
+        const scrollElements = document.querySelectorAll('.sidebar-content, .output-content, .ai-messages');
+        scrollElements.forEach(el => {
+            el.addEventListener('scroll', function() {
+                // Handle scroll events
+            }, { passive: true });
+        });
+    }
+}
+
+// Update existing event listeners to use mobile versions
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize mobile features
+    initMobileTabs();
+    initMobileAI();
+    initMobileGestures();
+    initMobileOptimizations();
+    
+    // Update button event listeners for mobile
+    document.getElementById('runBtn').removeEventListener('click', runCode);
+    document.getElementById('runBtn').addEventListener('click', runCodeMobile);
+    
+    document.getElementById('submitBtn').removeEventListener('click', submitCode);
+    document.getElementById('submitBtn').addEventListener('click', submitCodeMobile);
+    
+    // Load saved code from session
+    const savedCode = sessionStorage.getItem(`lesson_${LESSON_DATA.id}_code`);
+    if (savedCode && editor) {
+        editor.setValue(savedCode);
+    }
+    
+    // Handle orientation change
+    window.addEventListener('orientationchange', function() {
+        setTimeout(handleResize, 100);
+    });
+});
+
+// Update resize handler
+window.addEventListener('resize', handleResize);
+
+// Mobile-specific utility functions
+function isMobile() {
+    return window.innerWidth <= 768;
+}
+
+function isTablet() {
+    return window.innerWidth <= 992 && window.innerWidth > 768;
+}
+
+// Mobile toast notifications
+function showMobileToast(message, type = 'info') {
+    if (!isMobile()) return;
+    
+    const toast = document.createElement('div');
+    toast.className = `mobile-toast toast-${type}`;
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#6366f1'};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        z-index: 1000;
+        font-size: 14px;
+        max-width: 90%;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+    }, 10);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(20px)';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Update existing functions to show mobile toasts
+const originalRunCode = runCode;
+runCode = function() {
+    originalRunCode();
+    if (isMobile()) {
+        showMobileToast('Đang chạy code...', 'info');
+    }
+};
+
+const originalSubmitCode = submitCode;  
+submitCode = function() {
+    originalSubmitCode();
+    if (isMobile()) {
+        showMobileToast('Đang chấm bài...', 'info');
+    }
+};
+
+// Make functions globally available
+window.switchMobileSection = switchMobileSection;
+window.initMobileTabs = initMobileTabs;
+window.handleResize = handleResize;
+window.showMobileToast = showMobileToast;
+</script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap JS (đặt trước closing body tag) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
