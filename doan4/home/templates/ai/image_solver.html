@@ -747,14 +747,21 @@
     </div>
     <div class="col-md-4 text-end">
       <div class="d-flex gap-2 justify-content-end">
-        <a href="/ai/history/" class="btn btn-outline-black">
-          <i class="fas fa-history me-2"></i>
-          Lịch Sử
-        </a>
-        <a href="{% url 'ai_solutions_history' %}" class="btn btn-outline-black ">
-          <i class="fas fa-clock me-2"></i>
-          Xem Tất Cả
-        </a>
+        {% if user.is_authenticated %}
+          <a href="/ai/history/" class="btn btn-outline-black">
+            <i class="fas fa-history me-2"></i>
+            Lịch Sử
+          </a>
+          <a href="{% url 'ai_solutions_history' %}" class="btn btn-outline-black ">
+            <i class="fas fa-clock me-2"></i>
+            Xem Tất Cả
+          </a>
+        {% else %}
+          <a href="{% url 'home_login' %}" class="btn btn-outline-black">
+            <i class="fas fa-sign-in-alt me-2"></i>
+            Đăng Nhập
+          </a>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -899,11 +906,12 @@
   <div class="card-body p-4">
     <h5 class="card-title mb-3">
       <i class="fas fa-clock text-primary me-2"></i>
-      Lịch Sử Gần Đây
+      {% if user.is_authenticated %}Lịch Sử Gần Đây{% else %}Đăng nhập để xem lịch sử{% endif %}
     </h5>
     
-    {% if recent_solutions %}
-      {% for solution in recent_solutions %}
+    {% if user.is_authenticated %}
+      {% if recent_solutions %}
+        {% for solution in recent_solutions %}
       <div class="history-card mb-3" onclick="viewSolution({{ solution.id }})">
         <div class="d-flex align-items-center">
           {% if solution.solution_type == 'text_chat' or solution.document_type == 'txt' and 'Text Chat' in solution.title %}
@@ -950,11 +958,17 @@
           <i class="fas fa-chevron-right text-muted"></i>
         </div>
       </div>
-      {% endfor %}
+        {% endfor %}
+      {% else %}
+        <p class="text-muted text-center py-3">
+          <i class="fas fa-info-circle me-2"></i>
+          Chưa có lịch sử
+        </p>
+      {% endif %}
     {% else %}
       <p class="text-muted text-center py-3">
-        <i class="fas fa-info-circle me-2"></i>
-        Chưa có lịch sử
+        <i class="fas fa-sign-in-alt me-2"></i>
+        <a href="{% url 'home_login' %}" class="text-decoration-none">Đăng nhập</a> để xem lịch sử AI của bạn
       </p>
     {% endif %}
   </div>

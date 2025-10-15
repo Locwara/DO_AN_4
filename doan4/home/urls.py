@@ -2,12 +2,16 @@ from django.urls import path, include
 from . import views
 
 urlpatterns = [
-    path('', views.home_login_view, name='home_login'),
+    path('', views.dashboard_view, name='home'),
+    path('login/', views.home_login_view, name='home_login'),
     
     # Authentication URLs
     path('register/', views.register_view, name='register'),
     path('authenticate/login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    
+    # Google OAuth URLs
+    path('accounts/google/login/callback/', views.google_callback, name='google_callback'),
     
     # Dashboard sau khi đăng nhập
     path('dashboard/', views.dashboard_view, name='dashboard'),

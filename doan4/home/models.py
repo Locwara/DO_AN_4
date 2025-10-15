@@ -4,7 +4,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.search import SearchVectorField
 from cloudinary.models import CloudinaryField
 import uuid
-
+from django.conf import settings
 
 class User(AbstractUser):
     """Mở rộng bảng auth_user của Django"""
@@ -120,7 +120,23 @@ class Document(models.Model):
             models.Index(fields=['course', '-created_at']),
             models.Index(fields=['university', '-created_at']),
         ]
-    
+    def get_download_url(self):
+        """Trả về URL download trực tiếp"""
+        if not self.file_path:
+            return None
+            
+        try:
+            if hasattr(self.file_path, 'public_id') and self.file_path.public_id:
+                import cloudinary
+                return cloudinary.CloudinaryImage(self.file_path.public_id).build_url(
+                    secure=True,
+                    resource_type="raw",
+                    flags="attachment"  # Force download
+                )
+            else:
+                return self.file_path.url
+        except:
+            return self.file_path.url
     def get_search_keywords(self):
         """Extract keywords for better search"""
         keywords = []
@@ -131,7 +147,40 @@ class Document(models.Model):
         if self.university:
             keywords.append(self.university.name)
         return keywords
-
+    def get_secure_file_url(self):
+        """Trả về secure URL cho file"""
+        if not self.file_path:
+            return None
+        
+        try:
+            # Kiểm tra xem có phải Cloudinary file không
+            if hasattr(self.file_path, 'public_id') and self.file_path.public_id:
+                import cloudinary
+                # Dùng public_id để tạo URL
+                return cloudinary.CloudinaryImage(self.file_path.public_id).build_url(
+                    secure=True,
+                    resource_type="raw"  # Quan trọng cho files không phải image
+                )
+            else:
+                # Fallback về URL thông thường
+                url = self.file_path.url
+                if not settings.DEBUG and url.startswith('http://'):
+                    url = url.replace('http://', 'https://')
+                return url
+                
+        except Exception as e:
+            print(f"Error getting secure URL: {e}")
+            # Fallback về URL gốc
+            url = self.file_path.url
+            if not settings.DEBUG and url.startswith('http://'):
+                url = url.replace('http://', 'https://')
+            return url
+    def get_cloudinary_secure_url(self):
+        """Trả về Cloudinary secure URL"""
+        if hasattr(self.file_path, 'public_id'):
+            import cloudinary
+            return cloudinary.CloudinaryImage(self.file_path.public_id).build_url(secure=True)
+        return self.get_secure_file_url()
 
 class DocumentTag(models.Model):
     name = models.CharField(max_length=100, unique=True)

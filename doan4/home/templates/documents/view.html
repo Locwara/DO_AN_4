@@ -373,13 +373,22 @@
 
                         <!-- Action Buttons -->
                         <div class="action-buttons">
-                            <a href="{% url 'document_download' document.id %}" class="btn btn-download">
-                                <i class="fas fa-download"></i> Tải xuống
-                            </a>
-                            <button class="btn btn-like {% if is_liked %}liked{% endif %}" onclick="toggleLike({{ document.id }})">
-                                <i class="fas fa-heart"></i> 
-                                <span id="likeText">{% if is_liked %}Đã thích{% else %}Thích{% endif %}</span>
-                            </button>
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'document_download' document.id %}" class="btn btn-download">
+                                    <i class="fas fa-download"></i> Tải xuống
+                                </a>
+                                <button class="btn btn-like {% if is_liked %}liked{% endif %}" onclick="toggleLike({{ document.id }})">
+                                    <i class="fas fa-heart"></i> 
+                                    <span id="likeText">{% if is_liked %}Đã thích{% else %}Thích{% endif %}</span>
+                                </button>
+                            {% else %}
+                                <button onclick="alert('Vui lòng đăng nhập để tải xuống tài liệu'); window.location.href='{% url 'home_login' %}'" class="btn btn-outline-success">
+                                    <i class="fas fa-sign-in-alt"></i> Đăng nhập để tải xuống
+                                </button>
+                                <button onclick="alert('Vui lòng đăng nhập để thích tài liệu'); window.location.href='{% url 'home_login' %}'" class="btn btn-outline-danger">
+                                    <i class="fas fa-sign-in-alt"></i> Đăng nhập để thích
+                                </button>
+                            {% endif %}
                             <button class="btn btn-outline-primary" onclick="shareDocument()">
                                 <i class="fas fa-share"></i> Chia sẻ
                             </button>

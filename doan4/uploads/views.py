@@ -455,7 +455,7 @@ def api_temporary_upload(request):
                 upload_result = cloudinary.uploader.upload(
                     file,
                     resource_type="raw",
-                    folder="temp_documents/",  # Thư mục tạm thời
+                    folder="documents/",  # Thư mục tạm thời
                     use_filename=True,
                     unique_filename=True
                 )
@@ -496,6 +496,7 @@ def api_temporary_upload(request):
 @login_required
 @csrf_exempt
 def api_finalize_upload(request):
+    
     """API hoàn tất upload - KHÔNG chuyển file, chỉ tạo document record"""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'message': 'Method not allowed'})
@@ -545,6 +546,8 @@ def api_finalize_upload(request):
                     
                     # Kiểm tra file có tồn tại trên Cloudinary không
                     try:
+                        print(f"DEBUG DATA: {temp_file}")
+                        print(f"Processing file: {temp_file['original_name']}")
                         cloudinary.api.resource(
                             temp_file['cloudinary_public_id'], 
                             resource_type="raw"

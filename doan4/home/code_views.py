@@ -24,7 +24,6 @@ from .models import (
 )
 
 # Code Courses Views
-@login_required
 def code_courses_list(request):
     """List all coding courses"""
     courses = CodeCourse.objects.filter(
@@ -62,7 +61,7 @@ def code_courses_list(request):
     languages = CodeLanguage.objects.filter(is_active=True)
     universities = University.objects.filter(is_active=True)
     
-    # User's enrollments
+    # User's enrollments - chỉ khi đã đăng nhập
     user_enrollments = set()
     if request.user.is_authenticated:
         user_enrollments = set(
@@ -87,7 +86,6 @@ def code_courses_list(request):
     return render(request, 'code/courses_list.html', context)
 
 
-@login_required
 def code_course_detail(request, course_slug):
     """Course detail with lessons list"""
     course = get_object_or_404(
@@ -96,11 +94,13 @@ def code_course_detail(request, course_slug):
         status='published'
     )
     
-    # Check if user is enrolled
-    enrollment = CodeEnrollment.objects.filter(
-        user=request.user,
-        course=course
-    ).first()
+    # Check if user is enrolled (chỉ khi đã đăng nhập)
+    enrollment = None
+    if request.user.is_authenticated:
+        enrollment = CodeEnrollment.objects.filter(
+            user=request.user,
+            course=course
+        ).first()
     
     # Get lessons with progress
     lessons = CodeLesson.objects.filter(
@@ -140,11 +140,15 @@ def code_course_detail(request, course_slug):
     return render(request, 'code/course_detail.html', context)
 
 
-@login_required
 @require_http_methods(["POST"])
 def code_course_enroll(request, course_slug):
     """Enroll in a course"""
     course = get_object_or_404(CodeCourse, slug=course_slug, status='published')
+    
+    # Yêu cầu đăng nhập để enroll
+    if not request.user.is_authenticated:
+        messages.info(request, f'Vui lòng đăng nhập để đăng ký khóa học "{course.title}"')
+        return redirect('home_login')
     
     # Check if already enrolled
     if CodeEnrollment.objects.filter(user=request.user, course=course).exists():
@@ -1162,28 +1166,6 @@ def execute_python_simple_with_input_fixed(code, test_input=''):
         }
 
 # Update the main execute_code_safely function to handle input properly
-def execute_code_safely(code, language, lesson=None, timeout=10, test_input=''):
-    """Execute code with proper input handling"""
-    try:
-        # For local execution, handle input properly
-        if language.name.lower() == 'python':
-            return execute_python_locally_with_input(code, test_input)
-        
-        # For Judge0, use the improved prepare function
-        # ... rest of Judge0 code stays the same but use:
-        # test_code = prepare_test_code_for_judge0(code, test_input, language)
-        
-        # Judge0 execution code here...
-        
-    except Exception as e:
-        if language.name.lower() == 'python':
-            return execute_python_locally_with_input(code, test_input)
-        return {
-            'status': 'error',
-            'output': '',
-            'execution_time': 0,
-            'error': f'System error: {str(e)}'
-        }
 
 # Quick test function to verify input handling
 def test_input_handling():

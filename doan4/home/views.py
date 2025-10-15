@@ -224,7 +224,7 @@ def logout_view(request):
         logout(request)
         messages.success(request, f'Tạm biệt {username}! Bạn đã đăng xuất thành công.')
     
-    return redirect('home_login')
+    return redirect('dashboard')
 
 
 
@@ -234,7 +234,7 @@ from django.db.models import Sum, Count
 from .models import Document, University, Course, UserActivity
 
 def dashboard_view(request):
-    """Trang dashboard sau khi đăng nhập"""
+    """Trang dashboard - cho phép truy cập không cần đăng nhập"""
     documents = Document.objects.filter(
         status='approved',
         is_public=True
@@ -242,23 +242,29 @@ def dashboard_view(request):
         'university', 'course', 'uploaded_by'
     ).order_by('-created_at')[:12]
     
-    # Thống kê user
-    user_documents_count = Document.objects.filter(uploaded_by=request.user).count()
-    user_total_downloads = Document.objects.filter(uploaded_by=request.user).aggregate(
-        total=Sum('download_count'))['total'] or 0
-    user_total_likes = Document.objects.filter(uploaded_by=request.user).aggregate(
-        total=Sum('like_count'))['total'] or 0
+    # Thống kê user - chỉ hiển thị nếu đã đăng nhập
+    if request.user.is_authenticated:
+        user_documents_count = Document.objects.filter(uploaded_by=request.user).count()
+        user_total_downloads = Document.objects.filter(uploaded_by=request.user).aggregate(
+            total=Sum('download_count'))['total'] or 0
+        user_total_likes = Document.objects.filter(uploaded_by=request.user).aggregate(
+            total=Sum('like_count'))['total'] or 0
+        
+        # Hoạt động gần đây
+        recent_activities = UserActivity.objects.filter(
+            user=request.user
+        ).order_by('-created_at')[:5]
+    else:
+        user_documents_count = 0
+        user_total_downloads = 0
+        user_total_likes = 0
+        recent_activities = []
     
     # Danh sách trường với thống kê
     universities = University.objects.filter(is_active=True).annotate(
         courses_count=Count('course'),
         documents_count=Count('document')
     ).order_by('name')
-    
-    # Hoạt động gần đây
-    recent_activities = UserActivity.objects.filter(
-        user=request.user
-    ).order_by('-created_at')[:5]
     
     context = {
         'documents': documents,
@@ -378,6 +384,7 @@ def documents_search(request):
     
     return render(request, 'documents/search.html', context)
 
+@login_required
 def document_like(request, document_id):
     document = get_object_or_404(Document, id=document_id, status='approved', is_public=True)
     
@@ -414,7 +421,6 @@ def document_like(request, document_id):
         'like_count': document.like_count
     })
 
-@login_required
 def document_view(request, document_id):
     document = get_object_or_404(Document, id=document_id, status='approved', is_public=True)
     
@@ -425,23 +431,26 @@ def document_view(request, document_id):
     # Lưu lại lượt xem
     DocumentView.objects.create(
         document=document,
-        user=request.user,
+        user=request.user if request.user.is_authenticated else None,
         ip_address=request.META.get('REMOTE_ADDR'),
         user_agent=request.META.get('HTTP_USER_AGENT', '')
     )
     
-    # Ghi log hoạt động
-    UserActivity.objects.create(
-        user=request.user,
-        action='view_document',
-        description=f'Xem tài liệu "{document.title}"',
-        document=document,
-        ip_address=request.META.get('REMOTE_ADDR'),
-        user_agent=request.META.get('HTTP_USER_AGENT', '')
-    )
+    # Ghi log hoạt động nếu user đã đăng nhập
+    if request.user.is_authenticated:
+        UserActivity.objects.create(
+            user=request.user,
+            action='view_document',
+            description=f'Xem tài liệu "{document.title}"',
+            document=document,
+            ip_address=request.META.get('REMOTE_ADDR'),
+            user_agent=request.META.get('HTTP_USER_AGENT', '')
+        )
     
-    # Kiểm tra user đã like chưa
-    is_liked = DocumentLike.objects.filter(document=document, user=request.user).exists()
+    # Kiểm tra user đã like chưa (chỉ khi đã đăng nhập)
+    is_liked = False
+    if request.user.is_authenticated:
+        is_liked = DocumentLike.objects.filter(document=document, user=request.user).exists()
     
     # Tài liệu liên quan
     related_documents = Document.objects.filter(
@@ -461,7 +470,11 @@ from django.utils import timezone
 @login_required
 def document_download(request, document_id):
     document = get_object_or_404(Document, id=document_id, status='approved', is_public=True)
-    
+    print(f"Document ID: {document.id}")
+    print(f"File path: {document.file_path}")
+    print(f"Has public_id: {hasattr(document.file_path, 'public_id')}")
+    if hasattr(document.file_path, 'public_id'):
+        print(f"Public ID: {document.file_path.public_id}")
     # Kiểm tra quyền tải (premium user có thể tải tất cả)
     if not request.user.is_premium and document.uploaded_by != request.user:
         # Giới hạn số lần tải cho user thường
@@ -485,7 +498,7 @@ def document_download(request, document_id):
         ip_address=request.META.get('REMOTE_ADDR')
     )
     
-    # Ghi log hoạt động
+    # Ghi log hoạt động 
     UserActivity.objects.create(
         user=request.user,
         action='download_document',
@@ -493,14 +506,16 @@ def document_download(request, document_id):
         document=document,
         ip_address=request.META.get('REMOTE_ADDR'),
         user_agent=request.META.get('HTTP_USER_AGENT', '')
-    )
+    )   
     
     # Redirect đến file trên Cloudinary
     if document.file_path:
-        return redirect(document.file_path.url)
-    else:
-        messages.error(request, 'File không tồn tại!')
-        return redirect('document_view', document_id=document.id)
+        # Test các cách khác nhau
+        original_url = document.file_path.url
+        print(f"Original URL: {original_url}")
+        
+        # Thử redirect trực tiếp trước
+        return redirect(original_url)
 
 def check_username_availability(request):
     """API kiểm tra tên đăng nhập có khả dụng không"""
@@ -554,6 +569,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.urls import reverse
 import json
 from .models import User, Document, StudyList, AIQuizAttempt, PremiumTransaction
 from .forms import ProfileUpdateForm, PasswordChangeForm, PasswordResetForm, SetPasswordForm
@@ -835,7 +851,6 @@ from .models import *
 import json
 
 
-@login_required
 def chat_rooms_list(request):
     """Danh sách phòng chat"""
     # Filter parameters
@@ -877,8 +892,10 @@ def chat_rooms_list(request):
     universities = University.objects.filter(is_active=True)
     courses = Course.objects.filter(is_active=True).select_related('university')
     
-    # User's joined rooms
-    user_rooms = ChatRoomMember.objects.filter(user=request.user).values_list('room_id', flat=True)
+    # User's joined rooms (chỉ khi đã đăng nhập)
+    user_rooms = []
+    if request.user.is_authenticated:
+        user_rooms = ChatRoomMember.objects.filter(user=request.user).values_list('room_id', flat=True)
     
     context = {
         'page_obj': page_obj,
@@ -896,13 +913,19 @@ def chat_rooms_list(request):
     return render(request, 'chat/rooms_list.html', context)
 
 
-@login_required
 def chat_room_detail(request, room_id):
     """Chi tiết phòng chat"""
     room = get_object_or_404(ChatRoom, id=room_id, is_active=True)
     
-    # Check if user is member
-    is_member = ChatRoomMember.objects.filter(room=room, user=request.user).exists()
+    # Check if user is authenticated and member
+    is_member = False
+    if request.user.is_authenticated:
+        is_member = ChatRoomMember.objects.filter(room=room, user=request.user).exists()
+    
+    # If user is not authenticated, redirect to login
+    if not request.user.is_authenticated:
+        messages.info(request, f'Vui lòng đăng nhập để tham gia phòng "{room.name}"')
+        return redirect('home_login')
     
     # If room is private and user is not member, check password
     if room.room_type == 'private' and not is_member:
@@ -1915,7 +1938,10 @@ import json
 import base64
 import time
 import uuid
+import traceback
 from django.conf import settings
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -1942,6 +1968,25 @@ from .models import (
 )
 from django.db.models import Q, Count
 from django.contrib.postgres.search import SearchVector
+
+
+def verify_google_token(token):
+    """Verify Google ID token and return user info"""
+    try:
+        # Verify token with Google
+        idinfo = id_token.verify_oauth2_token(
+            token, 
+            google_requests.Request(), 
+            settings.GOOGLE_CLIENT_ID
+        )
+        
+        if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            raise ValueError('Wrong issuer.')
+            
+        return idinfo
+    except ValueError as e:
+        print(f"Token verification failed: {e}")
+        return None
 
 # Gemini API configuration
 GEMINI_API_KEY = "AIzaSyB5r_8Ou0fDq-XHoBWHGIXWcblxkoa9VgM"
@@ -2444,6 +2489,7 @@ def enhance_ai_prompt_with_context_strict(user_message, user, conversation_type=
         import traceback
         traceback.print_exc()
         return ""
+
 def extract_text_from_file(file):
     """Extract text content from various file types"""
     try:
@@ -2760,14 +2806,15 @@ def call_gemini_api(messages, image_data=None):
         }
 
 
-@login_required
-
 # 1. SỬA VIEW FUNCTION
 @login_required
 def ai_image_solver_view(request):
     """Main page for AI Image Solver"""
     # Debug: In ra console để check
-    all_solutions = AIImageSolution.objects.filter(user=request.user).order_by('-created_at')
+    if request.user.is_authenticated:
+        all_solutions = AIImageSolution.objects.filter(user=request.user).order_by('-created_at')
+    else:
+        all_solutions = AIImageSolution.objects.none()
     print(f"Total solutions for user {request.user.id}: {all_solutions.count()}")
     
     for solution in all_solutions[:5]:  # Debug 5 solutions đầu
@@ -3541,8 +3588,9 @@ def ai_text_chat_api(request):
     print("=== AI TEXT CHAT API CALLED (ENHANCED) ===")
     
     try:
+    
         start_time = time.time()
-        
+    
         user_message = request.POST.get('message', '').strip()
         conversation_id = request.POST.get('conversation_id')
         
@@ -3713,10 +3761,12 @@ def ai_solution_detail_view(request, solution_id):
     return render(request, 'ai/solution_detail.html', context)
 
 
-@login_required
 def ai_solutions_history_view(request):
     """View lịch sử các AI solutions"""
-    solutions = AIImageSolution.objects.filter(user=request.user).order_by('-created_at')
+    if request.user.is_authenticated:
+        solutions = AIImageSolution.objects.filter(user=request.user).order_by('-created_at')
+    else:
+        solutions = AIImageSolution.objects.none()
     
     # Pagination if needed
     from django.core.paginator import Paginator
@@ -3910,3 +3960,85 @@ def documents_list(request):
         'universities': University.objects.filter(is_active=True),
         'courses': Course.objects.filter(is_active=True),
     })
+
+
+@csrf_exempt
+def google_callback(request):
+    """Handle Google OAuth callback"""
+    print("----- Bắt đầu xử lý callback -----")
+    code = request.GET.get('code')
+    print(f"Code nhận được: {code}")
+
+    # TẠO REDIRECT URI CHÍNH XÁC
+    if settings.DEBUG:
+        redirect_uri = 'http://localhost:8000/accounts/google/login/callback/'
+    else:
+        redirect_uri = 'https://doan4-django.vercel.app/accounts/google/login/callback/'
+    
+    print(f"Redirect URI được sử dụng: {redirect_uri}")
+
+    # Trao đổi code lấy token
+    token_url = 'https://oauth2.googleapis.com/token'
+    data = {
+        'code': code,
+        'client_id': settings.GOOGLE_CLIENT_ID,
+        'client_secret': settings.GOOGLE_CLIENT_SECRET,
+        'redirect_uri': redirect_uri,  # SỬA ĐÂY
+        'grant_type': 'authorization_code'
+    }
+
+    print("----- Gửi yêu cầu lấy token tới Google -----")
+    print(f"Data gửi tới Google: {data}")  # THÊM LOG ĐỂ DEBUG
+    
+    response = requests.post(token_url, data=data)
+    print(f"Phản hồi từ Google (token): {response.status_code}, {response.text}")
+
+    if not response.ok:
+        print(f"Lỗi khi trao đổi code: {response.status_code}, {response.text}")
+        return JsonResponse({'success': False, 'error': 'Failed to get token'}, status=400)
+
+    token_data = response.json()
+    access_token = token_data.get('access_token')
+    print(f"Access token nhận được: {access_token}")
+
+    # Lấy thông tin người dùng
+    user_info_url = 'https://www.googleapis.com/oauth2/v3/userinfo'
+    headers = {'Authorization': f'Bearer {access_token}'}
+    user_response = requests.get(user_info_url, headers=headers)
+    print(f"Phản hồi từ Google (user info): {user_response.status_code}, {user_response.text}")
+
+    if not user_response.ok:
+        print(f"Lỗi khi lấy thông tin người dùng: {user_response.status_code}, {user_response.text}")
+        return JsonResponse({'success': False, 'error': 'Failed to get user info'}, status=400)
+
+    user_info = user_response.json()
+    print(f"Thông tin người dùng từ Google: {user_info}")
+    email = user_info.get('email')
+    google_id = user_info.get('sub')
+
+    if not email:
+        return JsonResponse({'success': False, 'error': 'Email not found in user info'}, status=400)
+
+    # Get or create user
+    user, created = User.objects.get_or_create(
+        email=email,
+        defaults={
+            'username': email.split('@')[0],
+            'first_name': user_info.get('given_name', ''),
+            'last_name': user_info.get('family_name', ''),
+            'google_id': google_id,
+        }
+    )
+    
+    # Update google_id if not set
+    if not user.google_id:
+        user.google_id = google_id
+        user.save()
+        
+    print(f"User: {user}, Created: {created}")
+
+    # Login user
+    login(request, user)
+    
+    messages.success(request, f'Chào mừng {user.get_full_name() or user.username}!')
+    return redirect('dashboard')

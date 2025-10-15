@@ -37,7 +37,7 @@ INSTALLED_APPS = [
 
 
 # Judge0 API configuration
-JUDGE0_API_KEY = "5d71f3174cmsh463db3f9fd800bcp15795bjsn61d7bcc37466"
+JUDGE0_API_KEY = "30cd93ee1dmshd61ffa82465c463p152947jsn20ea0f13906a"
 JUDGE0_BASE_URL = "judge0-ce.p.rapidapi.com"
 AI_SETTINGS = {
     'GEMINI_API_KEY': 'AIzaSyB5r_8Ou0fDq-XHoBWHGIXWcblxkoa9VgM',  # Move to environment variable
@@ -46,6 +46,10 @@ AI_SETTINGS = {
     'SEARCH_MIN_QUERY_LENGTH': 2,
     'ENABLE_AUTO_SUGGESTIONS': True,
 }
+
+# Google OAuth settings
+GOOGLE_CLIENT_ID = '14310137293-ltolga7peevcmvb8jhq7al070416rrtm.apps.googleusercontent.com'
+GOOGLE_CLIENT_SECRET = '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'
 AUTH_USER_MODEL = 'home.User'
 
 MIDDLEWARE = [
@@ -178,7 +182,7 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SECURE_FILE_UPLOADS = True
 
 # Login/Logout URLs
-LOGIN_URL = '/accounts/login/'
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
@@ -200,3 +204,66 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Disable all custom logging - let Django use default console logging
 LOGGING_CONFIG = None
+# Production settings for Vercel
+# Google OAuth settings for production
+# Thêm vào cuối file settings.py
+if os.environ.get('VERCEL'):
+    DEBUG = False
+    ALLOWED_HOSTS = ['.vercel.app', 'doan4-django.vercel.app']
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+    
+    # CSRF settings for Vercel
+    CSRF_TRUSTED_ORIGINS = ['https://doan4-django.vercel.app']
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+    
+    # Logging để debug trên Vercel
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'INFO',
+            },
+        },
+    }
+    
+
+# HTTPS và Security settings cho Vercel
+# Cloudinary configuration
+if os.environ.get('VERCEL'):
+    # Production - dùng environment variables
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'dddpqvxzg'),
+        'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '768143393531413'),
+        'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'kvBPf1aaObw24uYYl_7gw6EZ2Aw'),
+        'SECURE': True,
+    }
+
+    cloudinary.config(
+        cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME', 'dddpqvxzg'),
+        api_key=os.environ.get('CLOUDINARY_API_KEY', '768143393531413'),
+        api_secret=os.environ.get('CLOUDINARY_API_SECRET', 'kvBPf1aaObw24uYYl_7gw6EZ2Aw'),
+        secure=True
+    )
+else:
+    # Local development - dùng hardcoded values
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': 'dddpqvxzg',
+        'API_KEY': '768143393531413',
+        'API_SECRET': 'kvBPf1aaObw24uYYl_7gw6EZ2Aw',
+        'SECURE': True,
+    }
+
+    cloudinary.config(
+        cloud_name='dddpqvxzg',
+        api_key='768143393531413', 
+        api_secret='kvBPf1aaObw24uYYl_7gw6EZ2Aw',
+        secure=True
+    )

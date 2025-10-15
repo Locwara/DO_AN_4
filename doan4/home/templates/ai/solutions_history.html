@@ -301,10 +301,17 @@
         </p>
       </div>
       <div class="col-md-4 text-end">
-        <a href="{% url 'ai_image_solver' %}" class="btn btn-light">
-          <i class="fas fa-plus me-2"></i>
-          Giải Bài Mới
-        </a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'ai_image_solver' %}" class="btn btn-light">
+            <i class="fas fa-plus me-2"></i>
+            Giải Bài Mới
+          </a>
+        {% else %}
+          <a href="{% url 'home_login' %}" class="btn btn-light">
+            <i class="fas fa-sign-in-alt me-2"></i>
+            Đăng Nhập
+          </a>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -414,8 +421,9 @@
   </div>
 
   <!-- Solutions Grid -->
-  {% if solutions %}
-    <div class="row">
+  {% if user.is_authenticated %}
+    {% if solutions %}
+      <div class="row">
       {% for solution in solutions %}
         <div class="col-lg-4 col-md-6 mb-4">
           <div class="solution-card" onclick="viewSolution({{ solution.id }})">
@@ -458,59 +466,73 @@
           </div>
         </div>
       {% endfor %}
-    </div>
+      </div>
 
-    <!-- Pagination -->
-    {% if solutions.has_other_pages %}
-      <div class="pagination-wrapper">
-        <nav aria-label="Page navigation">
-          <ul class="pagination">
-            {% if solutions.has_previous %}
-              <li class="page-item">
-                <a class="page-link" href="?page={{ solutions.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
-                  <i class="fas fa-chevron-left"></i>
-                </a>
-              </li>
-            {% endif %}
-            
-            {% for num in solutions.paginator.page_range %}
-              {% if solutions.number == num %}
-                <li class="page-item active">
-                  <span class="page-link">{{ num }}</span>
-                </li>
-              {% elif num > solutions.number|add:'-3' and num < solutions.number|add:'3' %}
+      <!-- Pagination -->
+      {% if solutions.has_other_pages %}
+        <div class="pagination-wrapper">
+          <nav aria-label="Page navigation">
+            <ul class="pagination">
+              {% if solutions.has_previous %}
                 <li class="page-item">
-                  <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">{{ num }}</a>
+                  <a class="page-link" href="?page={{ solutions.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                    <i class="fas fa-chevron-left"></i>
+                  </a>
                 </li>
               {% endif %}
-            {% endfor %}
-            
-            {% if solutions.has_next %}
-              <li class="page-item">
-                <a class="page-link" href="?page={{ solutions.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
-                  <i class="fas fa-chevron-right"></i>
-                </a>
-              </li>
-            {% endif %}
-          </ul>
-        </nav>
+              
+              {% for num in solutions.paginator.page_range %}
+                {% if solutions.number == num %}
+                  <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                  </li>
+                {% elif num > solutions.number|add:'-3' and num < solutions.number|add:'3' %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">{{ num }}</a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+              
+              {% if solutions.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ solutions.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                    <i class="fas fa-chevron-right"></i>
+                  </a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+      {% endif %}
+    {% else %}
+      <!-- Empty State -->
+      <div class="empty-state">
+        <i class="fas fa-robot"></i>
+        <h3>Chưa có bài giải nào</h3>
+        <p class="mb-4">
+          {% if request.GET.q %}
+            Không tìm thấy bài giải nào với từ khóa "{{ request.GET.q }}"
+          {% else %}
+            Bạn chưa sử dụng AI để giải bài tập nào. Hãy bắt đầu ngay!
+          {% endif %}
+        </p>
+        <a href="{% url 'ai_image_solver' %}" class="btn btn-primary">
+          <i class="fas fa-plus me-2"></i>
+          Giải Bài Đầu Tiên
+        </a>
       </div>
     {% endif %}
   {% else %}
-    <!-- Empty State -->
+    <!-- Not authenticated state -->
     <div class="empty-state">
-      <i class="fas fa-robot"></i>
-      <h3>Chưa có bài giải nào</h3>
+      <i class="fas fa-sign-in-alt"></i>
+      <h3>Đăng nhập để xem lịch sử AI</h3>
       <p class="mb-4">
-        {% if request.GET.q %}
-          Không tìm thấy bài giải nào với từ khóa "{{ request.GET.q }}"
-        {% else %}
-          Bạn chưa sử dụng AI để giải bài tập nào. Hãy bắt đầu ngay!
-        {% endif %}
+        Đăng nhập để xem tất cả các bài giải AI đã thực hiện và quản lý lịch sử của bạn.
       </p>
-      <a href="{% url 'ai_image_solver' %}" class="btn btn-primary">
-        <i class="fas fa-plus me-2"></i>
-        Giải Bài Đầu Tiên
+      <a href="{% url 'home_login' %}" class="btn btn-primary">
+        <i class="fas fa-sign-in-alt me-2"></i>
+        Đăng Nhập Ngay
       </a>
     </div>
   {% endif %}

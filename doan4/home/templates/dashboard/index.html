@@ -21,6 +21,7 @@
         
         .navbar {
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            
         }
         
         .welcome-card {
@@ -331,6 +332,9 @@
             height: 3rem;
             color: #6366f1;
         }
+        #headvip{
+        
+        }
     </style>
     {% endblock %}
 </head>
@@ -338,7 +342,7 @@
    
     <!-- Navigation -->
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav id="headvip" class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="{% url 'dashboard' %}">
                 <i class="fas fa-graduation-cap"></i> StudyBot
@@ -376,17 +380,25 @@
 
                 
                 <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link active dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user"></i> {{ user.get_full_name|default:user.username }}
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-edit"></i> Hồ sơ</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Cài đặt</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
-                        </ul>
-                    </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link active dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user"></i> {{ user.get_full_name|default:user.username }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-edit"></i> Hồ sơ</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Cài đặt</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{% url 'home_login' %}">
+                                <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                            </a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -410,22 +422,39 @@
         <div class="welcome-card">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h1 class="h3 mb-2">
-                        Chào mừng trở lại, {{ user.get_full_name|default:user.username }}! 
-                    </h1>
-                    <p class="mb-0 opacity-90">
-                        {% if user.bio %}
-                            {{ user.bio }}
-                        {% else %}
-                            Sẵn sàng để khám phá và chia sẻ kiến thức hôm nay!
-                        {% endif %}
-                    </p>
+                    {% if user.is_authenticated %}
+                        <h1 class="h3 mb-2">
+                            Chào mừng trở lại, {{ user.get_full_name|default:user.username }}! 
+                        </h1>
+                        <p class="mb-0 opacity-90">
+                            {% if user.bio %}
+                                {{ user.bio }}
+                            {% else %}
+                                Sẵn sàng để khám phá và chia sẻ kiến thức hôm nay!
+                            {% endif %}
+                        </p>
+                    {% else %}
+                        <h1 class="h3 mb-2">
+                            Chào mừng bạn đến với StudyBot!
+                        </h1>
+                        <p class="mb-0 opacity-90">
+                            Khám phá hàng ngàn tài liệu học tập và tham gia cộng đồng sinh viên. <a href="{% url 'home_login' %}" class="text-white fw-bold" style="text-decoration: underline;">Đăng nhập</a> để có trải nghiệm tốt nhất!
+                        </p>
+                    {% endif %}
                 </div>
                 <div class="col-md-4 text-end">
-                    <div class="d-flex flex-column align-items-end">
-                        <small class="opacity-75">Thành viên từ</small>
-                        <strong>{{ user.date_joined|date:"d/m/Y" }}</strong>
-                    </div>
+                    {% if user.is_authenticated %}
+                        <div class="d-flex flex-column align-items-end">
+                            <small class="opacity-75">Thành viên từ</small>
+                            <strong>{{ user.date_joined|date:"d/m/Y" }}</strong>
+                        </div>
+                    {% else %}
+                        <div class="d-flex flex-column align-items-end">
+                            <a href="{% url 'home_login' %}" class="btn btn-light btn-lg">
+                                <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                            </a>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -476,9 +505,15 @@
                 <div class="stats-card">
                     <h5><i class="fas fa-upload text-primary"></i> Tải lên tài liệu</h5>
                     <p class="text-muted mb-3">Chia sẻ tài liệu học tập với cộng đồng</p>
-                    <button onclick="window.location.href='{% url 'upload_step1' %}'" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Tải lên ngay
-                    </button>
+                    {% if user.is_authenticated %}
+                        <button onclick="window.location.href='{% url 'upload_step1' %}'" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Tải lên ngay
+                        </button>
+                    {% else %}
+                        <button onclick="alert('Vui lòng đăng nhập để tải lên tài liệu'); window.location.href='{% url 'home_login' %}'" class="btn btn-outline-primary">
+                            <i class="fas fa-sign-in-alt"></i> Đăng nhập để tải lên
+                        </button>
+                    {% endif %}
                 </div>
             </div>
             <div class="col-md-6">
@@ -535,9 +570,15 @@
             <a href="{% url 'chat_rooms_list' %}" class="btn btn-info btn-sm flex-fill">
                 <i class="fas fa-list"></i> Danh sách phòng
             </a>
-            <a href="{% url 'chat_room_create' %}" class="btn btn-outline-info btn-sm flex-fill">
-                <i class="fas fa-plus"></i> Tạo phòng
-            </a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'chat_room_create' %}" class="btn btn-outline-info btn-sm flex-fill">
+                    <i class="fas fa-plus"></i> Tạo phòng
+                </a>
+            {% else %}
+                <button onclick="alert('Vui lòng đăng nhập để tạo phòng chat'); window.location.href='{% url 'home_login' %}'" class="btn btn-outline-info btn-sm flex-fill">
+                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                </button>
+            {% endif %}
         </div>
         
         <!-- Recent Active Rooms (Optional) -->
@@ -794,6 +835,7 @@
         </div>
 
         <!-- Recent Activity -->
+        {% if user.is_authenticated %}
         <div class="row mt-4">
             <div class="col-12">
                 <div class="stats-card">
@@ -821,6 +863,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
 
     <!-- Bootstrap JS -->
