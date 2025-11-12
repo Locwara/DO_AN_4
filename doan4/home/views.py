@@ -3,6 +3,8 @@ import time
 from django.utils import timezone
 from django.http import HttpResponse
 import mimetypes
+from unidecode import unidecode
+from Levenshtein import ratio
 
 # Create your views here.
 from django.shortcuts import render, redirect
@@ -17,7 +19,7 @@ from django.views.decorators.http import require_http_methods
 import json
 
 from .forms import RegisterForm, LoginForm
-from .models import User, University, Document, UserActivity, DocumentLike, DocumentView, DocumentDownload
+from .models import User, University, Document, UserActivity, DocumentLike, DocumentView, DocumentDownload, SearchHistory, Course
 
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -369,6 +371,14 @@ def documents_search(request):
             Q(description__icontains=query) |
             Q(ai_keywords__overlap=[query])
         ).distinct()
+        
+        # Save search history
+        SearchHistory.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            query=query,
+            result_count=documents.count(),
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
     
     # Pagination
     from django.core.paginator import Paginator
@@ -382,7 +392,7 @@ def documents_search(request):
         'total_results': paginator.count,
     }
     
-    return render(request, 'documents/search.html', context)
+    return render(request, 'documents/list.html', context)
 
 @login_required
 def document_like(request, document_id):
@@ -467,6 +477,7 @@ def document_view(request, document_id):
     
     return render(request, 'documents/view.html', context)
 from django.utils import timezone
+
 @login_required
 def document_download(request, document_id):
     document = get_object_or_404(Document, id=document_id, status='approved', is_public=True)
@@ -475,22 +486,26 @@ def document_download(request, document_id):
     print(f"Has public_id: {hasattr(document.file_path, 'public_id')}")
     if hasattr(document.file_path, 'public_id'):
         print(f"Public ID: {document.file_path.public_id}")
-    # Kiểm tra quyền tải (premium user có thể tải tất cả)
-    if not request.user.is_premium and document.uploaded_by != request.user:
-        # Giới hạn số lần tải cho user thường
-        today_downloads = DocumentDownload.objects.filter(
-            user=request.user,
-            created_at__date=timezone.now().date()
-        ).count()
-        
-        if today_downloads >= 5:  # Giới hạn 5 lần/ngày
-            messages.error(request, 'Bạn đã hết lượt tải miễn phí hôm nay. Nâng cấp Premium để tải không giới hạn!')
-            return redirect('document_view', document_id=document.id)
+    # Check download restriction for free users
+    from .premium_views import check_download_limit, log_download
+    
+    if not request.user.is_premium:
+        can_download, downloads_today = check_download_limit(request.user)
+        if not can_download:
+            messages.warning(
+                request,
+                f'Bạn đã tải {downloads_today} tài liệu hôm nay (giới hạn cho tài khoản thường). '
+                f'Nâng cấp Premium để tải không giới hạn!'
+            )
+            return redirect('premium_upgrade')
+    
+    # Log download
+    log_download(request.user, document, request.META.get('REMOTE_ADDR'))
     
     # Tăng lượt tải
     document.download_count += 1
     document.save(update_fields=['download_count'])
-    
+
     # Lưu lại lượt tải
     DocumentDownload.objects.create(
         document=document,
@@ -678,11 +693,11 @@ def forgot_password(request):
             reset_link = f"http://{current_site.domain}/reset-password/{uid}/{token}/"
             
             # Gửi email
-            subject = 'StudyShare - Đặt lại mật khẩu'
+            subject = 'StudyBot - Đặt lại mật khẩu'
             message = render_to_string('accounts/password_reset_email.html', {
                 'user': user,
                 'reset_link': reset_link,
-                'site_name': 'StudyShare'
+                'site_name': 'StudyBot'
             })
             
             email_msg = EmailMessage(subject, message, to=[email])
@@ -1665,45 +1680,68 @@ def chat_file_download(request, room_id, message_id):
     
     return response
 # API tìm kiếm tài liệu cho chat
+def normalize_vietnamese(text):
+    """Normalize Vietnamese text for fuzzy search"""
+    return unidecode(text.lower()).strip()
+
 @login_required
 def chat_search_documents(request, room_id):
-    """API tìm kiếm tài liệu để chia sẻ trong chat"""
+    """API to search for documents to share in chat, with fuzzy search and initial listing."""
     room = get_object_or_404(ChatRoom, id=room_id, is_active=True)
-    
-    # Check membership
+
     if not ChatRoomMember.objects.filter(room=room, user=request.user).exists():
         return JsonResponse({'error': 'Bạn không phải thành viên của phòng này!'}, status=403)
-    
+
     query = request.GET.get('q', '').strip()
-    if len(query) < 2:
-        return JsonResponse({'documents': []})
     
-    # Search documents
-    documents = Document.objects.filter(
-        status='approved',
-        is_public=True
-    ).filter(
-        Q(title__icontains=query) |
-        Q(description__icontains=query) |
-        Q(ai_keywords__contains=[query])
-    )
+    base_query = Document.objects.filter(status='approved', is_public=True)
     
     # Filter by room's university/course if available
     if room.university:
-        documents = documents.filter(university=room.university)
+        base_query = base_query.filter(university=room.university)
     if room.course:
-        documents = documents.filter(course=room.course)
-    
-    documents = documents.select_related('university', 'course', 'uploaded_by')[:20]
-    
-    # Save search history
-    ChatDocumentSearch.objects.create(
-        room=room,
-        user=request.user,
-        query=query,
-        results_count=documents.count()
-    )
-    
+        base_query = base_query.filter(course=room.course)
+
+    if not query:
+        # If query is empty, return the latest documents
+        documents = base_query.order_by('-created_at')[:20]
+    else:
+        # If there is a query, perform fuzzy search
+        query_norm = normalize_vietnamese(query)
+        
+        # Fetch all potential documents to perform fuzzy matching in Python
+        all_documents = base_query.select_related('university', 'course', 'uploaded_by')
+        
+        matched_docs = []
+        for doc in all_documents:
+            title_norm = normalize_vietnamese(doc.title)
+            # Calculate similarity ratio
+            score = ratio(query_norm, title_norm)
+            
+            # Also check for simple containment for partial matches
+            if query_norm in title_norm:
+                score = max(score, 0.8) # Boost score for containment
+
+            if score >= 0.6:  # Threshold for matching
+                matched_docs.append({
+                    'doc': doc,
+                    'score': score
+                })
+        
+        # Sort by score in descending order
+        matched_docs.sort(key=lambda x: x['score'], reverse=True)
+        
+        # Get the final list of document objects
+        documents = [item['doc'] for item in matched_docs[:20]]
+
+        # Save search history only for non-empty queries
+        ChatDocumentSearch.objects.create(
+            room=room,
+            user=request.user,
+            query=query,
+            results_count=len(documents)
+        )
+
     documents_data = []
     for doc in documents:
         documents_data.append({
@@ -3938,6 +3976,206 @@ def get_conversation_api(request, conversation_id):
             'error': f'Error loading conversation: {str(e)}'
         })
     
+
+def delete_search_history_item_api(request):
+    """API to delete a single search history item"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'message': 'Vui lòng đăng nhập'}, status=401)
+    
+    if request.method == 'POST':
+        import json
+        data = json.loads(request.body)
+        query = data.get('query')
+        
+        if not query:
+            return JsonResponse({'success': False, 'message': 'Thiếu query'}, status=400)
+        
+        # Delete all search history entries for this query and user
+        SearchHistory.objects.filter(user=request.user, query=query).delete()
+        return JsonResponse({'success': True, 'message': 'Đã xóa lịch sử'})
+    
+    return JsonResponse({'success': False, 'message': 'Phương thức không hợp lệ'}, status=405)
+
+
+def clear_search_history_api(request):
+    """API to clear user's search history"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'message': 'Vui lòng đăng nhập'}, status=401)
+    
+    if request.method == 'POST':
+        # Delete all search history for this user
+        SearchHistory.objects.filter(user=request.user).delete()
+        return JsonResponse({'success': True, 'message': 'Đã xóa lịch sử tìm kiếm'})
+    
+    return JsonResponse({'success': False, 'message': 'Phương thức không hợp lệ'}, status=405)
+
+
+def normalize_vietnamese(text):
+    """Normalize Vietnamese text for fuzzy search"""
+    from unidecode import unidecode
+    return unidecode(text.lower()).strip()
+
+
+def fuzzy_match(query, text, threshold=0.6):
+    """Check if query fuzzy matches text using Levenshtein distance"""
+    from Levenshtein import ratio
+    
+    query_norm = normalize_vietnamese(query)
+    text_norm = normalize_vietnamese(text)
+    
+    # Check if query is substring
+    if query_norm in text_norm:
+        return True
+    
+    # Check Levenshtein ratio (0.6 = 60% similarity)
+    words_in_text = text_norm.split()
+    for word in words_in_text:
+        if ratio(query_norm, word) >= threshold:
+            return True
+    
+    # Check if all query words exist in text
+    query_words = query_norm.split()
+    if len(query_words) > 1:
+        matches = sum(1 for qw in query_words if any(ratio(qw, tw) >= threshold for tw in words_in_text))
+        if matches >= len(query_words) * 0.7:  # 70% of words match
+            return True
+    
+    return False
+
+
+def search_suggestions_api(request):
+    """API for real-time search autocomplete suggestions with fuzzy matching"""
+    query = request.GET.get('q', '').strip()
+    normalized_query = normalize_vietnamese(query)
+    
+    if len(query) < 1:
+        # Return search history and popular searches when no query
+        suggestions = {
+            'history': [],
+            'popular': [],
+            'results': []
+        }
+        
+        # Get user's search history if authenticated
+        if request.user.is_authenticated:
+            recent_searches = SearchHistory.objects.filter(
+                user=request.user
+            ).values('query').distinct().order_by('-created_at')[:5]
+            suggestions['history'] = [s['query'] for s in recent_searches]
+        
+        # Get popular searches (top 5 most searched)
+        from django.db.models import Count
+        popular_searches = SearchHistory.objects.values('query').annotate(
+            search_count=Count('id')
+        ).order_by('-search_count')[:5]
+        suggestions['popular'] = [s['query'] for s in popular_searches]
+        
+        return JsonResponse(suggestions)
+    
+    # Real-time suggestions when typing
+    suggestions = {
+        'documents': [],
+        'courses': [],
+        'universities': []
+    }
+    
+    from django.db.models import Q
+    
+    # Search documents with fuzzy matching
+    documents_qs = Document.objects.filter(
+        Q(status='approved') & Q(is_public=True)
+    ).select_related('course', 'university')
+    
+    # Exact match first
+    exact_docs = list(documents_qs.filter(
+        Q(title__icontains=query) | Q(description__icontains=query)
+    )[:5])
+    
+    # Fuzzy match if not enough results
+    if len(exact_docs) < 3 and normalized_query:
+        seen_ids = {d.id for d in exact_docs}
+        all_docs = documents_qs.exclude(id__in=seen_ids)[:100]
+        
+        for doc in all_docs:
+            if fuzzy_match(query, doc.title, threshold=0.5):
+                exact_docs.append(doc)
+                if len(exact_docs) >= 5:
+                    break
+    
+    documents = exact_docs[:5]
+    
+    for doc in documents:
+        suggestions['documents'].append({
+            'id': doc.id,
+            'title': doc.title,
+            'type': 'document',
+            'course': f"{doc.course.code} - {doc.course.name}" if doc.course else '',
+            'university': doc.university.short_name or doc.university.name if doc.university else '',
+            'url': f'/documents/{doc.id}/view/',
+            'icon': 'fa-file-alt'
+        })
+    
+    # Search courses with fuzzy matching
+    courses_qs = Course.objects.filter(is_active=True).select_related('university')
+    
+    exact_courses = list(courses_qs.filter(
+        Q(name__icontains=query) | Q(code__icontains=query)
+    )[:5])
+    
+    if len(exact_courses) < 3 and normalized_query:
+        seen_ids = {c.id for c in exact_courses}
+        all_courses = courses_qs.exclude(id__in=seen_ids)[:100]
+        
+        for course in all_courses:
+            if fuzzy_match(query, course.name, threshold=0.5):
+                exact_courses.append(course)
+                if len(exact_courses) >= 5:
+                    break
+    
+    courses = exact_courses[:5]
+    
+    for course in courses:
+        suggestions['courses'].append({
+            'id': course.id,
+            'title': f"{course.code} - {course.name}",
+            'type': 'course',
+            'university': course.university.short_name or course.university.name,
+            'url': f'/documents/?course={course.id}',
+            'icon': 'fa-book'
+        })
+    
+    # Search universities with fuzzy matching
+    unis_qs = University.objects.filter(is_active=True)
+    
+    exact_unis = list(unis_qs.filter(
+        Q(name__icontains=query) | Q(short_name__icontains=query)
+    )[:5])
+    
+    if len(exact_unis) < 3 and normalized_query:
+        seen_ids = {u.id for u in exact_unis}
+        all_unis = unis_qs.exclude(id__in=seen_ids)[:100]
+        
+        for uni in all_unis:
+            if fuzzy_match(query, uni.name, threshold=0.5) or \
+               (uni.short_name and fuzzy_match(query, uni.short_name, threshold=0.5)):
+                exact_unis.append(uni)
+                if len(exact_unis) >= 5:
+                    break
+    
+    universities = exact_unis[:5]
+    
+    for uni in universities:
+        suggestions['universities'].append({
+            'id': uni.id,
+            'title': uni.name,
+            'subtitle': uni.short_name or '',
+            'type': 'university',
+            'url': f'/documents/?university={uni.id}',
+            'icon': 'fa-university'
+        })
+    
+    return JsonResponse(suggestions)
+
 
 def documents_list(request):
     # Filter logic
