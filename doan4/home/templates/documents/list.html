@@ -22,7 +22,7 @@
     }
 
     .bg-gradient-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
     }
 
     .card-img-top {
@@ -59,10 +59,26 @@
     }
 
     .search-card {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border: none;
-        border-radius: 15px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
     }
+    
+    .file-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        border-radius: 8px;
+    }
+    
+    .file-icon.pdf { background: #fee2e2; color: #dc2626; }
+    .file-icon.doc { background: #dbeafe; color: #2563eb; }
+    .file-icon.xls { background: #d1fae5; color: #059669; }
+    .file-icon.ppt { background: #fed7aa; color: #ea580c; }
+    .file-icon.txt { background: #e5e7eb; color: #6b7280; }
 
     @media (max-width: 768px) {
         .document-card:hover {
@@ -73,12 +89,12 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4">
+<div class="container-fluid px-4" style="padding-top: 30px;">
     <!-- Header Section -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
-            <h1 class="h3 text-gray-800">Thư viện Tài liệu</h1>
-            <p class="text-muted">Khám phá và tải xuống tài liệu học tập chất lượng cao</p>
+            <h1 class="h3 text-gray-800 mb-2">Thư viện Tài liệu</h1>
+            <p class="text-muted mb-0">Khám phá và tải xuống tài liệu học tập chất lượng cao</p>
         </div>
         <div class="d-flex gap-2">
             <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
@@ -110,11 +126,11 @@
     {% endif %}
 
     <!-- Filters Section -->
-    <div class="card search-card mb-4 shadow-sm">
+    <div class="card search-card mb-4 shadow-sm" style="max-width: 900px;">
         <div class="card-body">
             <form method="GET" class="row g-3" id="searchForm">
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold">Trường Đại học</label>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Trường Đại học</label>
                     <select name="university" class="form-select" id="universitySelect">
                         <option value="">Tất cả trường</option>
                         {% for university in universities %}
@@ -126,8 +142,8 @@
                     </select>
                 </div>
                 
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold">Ngành học</label>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Ngành học</label>
                     <select name="course" class="form-select" id="courseSelect">
                         <option value="">Tất cả ngành</option>
                         {% for course in courses %}
@@ -139,8 +155,8 @@
                     </select>
                 </div>
                 
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold">Loại tài liệu</label>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Loại tài liệu</label>
                     <select name="document_type" class="form-select">
                         <option value="">Tất cả loại</option>
                         <option value="textbook" {% if request.GET.document_type == 'textbook' %}selected{% endif %}>Giáo trình</option>
@@ -152,18 +168,18 @@
                     </select>
                 </div>
                 
-                <div class="col-md-8">
-                    <label class="form-label fw-semibold">Tìm kiếm</label>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Tìm kiếm</label>
                     <input type="text" name="search" class="form-control" 
                            placeholder="Nhập tên tài liệu, từ khóa..." 
                            value="{{ request.GET.search }}">
                 </div>
                 
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">
+                <div class="col-12 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary">
                         <i class="fas fa-search"></i> Tìm kiếm
                     </button>
-                    <a href="{% url 'documents_list' %}" class="btn btn-outline-secondary">
+                    <a href="{% url 'documents_list' %}" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Xóa bộ lọc
                     </a>
                 </div>
@@ -185,7 +201,7 @@
     <!-- Documents Grid -->
     <div class="row" id="documentsGrid">
         {% for document in documents %}
-        <div class="col-lg-4 col-md-6 mb-4">
+        <div class="col-xl-3 col-lg-4 col-md-6 mb-3">
             <div class="card document-card h-100 shadow-sm">
                 <!-- Document Header -->
                 <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
@@ -230,17 +246,36 @@
                     </div>
                 </div>
 
-                <!-- Thumbnail -->
-                <div class="position-relative" style="height: 200px; overflow: hidden; cursor: pointer;" 
+                <!-- Thumbnail với File Icon -->
+                <div class="position-relative" style="height: 160px; overflow: hidden; cursor: pointer;" 
                      onclick="window.location.href='{% url 'document_view' document.id %}'">
                     {% if document.thumbnail %}
                         <img src="{{ document.thumbnail.url }}" class="card-img-top w-100 h-100" 
                              style="object-fit: cover;" alt="{{ document.title }}">
                     {% else %}
                         <div class="card-img-top bg-light d-flex align-items-center justify-content-center h-100">
-                            <div class="text-center text-muted">
-                                <i class="fas fa-file-pdf fa-3x mb-2"></i>
-                                <div>{{ document.file_type|upper|default:"PDF" }}</div>
+                            <div class="text-center">
+                                {% if document.file_type == 'pdf' or document.file_type == 'application/pdf' %}
+                                    <div class="file-icon pdf mx-auto">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                {% elif document.file_type == 'doc' or document.file_type == 'docx' or 'word' in document.file_type|lower %}
+                                    <div class="file-icon doc mx-auto">
+                                        <i class="fas fa-file-word"></i>
+                                    </div>
+                                {% elif document.file_type == 'xls' or document.file_type == 'xlsx' or 'excel' in document.file_type|lower %}
+                                    <div class="file-icon xls mx-auto">
+                                        <i class="fas fa-file-excel"></i>
+                                    </div>
+                                {% elif document.file_type == 'ppt' or document.file_type == 'pptx' or 'powerpoint' in document.file_type|lower %}
+                                    <div class="file-icon ppt mx-auto">
+                                        <i class="fas fa-file-powerpoint"></i>
+                                    </div>
+                                {% else %}
+                                    <div class="file-icon txt mx-auto">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
                     {% endif %}
@@ -254,8 +289,8 @@
                 </div>
 
                 <!-- Card Body -->
-                <div class="card-body d-flex flex-column">
-                    <h6 class="card-title fw-bold mb-2">
+                <div class="card-body d-flex flex-column" style="padding: 1rem;">
+                    <h6 class="card-title fw-bold mb-2" style="font-size: 0.95rem;">
                         <a href="{% url 'document_view' document.id %}" 
                            class="text-decoration-none text-dark stretched-link"
                            style="z-index: 2;">
