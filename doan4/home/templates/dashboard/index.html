@@ -372,22 +372,6 @@
             font-size: 0.9rem;
         }
         
-        .file-icon {
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            border-radius: 8px;
-        }
-        
-        .file-icon.pdf { background: #fee2e2; color: #dc2626; }
-        .file-icon.doc { background: #dbeafe; color: #2563eb; }
-        .file-icon.xls { background: #d1fae5; color: #059669; }
-        .file-icon.ppt { background: #fed7aa; color: #ea580c; }
-        .file-icon.txt { background: #e5e7eb; color: #6b7280; }
-        
         /* Autocomplete Dropdown */
         .autocomplete-dropdown {
             position: absolute;
@@ -856,32 +840,19 @@
                                 {% if document.thumbnail %}
                                     <img src="{{ document.thumbnail.url }}" alt="{{ document.title }}">
                                 {% else %}
-                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center h-100">
-                                        <div class="text-center">
-                                            {% if document.file_type == 'pdf' or document.file_type == 'application/pdf' %}
-                                                <div class="file-icon pdf mx-auto">
-                                                    <i class="fas fa-file-pdf"></i>
-                                                </div>
-                                            {% elif document.file_type == 'doc' or document.file_type == 'docx' or 'word' in document.file_type|lower %}
-                                                <div class="file-icon doc mx-auto">
-                                                    <i class="fas fa-file-word"></i>
-                                                </div>
-                                            {% elif document.file_type == 'xls' or document.file_type == 'xlsx' or 'excel' in document.file_type|lower %}
-                                                <div class="file-icon xls mx-auto">
-                                                    <i class="fas fa-file-excel"></i>
-                                                </div>
-                                            {% elif document.file_type == 'ppt' or document.file_type == 'pptx' or 'powerpoint' in document.file_type|lower %}
-                                                <div class="file-icon ppt mx-auto">
-                                                    <i class="fas fa-file-powerpoint"></i>
-                                                </div>
-                                            {% else %}
-                                                <div class="file-icon txt mx-auto">
-                                                    <i class="fas fa-file-alt"></i>
-                                                </div>
-                                            {% endif %}
-                                            <div class="small text-muted mt-2">{{ document.file_type|upper|default:"PDF" }}</div>
-                                        </div>
-                                    </div>
+                                    {% if document.document_type == 'textbook' %}
+                                        <i class="fas fa-book"></i>
+                                    {% elif document.document_type == 'exercise' %}
+                                        <i class="fas fa-pencil-alt"></i>
+                                    {% elif document.document_type == 'exam' %}
+                                        <i class="fas fa-file-alt"></i>
+                                    {% elif document.document_type == 'thesis' %}
+                                        <i class="fas fa-graduation-cap"></i>
+                                    {% elif document.document_type == 'lecture' %}
+                                        <i class="fas fa-chalkboard-teacher"></i>
+                                    {% else %}
+                                        <i class="fas fa-file"></i>
+                                    {% endif %}
                                 {% endif %}
                             </div>
 
