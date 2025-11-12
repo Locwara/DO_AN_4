@@ -22,20 +22,20 @@
     <div class="welcome-card">
         <div class="row align-items-center">
             <div class="col-md-8">
-                <h1 class="h3 mb-2">
+                <h2 class="h4 mb-2">
                     <i class="fas fa-comments"></i> Phòng Chat Học Tập
-                </h1>
-                <p class="mb-0 opacity-90">
+                </h2>
+                <p class="mb-0 opacity-90" style="font-size: 0.9rem;">
                     Tham gia thảo luận, chia sẻ kiến thức và kết nối với cộng đồng sinh viên
                 </p>
             </div>
             <div class="col-md-4 text-end">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'chat_room_create' %}" class="btn btn-light btn-lg">
+                    <a href="{% url 'chat_room_create' %}" class="btn btn-light">
                         <i class="fas fa-plus"></i> Tạo phòng mới
                     </a>
                 {% else %}
-                    <button onclick="alert('Vui lòng đăng nhập để tạo phòng chat'); window.location.href='{% url 'home_login' %}'" class="btn btn-light btn-lg">
+                    <button onclick="alert('Vui lòng đăng nhập để tạo phòng chat'); window.location.href='{% url 'home_login' %}'" class="btn btn-light">
                         <i class="fas fa-sign-in-alt"></i> Đăng nhập để tạo phòng
                     </button>
                 {% endif %}
@@ -494,7 +494,7 @@
 }
 
 .welcome-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #667eea; /* Removed gradient */
     color: white;
     border-radius: 16px;
     padding: 2rem;
