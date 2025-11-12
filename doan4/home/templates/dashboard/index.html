@@ -1,3 +1,5 @@
+{% load static %}
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -21,40 +23,172 @@
         
         .navbar {
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            
         }
         
-        .welcome-card {
+        /* Hero Section - Clean and Focused */
+        .hero-section {
             background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
             color: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
+            padding: 60px 0;
+            margin-bottom: 40px;
         }
         
-        .stats-card {
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        
+        .search-box-large {
+            background: white;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+        
+        .search-box-large input {
+            border: none;
+            padding: 12px 24px;
+            font-size: 1.1rem;
+        }
+        
+        .search-box-large input:focus {
+            outline: none;
+            box-shadow: none;
+        }
+        
+        .search-box-large button {
+            border-radius: 50px;
+            padding: 12px 32px;
+        }
+        
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+        
+        .hero-stat-item {
+            text-align: center;
+        }
+        
+        .hero-stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+        }
+        
+        .hero-stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        /* Quick Actions - Compact */
+        .quick-actions {
+            margin-bottom: 40px;
+        }
+        
+        .action-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid transparent;
+            height: 100%;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-color: #6366f1;
+        }
+        
+        .action-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 1.8rem;
+        }
+        
+        .action-icon.primary { background: #ddd6fe; color: #6366f1; }
+        .action-icon.success { background: #dcfce7; color: #16a34a; }
+        .action-icon.info { background: #dbeafe; color: #0284c7; }
+        .action-icon.warning { background: #fef3c7; color: #d97706; }
+        
+        .action-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        
+        .action-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        /* User Stats - Condensed */
+        .user-stats-compact {
             background: white;
             border-radius: 15px;
             padding: 25px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border: none;
-            transition: transform 0.2s;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
         
-        .stats-card:hover {
-            transform: translateY(-2px);
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            text-align: center;
         }
         
-        .premium-badge {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+        .stat-item {
+            padding: 15px;
+            border-radius: 10px;
+            background: #f9fafb;
         }
-
-        .document-card, .university-card, .course-card {
+        
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f2937;
+            display: block;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
+        .stat-icon {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+        
+        /* Document Cards */
+        .document-card {
             background: white;
             border-radius: 12px;
             padding: 20px;
@@ -67,102 +201,10 @@
             flex-direction: column;
         }
         
-        .document-card:hover, .university-card:hover, .course-card:hover {
+        .document-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
             border-color: #6366f1;
-        }
-        
-        .university-card {
-            text-align: center;
-            padding: 30px 20px;
-        }
-        
-        .university-logo {
-            width: 80px;
-            height: 80px;
-            border-radius: 12px;
-            object-fit: cover;
-            margin: 0 auto 20px;
-            background: linear-gradient(45deg, #f3f4f6, #e5e7eb);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: #6b7280;
-        }
-        
-        .university-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 12px;
-        }
-        #universitiesSection{
-            margin-top: 10px !important;
-            margin-bottom: 10px !important;
-        }
-        .university-name {
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-            color: #1f2937;
-        }
-        
-        .university-short-name {
-            color: #6b7280;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-        }
-        
-        .university-stats {
-            display: flex;
-            justify-content: space-around;
-            margin-top: auto;
-            padding-top: 15px;
-            border-top: 1px solid #e5e7eb;
-        }
-        
-        .course-card {
-            padding: 25px;
-        }
-        
-        .course-code {
-            background: #ddd6fe;
-            color: #7c3aed;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            display: inline-block;
-            margin-bottom: 12px;
-        }
-        
-        .course-name {
-            font-weight: 600;
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            color: #1f2937;
-        }
-        
-        .course-description {
-            color: #6b7280;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-            line-height: 1.5;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        .course-stats {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: auto;
-            padding-top: 15px;
-            border-top: 1px solid #e5e7eb;
         }
         
         .document-thumbnail {
@@ -203,6 +245,10 @@
             color: #6b7280;
             font-size: 0.85rem;
             margin-bottom: 10px;
+        }
+        
+        .document-meta i {
+            width: 16px;
         }
         
         .document-stats {
@@ -254,147 +300,326 @@
             color: #991b1b;
         }
         
-        .filter-section {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 25px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
         }
         
-        .filter-section .form-select {
-            border-radius: 8px;
-            border: 1px solid #d1d5db;
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
         }
         
-        .no-documents, .no-universities, .no-courses {
+        .premium-badge {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .explore-link {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
             text-align: center;
-            padding: 60px 20px;
-            color: #6b7280;
-        }
-        
-        .no-documents i, .no-universities i, .no-courses i {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-        
-        .breadcrumb {
-            background: white;
-            border-radius: 12px;
-            padding: 15px 20px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
-        }
-        
-        .breadcrumb-item a {
-            color: #6366f1;
+            transition: all 0.3s;
+            cursor: pointer;
             text-decoration: none;
-        }
-        
-        .breadcrumb-item a:hover {
-            color: #4f46e5;
-            text-decoration: underline;
-        }
-        
-        .section-content {
             display: block;
         }
         
-        .back-button {
-            background: white;
-            border: 1px solid #e5e7eb;
-            color: #6b7280;
-            padding: 8px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .back-button:hover {
-            background: #f9fafb;
+        .explore-link:hover {
             border-color: #6366f1;
-            color: #6366f1;
+            background: #f9fafb;
+            transform: translateY(-2px);
         }
         
-        .loading-spinner {
+        .explore-icon {
+            font-size: 3rem;
+            color: #6366f1;
+            margin-bottom: 15px;
+        }
+        
+        .explore-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .explore-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        /* Autocomplete Dropdown */
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            max-height: 500px;
+            overflow-y: auto;
+            z-index: 1000;
+            margin-top: 8px;
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        
+        .autocomplete-dropdown.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        
+        .autocomplete-section {
+            padding: 15px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .autocomplete-section:last-child {
+            border-bottom: none;
+        }
+        
+        .autocomplete-header {
+            padding: 8px 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .autocomplete-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+        }
+        
+        .autocomplete-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .delete-history-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: transparent;
+            color: #9ca3af;
             display: none;
-            text-align: center;
-            padding: 40px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
         }
         
-        .spinner-border-custom {
-            width: 3rem;
-            height: 3rem;
-            color: #6366f1;
+        .autocomplete-item:hover .delete-history-icon {
+            display: flex;
         }
-        #headvip{
         
+        .delete-history-icon:hover {
+            background: #fee2e2;
+            color: #dc2626;
         }
+        
+        .autocomplete-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .autocomplete-icon.doc { background: #ddd6fe; color: #7c3aed; }
+        .autocomplete-icon.course { background: #dbeafe; color: #0284c7; }
+        .autocomplete-icon.uni { background: #dcfce7; color: #16a34a; }
+        .autocomplete-icon.history { background: #f3f4f6; color: #6b7280; }
+        
+        .autocomplete-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .autocomplete-title {
+            font-weight: 500;
+            color: #1f2937;
+            margin-bottom: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .autocomplete-subtitle {
+            font-size: 0.8rem;
+            color: #6b7280;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .autocomplete-badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: #f3f4f6;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+        
+        .search-box-wrapper {
+            position: relative;
+        }
+        
+        .clear-history-btn {
+            background: none;
+            border: none;
+            color: #dc2626;
+            cursor: pointer;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+            border-radius: 8px;
+            margin: 8px 16px;
+            display: block;
+            width: calc(100% - 32px);
+            text-align: left;
+        }
+        
+        .clear-history-btn:hover {
+            background: #fee2e2;
+        }
+        
+        .clear-history-btn i {
+            margin-right: 8px;
+        }
+        
+
     </style>
     {% endblock %}
 </head>
 <body>
    
-    <!-- Navigation -->
-
-    <nav id="headvip" class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <!-- Modern Navigation -->
+    <nav id="headvip" class="navbar navbar-expand-lg navbar-light bg-white sticky-top" style="box-shadow: 0 2px 10px rgba(0,0,0,0.08); border-bottom: 1px solid #e5e7eb;">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'dashboard' %}">
-                <i class="fas fa-graduation-cap"></i> StudyBot
+            <a class="navbar-brand" href="{% url 'dashboard' %}" style="font-weight: 700; font-size: 1.5rem; color: #6366f1; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-graduation-cap" style="font-size: 1.8rem;"></i>
+                <span>StudyBot</span>
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="border: none;">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
+                <ul class="navbar-nav me-auto ms-lg-4">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'dashboard' %}">
+                        <a class="nav-link" href="{% url 'dashboard' %}" style="font-weight: 500; color: #6366f1; padding: 8px 16px; border-radius: 8px; transition: all 0.2s;" 
+                           onmouseover="this.style.background='#f3f4f6'" 
+                           onmouseout="this.style.background='transparent'">
                             <i class="fas fa-home"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'documents_list' %}">
+                        <a class="nav-link" href="{% url 'documents_list' %}" style="font-weight: 500; color: #1f2937; padding: 8px 16px; border-radius: 8px; transition: all 0.2s;"
+                           onmouseover="this.style.background='#f3f4f6'; this.style.color='#6366f1'"
+                           onmouseout="this.style.background='transparent'; this.style.color='#1f2937'">
                             <i class="fas fa-file-alt"></i> Tài liệu
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'code_courses_list' %}">
+                        <a class="nav-link" href="{% url 'code_courses_list' %}" style="font-weight: 500; color: #1f2937; padding: 8px 16px; border-radius: 8px; transition: all 0.2s;"
+                           onmouseover="this.style.background='#f3f4f6'; this.style.color='#6366f1'"
+                           onmouseout="this.style.background='transparent'; this.style.color='#1f2937'">
                             <i class="fas fa-code"></i> Code with AI
                         </a>
                     </li>
-                    <li onclick="window.location.href='{% url 'ai_image_solver' %}'" class="nav-item">
-                        <a class="nav-link active" href="#">
-                            <i class="fas fa-comments"></i> Chat
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'ai_image_solver' %}" style="font-weight: 500; color: #1f2937; padding: 8px 16px; border-radius: 8px; transition: all 0.2s;"
+                           onmouseover="this.style.background='#f3f4f6'; this.style.color='#6366f1'"
+                           onmouseout="this.style.background='transparent'; this.style.color='#1f2937'">
+                            <i class="fas fa-robot"></i> AI Chat
                         </a>
                     </li>
-                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'chat_rooms_list' %}" style="font-weight: 500; color: #1f2937; padding: 8px 16px; border-radius: 8px; transition: all 0.2s;"
+                           onmouseover="this.style.background='#f3f4f6'; this.style.color='#6366f1'"
+                           onmouseout="this.style.background='transparent'; this.style.color='#1f2937'">
+                            <i class="fas fa-comments"></i> Phòng Chat
+                        </a>
+                    </li>
                 </ul>
-                <!-- Chat Section Card for Dashboard -->
-
                 
-                <ul class="navbar-nav">
+                <ul class="navbar-nav align-items-lg-center">
                     {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link active dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user"></i> {{ user.get_full_name|default:user.username }}
+                        {% if not user.is_premium %}
+                        <li class="nav-item me-2">
+                            <a href="{% url 'premium_upgrade' %}" class="btn btn-sm" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 0.85rem; transition: transform 0.2s;"
+                               onmouseover="this.style.transform='translateY(-2px)'"
+                               onmouseout="this.style.transform='translateY(0)'">
+                                <i class="fas fa-crown"></i> Nâng cấp Premium
                             </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-edit"></i> Hồ sơ</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Cài đặt</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" style="font-weight: 500; color: #1f2937; padding: 8px 12px; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                    {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                                </div>
+                                <span class="d-none d-lg-inline">{{ user.get_full_name|default:user.username }}</span>
+                                {% if user.is_premium %}
+                                <span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
+                                    <i class="fas fa-crown"></i> Premium
+                                </span>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" style="border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border-radius: 12px; padding: 8px;">
+                                <li><a class="dropdown-item" href="{% url 'profile' %}" style="border-radius: 8px; padding: 10px 16px;"><i class="fas fa-user-edit text-primary"></i> Hồ sơ</a></li>
+                                {% if user.is_premium %}
+                                <li><a class="dropdown-item" href="{% url 'premium_info' %}" style="border-radius: 8px; padding: 10px 16px;"><i class="fas fa-crown text-warning"></i> Thông tin Premium</a></li>
+                                {% if user.premium_expiry %}
+                                {% with days_left=user.premium_expiry|days_until %}
+                                <li><a class="dropdown-item" href="{% url 'premium_upgrade' %}" style="border-radius: 8px; padding: 10px 16px;">
+                                    <i class="fas fa-hourglass-half text-info"></i> 
+                                    {% if days_left > 0 %}
+                                    Còn {{ days_left }} ngày
+                                    {% else %}
+                                    Đã hết hạn
+                                    {% endif %}
+                                </a></li>
+                                {% endwith %}
+                                {% endif %}
+                                {% endif %}
+                                <li><hr class="dropdown-divider" style="margin: 8px 0;"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}" style="border-radius: 8px; padding: 10px 16px; color: #dc2626;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
                             </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link active" href="{% url 'home_login' %}">
+                            <a href="{% url 'home_login' %}" class="btn btn-primary" style="padding: 8px 24px; border-radius: 8px; font-weight: 600;">
                                 <i class="fas fa-sign-in-alt"></i> Đăng nhập
                             </a>
                         </li>
@@ -405,8 +630,63 @@
     </nav>
 
     {% block content %}
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                {% if user.is_authenticated %}
+                    <h1 class="hero-title">Xin chào, {{ user.get_full_name|default:user.username }}! 👋</h1>
+                    <p class="hero-subtitle">Khám phá hàng ngàn tài liệu học tập được chia sẻ bởi cộng đồng sinh viên</p>
+                {% else %}
+                    <h1 class="hero-title">Chào mừng đến với StudyBot! 📚</h1>
+                    <p class="hero-subtitle">Nền tảng chia sẻ tài liệu học tập hàng đầu cho sinh viên Việt Nam</p>
+                {% endif %}
+                
+                <!-- Large Search Box with Autocomplete -->
+                <form method="GET" action="{% url 'documents_search' %}" id="searchForm">
+                    <div class="search-box-wrapper">
+                        <div class="search-box-large">
+                            <div class="input-group">
+                                <input 
+                                    type="text" 
+                                    name="q" 
+                                    id="searchInput"
+                                    class="form-control" 
+                                    placeholder="Tìm kiếm tài liệu, môn học, trường..." 
+                                    value="{{ request.GET.q }}"
+                                    autocomplete="off">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i> Tìm kiếm
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Autocomplete Dropdown -->
+                        <div id="autocompleteDropdown" class="autocomplete-dropdown"></div>
+                    </div>
+                </form>
+                
+                <!-- Hero Stats -->
+                <div class="hero-stats">
+                    <div class="hero-stat-item">
+                        <span class="hero-stat-number">{{ universities.count|default:0 }}</span>
+                        <span class="hero-stat-label">Trường Đại Học</span>
+                    </div>
+                    <div class="hero-stat-item">
+                        <span class="hero-stat-number">{{ documents.count|default:0 }}+</span>
+                        <span class="hero-stat-label">Tài Liệu</span>
+                    </div>
+                    <div class="hero-stat-item">
+                        <span class="hero-stat-number">10K+</span>
+                        <span class="hero-stat-label">Sinh Viên</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
-    <div class="container mt-4">
+    <div class="container">
         <!-- Messages -->
         {% if messages %}
             {% for message in messages %}
@@ -418,464 +698,385 @@
             {% endfor %}
         {% endif %}
 
-        <!-- Welcome Section -->
-        <div class="welcome-card">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    {% if user.is_authenticated %}
-                        <h1 class="h3 mb-2">
-                            Chào mừng trở lại, {{ user.get_full_name|default:user.username }}! 
-                        </h1>
-                        <p class="mb-0 opacity-90">
-                            {% if user.bio %}
-                                {{ user.bio }}
-                            {% else %}
-                                Sẵn sàng để khám phá và chia sẻ kiến thức hôm nay!
-                            {% endif %}
-                        </p>
-                    {% else %}
-                        <h1 class="h3 mb-2">
-                            Chào mừng bạn đến với StudyBot!
-                        </h1>
-                        <p class="mb-0 opacity-90">
-                            Khám phá hàng ngàn tài liệu học tập và tham gia cộng đồng sinh viên. <a href="{% url 'home_login' %}" class="text-white fw-bold" style="text-decoration: underline;">Đăng nhập</a> để có trải nghiệm tốt nhất!
-                        </p>
-                    {% endif %}
+        <!-- User Stats Compact (only for authenticated users) -->
+        {% if user.is_authenticated %}
+        <div class="user-stats-compact">
+            <h5 class="mb-3"><i class="fas fa-chart-line text-primary"></i> Hoạt động của bạn</h5>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-icon text-primary"><i class="fas fa-file-alt"></i></div>
+                    <span class="stat-number">{{ user_documents_count|default:0 }}</span>
+                    <div class="stat-label">Tài liệu đã tải</div>
                 </div>
-                <div class="col-md-4 text-end">
-                    {% if user.is_authenticated %}
-                        <div class="d-flex flex-column align-items-end">
-                            <small class="opacity-75">Thành viên từ</small>
-                            <strong>{{ user.date_joined|date:"d/m/Y" }}</strong>
-                        </div>
-                    {% else %}
-                        <div class="d-flex flex-column align-items-end">
-                            <a href="{% url 'home_login' %}" class="btn btn-light btn-lg">
-                                <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                            </a>
-                        </div>
-                    {% endif %}
+                <div class="stat-item">
+                    <div class="stat-icon text-success"><i class="fas fa-download"></i></div>
+                    <span class="stat-number">{{ user_total_downloads|default:0 }}</span>
+                    <div class="stat-label">Lượt tải xuống</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon text-info"><i class="fas fa-heart"></i></div>
+                    <span class="stat-number">{{ user_total_likes|default:0 }}</span>
+                    <div class="stat-label">Lượt thích</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon text-warning"><i class="fas fa-trophy"></i></div>
+                    <span class="stat-number">0</span>
+                    <div class="stat-label">Quiz hoàn thành</div>
                 </div>
             </div>
-        </div>
-
-        <!-- Quick Stats -->
-        <div class="row g-4 mb-4">
-            <div class="col-md-3">
-                <div class="stats-card text-center">
-                    <div class="text-primary mb-2">
-                        <i class="fas fa-file-alt fa-2x"></i>
-                    </div>
-                    <h4 class="h5 mb-1">{{ user_documents_count|default:0 }}</h4>
-                    <small class="text-muted">Tài liệu đã tải</small>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stats-card text-center">
-                    <div class="text-success mb-2">
-                        <i class="fas fa-download fa-2x"></i>
-                    </div>
-                    <h4 class="h5 mb-1">{{ user_total_downloads|default:0 }}</h4>
-                    <small class="text-muted">Lượt tải xuống</small>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stats-card text-center">
-                    <div class="text-info mb-2">
-                        <i class="fas fa-heart fa-2x"></i>
-                    </div>
-                    <h4 class="h5 mb-1">{{ user_total_likes|default:0 }}</h4>
-                    <small class="text-muted">Lượt thích</small>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stats-card text-center">
-                    <div class="text-warning mb-2">
-                        <i class="fas fa-trophy fa-2x"></i>
-                    </div>
-                    <h4 class="h5 mb-1">0</h4>
-                    <small class="text-muted">Quiz hoàn thành</small>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="row g-4 mb-4">
-            <div class="col-md-6">
-                <div class="stats-card">
-                    <h5><i class="fas fa-upload text-primary"></i> Tải lên tài liệu</h5>
-                    <p class="text-muted mb-3">Chia sẻ tài liệu học tập với cộng đồng</p>
-                    {% if user.is_authenticated %}
-                        <button onclick="window.location.href='{% url 'upload_step1' %}'" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Tải lên ngay
-                        </button>
-                    {% else %}
-                        <button onclick="alert('Vui lòng đăng nhập để tải lên tài liệu'); window.location.href='{% url 'home_login' %}'" class="btn btn-outline-primary">
-                            <i class="fas fa-sign-in-alt"></i> Đăng nhập để tải lên
-                        </button>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="stats-card">
-                    <h5><i class="fas fa-search text-success"></i> Tìm kiếm tài liệu</h5>
-                    <p class="text-muted mb-3">Khám phá hàng ngàn tài liệu học tập</p>
-                    <form method="GET" action="{% url 'documents_search' %}">
-                        <div class="input-group">
-                            <input type="text" name="q" class="form-control" placeholder="Tìm kiếm tài liệu..." value="{{ request.GET.q }}">
-                            <button class="btn btn-success" type="submit">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Breadcrumb Navigation -->
-        <nav aria-label="breadcrumb" id="breadcrumbNav" style="display: none;">
-            <ol class="breadcrumb" id="breadcrumbList">
-                <li class="breadcrumb-item"><a href="#" onclick="showDashboard()">Dashboard</a></li>
-            </ol>
-        </nav>
-        <div class="col-md-6">
-    <div class="stats-card">
-        <h5><i class="fas fa-comments text-info"></i> Phòng chat học tập</h5>
-        <p class="text-muted mb-3">Tham gia thảo luận với cộng đồng sinh viên</p>
-        
-        <!-- Quick Stats -->
-        <div class="row g-3 mb-3">
-            <div class="col-6">
-                <div class="text-center">
-                    <div class="text-info mb-1">
-                        <i class="fas fa-door-open"></i>
-                    </div>
-                    <small class="text-muted d-block">Phòng công khai</small>
-                    <strong class="text-primary">{{ public_rooms_count|default:0 }}</strong>
-                </div>
-            </div>
-            <div class="col-6">
-                <div class="text-center">
-                    <div class="text-success mb-1">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <small class="text-muted d-block">Đang online</small>
-                    <strong class="text-success">{{ online_users_count|default:0 }}</strong>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div class="d-flex gap-2">
-            <a href="{% url 'chat_rooms_list' %}" class="btn btn-info btn-sm flex-fill">
-                <i class="fas fa-list"></i> Danh sách phòng
-            </a>
-            {% if user.is_authenticated %}
-                <a href="{% url 'chat_room_create' %}" class="btn btn-outline-info btn-sm flex-fill">
-                    <i class="fas fa-plus"></i> Tạo phòng
-                </a>
-            {% else %}
-                <button onclick="alert('Vui lòng đăng nhập để tạo phòng chat'); window.location.href='{% url 'home_login' %}'" class="btn btn-outline-info btn-sm flex-fill">
-                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                </button>
-            {% endif %}
-        </div>
-        
-        <!-- Recent Active Rooms (Optional) -->
-        {% if recent_chat_rooms %}
-        <div class="mt-3 pt-3 border-top">
-            <small class="text-muted d-block mb-2">Phòng hoạt động gần đây:</small>
-            {% for room in recent_chat_rooms|slice:":3" %}
-            <div class="d-flex justify-content-between align-items-center py-1">
-                <div>
-                    <small class="fw-medium">{{ room.name }}</small>
-                    <small class="text-muted d-block">{{ room.members_count }} thành viên</small>
-                </div>
-                <a href="{% url 'chat_room_detail' room.id %}" class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-            {% endfor %}
         </div>
         {% endif %}
-    </div>
-</div>
-        <!-- Universities Section -->
-        <div id="universitiesSection" class="section-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4><i class="fas fa-university text-primary"></i> Trường Đại Học</h4>
-                <small class="text-muted">Chọn trường để xem các môn học</small>
-            </div>
 
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6 stagger-item">
+                    <div class="action-card" onclick="window.location.href='{% if user.is_authenticated %}{% url 'upload_step1' %}{% else %}{% url 'home_login' %}{% endif %}'">
+                        <div class="action-icon primary">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <div class="action-title">Tải lên tài liệu</div>
+                        <div class="action-description">Chia sẻ tài liệu với cộng đồng</div>
+                        <button class="btn btn-primary btn-sm">
+                            {% if user.is_authenticated %}
+                                <i class="fas fa-plus"></i> Tải lên
+                            {% else %}
+                                <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 stagger-item">
+                    <div class="action-card" onclick="window.location.href='{% url 'documents_list' %}'">
+                        <div class="action-icon success">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div class="action-title">Khám phá tài liệu</div>
+                        <div class="action-description">Tìm kiếm trong kho tài liệu</div>
+                        <button class="btn btn-success btn-sm">
+                            <i class="fas fa-arrow-right"></i> Khám phá
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 stagger-item">
+                    <div class="action-card" onclick="window.location.href='{% url 'chat_rooms_list' %}'">
+                        <div class="action-icon info">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="action-title">Phòng chat</div>
+                        <div class="action-description">Thảo luận với sinh viên</div>
+                        <button class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-arrow-right"></i> Tham gia
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 stagger-item">
+                    <div class="action-card" onclick="window.location.href='{% url 'code_courses_list' %}'">
+                        <div class="action-icon warning">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <div class="action-title">Code with AI</div>
+                        <div class="action-description">Học lập trình với AI</div>
+                        <button class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-arrow-right"></i> Học ngay
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Explore Universities Link -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <a href="#" onclick="showUniversitiesSection(); return false;" class="explore-link">
+                    <div class="explore-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <div class="explore-title">Khám phá theo trường đại học</div>
+                    <div class="explore-description">
+                        Tìm tài liệu theo {{ universities.count|default:0 }} trường đại học trong hệ thống
+                    </div>
+                    <div class="mt-3">
+                        <span class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-arrow-right"></i> Xem tất cả trường
+                        </span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Latest Documents Section -->
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-star text-warning"></i> Tài liệu nổi bật</h2>
+            <a href="{% url 'documents_list' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-right"></i> Xem tất cả
+            </a>
+        </div>
+
+        <div class="row g-4 mb-5">
+            {% if documents %}
+                {% for document in documents|slice:":8" %}
+                    <div class="col-lg-3 col-md-4 col-sm-6">
+                        <div class="document-card" onclick="viewDocument({{ document.id }})">
+                            <!-- Thumbnail -->
+                            <div class="document-thumbnail">
+                                {% if document.thumbnail %}
+                                    <img src="{{ document.thumbnail.url }}" alt="{{ document.title }}">
+                                {% else %}
+                                    {% if document.document_type == 'textbook' %}
+                                        <i class="fas fa-book"></i>
+                                    {% elif document.document_type == 'exercise' %}
+                                        <i class="fas fa-pencil-alt"></i>
+                                    {% elif document.document_type == 'exam' %}
+                                        <i class="fas fa-file-alt"></i>
+                                    {% elif document.document_type == 'thesis' %}
+                                        <i class="fas fa-graduation-cap"></i>
+                                    {% elif document.document_type == 'lecture' %}
+                                        <i class="fas fa-chalkboard-teacher"></i>
+                                    {% else %}
+                                        <i class="fas fa-file"></i>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+
+                            <!-- Document Type Badge -->
+                            <div class="document-type-badge">
+                                {% if document.document_type == 'textbook' %}Sách giáo khoa
+                                {% elif document.document_type == 'exercise' %}Bài tập
+                                {% elif document.document_type == 'exam' %}Đề thi
+                                {% elif document.document_type == 'thesis' %}Luận văn
+                                {% elif document.document_type == 'lecture' %}Bài giảng
+                                {% else %}Khác
+                                {% endif %}
+                            </div>
+
+                            <!-- Title -->
+                            <div class="document-title">{{ document.title }}</div>
+
+                            <!-- Meta Info -->
+                            <div class="document-meta">
+                                <div><i class="fas fa-university"></i> {{ document.university.short_name|default:document.university.name }}</div>
+                                <div><i class="fas fa-user"></i> {{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}</div>
+                            </div>
+
+                            <!-- Stats -->
+                            <div class="document-stats">
+                                <div>
+                                    <small><i class="fas fa-eye"></i> {{ document.view_count }}</small>
+                                    <small class="ms-2"><i class="fas fa-download"></i> {{ document.download_count }}</small>
+                                </div>
+                                <div>
+                                    <small><i class="fas fa-heart"></i> {{ document.like_count }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-folder-open fa-4x text-muted mb-3" style="opacity: 0.3;"></i>
+                        <h5>Chưa có tài liệu nào</h5>
+                        <p class="text-muted">Hãy bắt đầu bằng cách tải lên tài liệu đầu tiên!</p>
+                        {% if user.is_authenticated %}
+                        <button onclick="window.location.href='{% url 'upload_step1' %}'" class="btn btn-primary mt-3">
+                            <i class="fas fa-upload"></i> Tải lên tài liệu
+                        </button>
+                        {% else %}
+                        <button onclick="window.location.href='{% url 'home_login' %}'" class="btn btn-primary mt-3">
+                            <i class="fas fa-sign-in-alt"></i> Đăng nhập để tải lên
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Hidden Universities Section (shown when clicked) -->
+    <div id="universitiesModal" style="display: none;">
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1040;" onclick="hideUniversitiesSection()"></div>
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 15px; padding: 30px; max-width: 1200px; width: 90%; max-height: 80vh; overflow-y: auto; z-index: 1050; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-university text-primary"></i> Chọn trường đại học</h3>
+                <button class="btn btn-sm btn-outline-secondary" onclick="hideUniversitiesSection()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
             <div class="row g-4" id="universitiesContainer">
                 {% if universities %}
                     {% for university in universities %}
                         <div class="col-lg-3 col-md-4 col-sm-6">
-                            <div class="university-card" onclick="showCourses({{ university.id }}, '{{ university.name|escapejs }}')">
-                                <div class="university-logo">
+                            <div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s;" 
+                                 onmouseover="this.style.borderColor='#6366f1'; this.style.transform='translateY(-2px)';" 
+                                 onmouseout="this.style.borderColor='#e5e7eb'; this.style.transform='translateY(0)';" 
+                                 onclick="window.location.href='{% url 'documents_list' %}?university={{ university.id }}'">
+                                <div style="width: 60px; height: 60px; margin: 0 auto 15px; background: #f3f4f6; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
                                     {% if university.logo %}
-                                        <img src="{{ university.logo.url }}" alt="{{ university.name }}">
+                                        <img src="{{ university.logo.url }}" alt="{{ university.name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
                                     {% else %}
-                                        <i class="fas fa-university"></i>
+                                        <i class="fas fa-university" style="font-size: 1.5rem; color: #6b7280;"></i>
                                     {% endif %}
                                 </div>
-                                <div class="university-name">{{ university.name }}</div>
-                                <div class="university-short-name">{{ university.short_name|default:"" }}</div>
-                                <div class="university-stats">
-                                    <div>
-                                        <small><i class="fas fa-book"></i> {{ university.courses_count }} môn</small>
-                                    </div>
-                                    <div>
-                                        <small><i class="fas fa-file-alt"></i> {{ university.documents_count }} tài liệu</small>
-                                    </div>
-                                </div>
+                                <div style="font-weight: 600; margin-bottom: 5px;">{{ university.short_name|default:university.name }}</div>
+                                <div style="font-size: 0.85rem; color: #6b7280;">{{ university.documents_count|default:0 }} tài liệu</div>
                             </div>
                         </div>
                     {% endfor %}
-                {% else %}
-                    <div class="col-12">
-                        <div class="no-universities">
-                            <i class="fas fa-university"></i>
-                            <h5>Chưa có trường nào</h5>
-                            <p>Hiện tại chưa có trường đại học nào trong hệ thống.</p>
-                        </div>
-                    </div>
                 {% endif %}
             </div>
         </div>
-
-        <!-- Courses Section -->
-        <div id="coursesSection" class="section-content" style="display: none;">
-            <a href="#" class="back-button" onclick="showDashboard()">
-                <i class="fas fa-arrow-left"></i>
-                Quay lại Dashboard
-            </a>
-            
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 id="coursesTitle"><i class="fas fa-book text-primary"></i> Các môn học</h4>
-                <small class="text-muted">Chọn môn học để xem tài liệu</small>
-            </div>
-
-            <div class="loading-spinner" id="coursesLoading">
-                <div class="spinner-border spinner-border-custom" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-3 text-muted">Đang tải danh sách môn học...</p>
-            </div>
-
-            <div class="row g-4" id="coursesContainer">
-                <!-- Courses will be loaded here via AJAX -->
-            </div>
-        </div>
-
-        <!-- Course Documents Section -->
-        <div id="courseDocumentsSection" class="section-content" style="display: none;">
-            <a href="#" class="back-button" onclick="goBackToCourses()">
-                <i class="fas fa-arrow-left"></i>
-                Quay lại danh sách môn học
-            </a>
-            
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 id="courseDocumentsTitle"><i class="fas fa-folder-open text-primary"></i> Tài liệu môn học</h4>
-            </div>
-
-            <div class="loading-spinner" id="documentsLoading">
-                <div class="spinner-border spinner-border-custom" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-3 text-muted">Đang tải danh sách tài liệu...</p>
-            </div>
-
-            <div class="row g-4" id="courseDocumentsContainer">
-                <!-- Documents will be loaded here via AJAX -->
-            </div>
-        </div>
-
-        <!-- Documents Section (Latest) -->
-        <div id="documentsSection" class="section-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4><i class="fas fa-folder-open text-primary"></i> Tài liệu mới nhất</h4>
-                <a href="{% url 'documents_list' %}" class="btn btn-outline-primary btn-sm">
-                    <i class="fas fa-eye"></i> Xem tất cả
-                </a>
-            </div>
-
-            <!-- Filter Section -->
-            <div class="filter-section">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <select class="form-select" id="documentTypeFilter">
-                            <option value="">Tất cả loại tài liệu</option>
-                            <option value="textbook">Sách giáo khoa</option>
-                            <option value="exercise">Bài tập</option>
-                            <option value="exam">Đề thi</option>
-                            <option value="thesis">Luận văn</option>
-                            <option value="lecture">Bài giảng</option>
-                            <option value="other">Khác</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select" id="universityFilter">
-                            <option value="">Tất cả trường</option>
-                            {% for university in universities %}
-                                <option value="{{ university.id }}">{{ university.short_name|default:university.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select" id="statusFilter">
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="approved">Đã duyệt</option>
-                            <option value="pending">Chờ duyệt</option>
-                            <option value="rejected">Từ chối</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select" id="sortBy">
-                            <option value="-created_at">Mới nhất</option>
-                            <option value="created_at">Cũ nhất</option>
-                            <option value="-view_count">Lượt xem nhiều nhất</option>
-                            <option value="-download_count">Lượt tải nhiều nhất</option>
-                            <option value="-like_count">Lượt thích nhiều nhất</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Documents Grid -->
-            <div class="row g-4" id="documentsContainer">
-                {% if documents %}
-                    {% for document in documents %}
-                        <div class="col-lg-3 col-md-4 col-sm-6 document-item" 
-                             data-type="{{ document.document_type }}" 
-                             data-university="{{ document.university.id }}" 
-                             data-status="{{ document.status }}">
-                            <div class="document-card" onclick="viewDocument({{ document.id }})">
-                                <!-- Thumbnail -->
-                                <div class="document-thumbnail">
-                                    {% if document.thumbnail %}
-                                        <img src="{{ document.thumbnail.url }}" alt="{{ document.title }}">
-                                    {% else %}
-                                        {% if document.document_type == 'textbook' %}
-                                            <i class="fas fa-book"></i>
-                                        {% elif document.document_type == 'exercise' %}
-                                            <i class="fas fa-pencil-alt"></i>
-                                        {% elif document.document_type == 'exam' %}
-                                            <i class="fas fa-file-alt"></i>
-                                        {% elif document.document_type == 'thesis' %}
-                                            <i class="fas fa-graduation-cap"></i>
-                                        {% elif document.document_type == 'lecture' %}
-                                            <i class="fas fa-chalkboard-teacher"></i>
-                                        {% else %}
-                                            <i class="fas fa-file"></i>
-                                        {% endif %}
-                                    {% endif %}
-                                </div>
-
-                                <!-- Document Type Badge -->
-                                <div class="document-type-badge">
-                                    {% if document.document_type == 'textbook' %}Sách giáo khoa
-                                    {% elif document.document_type == 'exercise' %}Bài tập
-                                    {% elif document.document_type == 'exam' %}Đề thi
-                                    {% elif document.document_type == 'thesis' %}Luận văn
-                                    {% elif document.document_type == 'lecture' %}Bài giảng
-                                    {% else %}Khác
-                                    {% endif %}
-                                </div>
-
-                                <!-- Title -->
-                                <div class="document-title">{{ document.title }}</div>
-
-                                <!-- Meta Info -->
-                                <div class="document-meta">
-                                    <div><i class="fas fa-university"></i> {{ document.university.short_name|default:document.university.name }}</div>
-                                    <div><i class="fas fa-book-open"></i> {{ document.course.code }} - {{ document.course.name }}</div>
-                                    <div><i class="fas fa-user"></i> {{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}</div>
-                                </div>
-
-                                <!-- Status Badge -->
-                                <div class="mb-2">
-                                    <span class="status-badge status-{{ document.status }}">
-                                        {% if document.status == 'approved' %}
-                                            <i class="fas fa-check"></i> Đã duyệt
-                                        {% elif document.status == 'pending' %}
-                                            <i class="fas fa-clock"></i> Chờ duyệt
-                                        {% else %}
-                                            <i class="fas fa-times"></i> Từ chối
-                                        {% endif %}
-                                    </span>
-                                </div>
-
-                                <!-- Stats -->
-                                <div class="document-stats">
-                                    <div>
-                                        <small><i class="fas fa-eye"></i> {{ document.view_count }}</small>
-                                        <small class="ms-2"><i class="fas fa-download"></i> {{ document.download_count }}</small>
-                                    </div>
-                                    <div>
-                                        <small><i class="fas fa-heart"></i> {{ document.like_count }}</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="col-12">
-                        <div class="no-documents">
-                            <i class="fas fa-folder-open"></i>
-                            <h5>Chưa có tài liệu nào</h5>
-                            <p>Hãy bắt đầu bằng cách tải lên tài liệu đầu tiên!</p>
-                            <button onclick="window.location.href='{% url 'upload_step1' %}'" class="btn btn-primary">
-                                <i class="fas fa-upload"></i> Tải lên tài liệu
-                            </button>
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Recent Activity -->
-        {% if user.is_authenticated %}
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="stats-card">
-                    <h5 class="mb-4"><i class="fas fa-clock text-info"></i> Hoạt động gần đây</h5>
-                    {% if recent_activities %}
-                        <div class="list-group list-group-flush">
-                            {% for activity in recent_activities %}
-                                <div class="list-group-item border-0 px-0">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <h6 class="mb-1">{{ activity.description|default:activity.action }}</h6>
-                                            <small class="text-muted">{{ activity.created_at|timesince }} trước</small>
-                                        </div>
-                                        <small class="text-muted">{{ activity.action }}</small>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="text-center text-muted py-4">
-                            <i class="fas fa-history fa-3x mb-3 opacity-25"></i>
-                            <p>Chưa có hoạt động nào. Hãy bắt đầu bằng cách tải lên hoặc tìm kiếm tài liệu!</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        {% endif %}
     </div>
+
+    {% endblock %}
+
+    <!-- Footer -->
+    <footer style="background: #1f2937; color: white; margin-top: 80px; padding: 60px 0 30px;">
+        <div class="container">
+            <div class="row g-4">
+                <!-- About Section -->
+                <div class="col-lg-4 col-md-6">
+                    <h5 style="color: #fff; font-weight: 600; margin-bottom: 20px;">
+                        <i class="fas fa-graduation-cap" style="color: #6366f1;"></i> StudyBot
+                    </h5>
+                    <p style="color: #9ca3af; line-height: 1.6; margin-bottom: 20px;">
+                        Nền tảng chia sẻ tài liệu học tập và học lập trình với AI hàng đầu cho sinh viên Việt Nam.
+                    </p>
+                    <div style="display: flex; gap: 12px;">
+                        <a href="#" style="width: 40px; height: 40px; background: #374151; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #9ca3af; text-decoration: none; transition: all 0.3s;"
+                           onmouseover="this.style.background='#6366f1'; this.style.color='white'"
+                           onmouseout="this.style.background='#374151'; this.style.color='#9ca3af'">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" style="width: 40px; height: 40px; background: #374151; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #9ca3af; text-decoration: none; transition: all 0.3s;"
+                           onmouseover="this.style.background='#6366f1'; this.style.color='white'"
+                           onmouseout="this.style.background='#374151'; this.style.color='#9ca3af'">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="#" style="width: 40px; height: 40px; background: #374151; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #9ca3af; text-decoration: none; transition: all 0.3s;"
+                           onmouseover="this.style.background='#6366f1'; this.style.color='white'"
+                           onmouseout="this.style.background='#374151'; this.style.color='#9ca3af'">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="col-lg-2 col-md-6">
+                    <h6 style="color: #fff; font-weight: 600; margin-bottom: 20px;">Liên Kết</h6>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 12px;">
+                            <a href="{% url 'dashboard' %}" style="color: #9ca3af; text-decoration: none; transition: color 0.3s;"
+                               onmouseover="this.style.color='#6366f1'"
+                               onmouseout="this.style.color='#9ca3af'">
+                                <i class="fas fa-home" style="width: 20px;"></i> Trang chủ
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 12px;">
+                            <a href="{% url 'documents_list' %}" style="color: #9ca3af; text-decoration: none; transition: color 0.3s;"
+                               onmouseover="this.style.color='#6366f1'"
+                               onmouseout="this.style.color='#9ca3af'">
+                                <i class="fas fa-file-alt" style="width: 20px;"></i> Tài liệu
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 12px;">
+                            <a href="{% url 'code_courses_list' %}" style="color: #9ca3af; text-decoration: none; transition: color 0.3s;"
+                               onmouseover="this.style.color='#6366f1'"
+                               onmouseout="this.style.color='#9ca3af'">
+                                <i class="fas fa-code" style="width: 20px;"></i> Khóa học
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 12px;">
+                            <a href="{% url 'chat_rooms_list' %}" style="color: #9ca3af; text-decoration: none; transition: color 0.3s;"
+                               onmouseover="this.style.color='#6366f1'"
+                               onmouseout="this.style.color='#9ca3af'">
+                                <i class="fas fa-comments" style="width: 20px;"></i> Phòng chat
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Support -->
+                <div class="col-lg-3 col-md-6">
+                    <h6 style="color: #fff; font-weight: 600; margin-bottom: 20px;">Hỗ Trợ</h6>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 12px;">
+                            <a href="#" style="color: #9ca3af; text-decoration: none; transition: color 0.3s;"
+                               onmouseover="this.style.color='#6366f1'"
+                               onmouseout="this.style.color='#9ca3af'">
+                                <i class="fas fa-question-circle" style="width: 20px;"></i> Hướng dẫn
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 12px;">
+                            <a href="#" style="color: #9ca3af; text-decoration: none; transition: color 0.3s;"
+                               onmouseover="this.style.color='#6366f1'"
+                               onmouseout="this.style.color='#9ca3af'">
+                                <i class="fas fa-envelope" style="width: 20px;"></i> Liên hệ
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 12px;">
+                            <a href="#" style="color: #9ca3af; text-decoration: none; transition: color 0.3s;"
+                               onmouseover="this.style.color='#6366f1'"
+                               onmouseout="this.style.color='#9ca3af'">
+                                <i class="fas fa-shield-alt" style="width: 20px;"></i> Chính sách
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 12px;">
+                            <a href="#" style="color: #9ca3af; text-decoration: none; transition: color 0.3s;"
+                               onmouseover="this.style.color='#6366f1'"
+                               onmouseout="this.style.color='#9ca3af'">
+                                <i class="fas fa-file-contract" style="width: 20px;"></i> Điều khoản
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Newsletter -->
+                <div class="col-lg-3 col-md-6">
+                    <h6 style="color: #fff; font-weight: 600; margin-bottom: 20px;">Đăng Ký Nhận Tin</h6>
+                    <p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 16px;">
+                        Nhận thông báo về tài liệu mới và khóa học
+                    </p>
+                    <div class="input-group" style="margin-bottom: 16px;">
+                        <input type="email" class="form-control" placeholder="Email của bạn" style="background: #374151; border: 1px solid #4b5563; color: white; border-radius: 8px 0 0 8px;">
+                        <button class="btn" style="background: #6366f1; color: white; border-radius: 0 8px 8px 0; border: none;">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <style>
+                        footer input::placeholder {
+                            color: rgba(255, 255, 255, 0.6) !important;
+                        }
+                    </style>
+                </div>
+            </div>
+            
+            <!-- Bottom Bar -->
+            <div style="border-top: 1px solid #374151; margin-top: 40px; padding-top: 24px;">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <p style="color: #9ca3af; margin: 0; font-size: 0.9rem;">
+                            © 2025 StudyBot. All rights reserved.
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <p style="color: #9ca3af; margin: 0; font-size: 0.9rem;">
+                            Made with <i class="fas fa-heart" style="color: #ef4444;"></i> for Vietnamese students
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Global variables for navigation state
-        let currentUniversityId = null;
-        let currentUniversityName = null;
-        let currentCourseId = null;
-        let currentCourseName = null;
-
         // Auto-hide alerts after 5 seconds
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
@@ -892,314 +1093,358 @@
             window.location.href = `/documents/${documentId}/view/`;
         }
 
-        // Show dashboard (initial view)
-        function showDashboard() {
-            document.getElementById('universitiesSection').style.display = 'block';
-            document.getElementById('coursesSection').style.display = 'none';
-            document.getElementById('courseDocumentsSection').style.display = 'none';
-            document.getElementById('documentsSection').style.display = 'block';
-            document.getElementById('breadcrumbNav').style.display = 'none';
-            
-            // Reset state
-            currentUniversityId = null;
-            currentUniversityName = null;
-            currentCourseId = null;
-            currentCourseName = null;
+        // Show universities section
+        function showUniversitiesSection() {
+            document.getElementById('universitiesModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
         }
 
-        // Show courses for a university
-        function showCourses(universityId, universityName) {
-            currentUniversityId = universityId;
-            currentUniversityName = universityName;
-            
-            // Hide other sections
-            document.getElementById('universitiesSection').style.display = 'none';
-            document.getElementById('documentsSection').style.display = 'none';
-            document.getElementById('courseDocumentsSection').style.display = 'none';
-            
-            // Show courses section
-            document.getElementById('coursesSection').style.display = 'block';
-            document.getElementById('coursesTitle').innerHTML = `<i class="fas fa-book text-primary"></i> Các môn học - ${universityName}`;
-            
-            // Update breadcrumb
-            updateBreadcrumb([
-                { text: 'Dashboard', onclick: 'showDashboard()' },
-                { text: universityName, active: true }
-            ]);
-            
-            // Load courses via AJAX
-            loadCourses(universityId);
+        // Hide universities section
+        function hideUniversitiesSection() {
+            document.getElementById('universitiesModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
         }
 
-        // Load courses for a university
-        function loadCourses(universityId) {
-            const coursesContainer = document.getElementById('coursesContainer');
-            const coursesLoading = document.getElementById('coursesLoading');
-            
-            coursesLoading.style.display = 'block';
-            coursesContainer.innerHTML = '';
-            
-            fetch(`/api/university/${universityId}/courses/`)
-                .then(response => response.json())
-                .then(data => {
-                    coursesLoading.style.display = 'none';
-                    
-                    if (data.courses && data.courses.length > 0) {
-                        let html = '';
-                        data.courses.forEach(course => {
-                            html += `
-                                <div class="col-lg-4 col-md-6">
-                                    <div class="course-card" onclick="showCourseDocuments(${course.id}, '${course.code} - ${course.name}')">
-                                        <div class="course-code">${course.code}</div>
-                                        <div class="course-name">${course.name}</div>
-                                        ${course.description ? `<div class="course-description">${course.description}</div>` : ''}
-                                        <div class="course-stats">
-                                            <div>
-                                                <small><i class="fas fa-file-alt"></i> ${course.documents_count} tài liệu</small>
-                                            </div>
-                                            <div>
-                                                <small><i class="fas fa-arrow-right"></i></small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        coursesContainer.innerHTML = html;
-                    } else {
-                        coursesContainer.innerHTML = `
-                            <div class="col-12">
-                                <div class="no-courses">
-                                    <i class="fas fa-book"></i>
-                                    <h5>Chưa có môn học nào</h5>
-                                    <p>Trường này chưa có môn học nào trong hệ thống.</p>
-                                </div>
-                            </div>
-                        `;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading courses:', error);
-                    coursesLoading.style.display = 'none';
-                    coursesContainer.innerHTML = `
-                        <div class="col-12">
-                            <div class="no-courses">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <h5>Lỗi tải dữ liệu</h5>
-                                <p>Không thể tải danh sách môn học. Vui lòng thử lại sau.</p>
-                                <button class="btn btn-primary" onclick="loadCourses(${universityId})">
-                                    <i class="fas fa-refresh"></i> Thử lại
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-        }
-
-        // Show course documents
-        function showCourseDocuments(courseId, courseName) {
-            currentCourseId = courseId;
-            currentCourseName = courseName;
-            
-            // Hide other sections
-            document.getElementById('coursesSection').style.display = 'none';
-            
-            // Show course documents section
-            document.getElementById('courseDocumentsSection').style.display = 'block';
-            document.getElementById('courseDocumentsTitle').innerHTML = `<i class="fas fa-folder-open text-primary"></i> ${courseName}`;
-            
-            // Update breadcrumb
-            updateBreadcrumb([
-                { text: 'Dashboard', onclick: 'showDashboard()' },
-                { text: currentUniversityName, onclick: `showCourses(${currentUniversityId}, '${currentUniversityName}')` },
-                { text: courseName, active: true }
-            ]);
-            
-            // Load documents via AJAX
-            loadCourseDocuments(courseId);
-        }
-
-        // Load documents for a course
-        function loadCourseDocuments(courseId) {
-            const documentsContainer = document.getElementById('courseDocumentsContainer');
-            const documentsLoading = document.getElementById('documentsLoading');
-            
-            documentsLoading.style.display = 'block';
-            documentsContainer.innerHTML = '';
-            
-            fetch(`/api/course/${courseId}/documents/`)
-                .then(response => response.json())
-                .then(data => {
-                    documentsLoading.style.display = 'none';
-                    
-                    if (data.documents && data.documents.length > 0) {
-                        let html = '';
-                        data.documents.forEach(doc => {
-                            const typeIcon = getDocumentTypeIcon(doc.document_type);
-                            const statusClass = `status-${doc.status}`;
-                            const statusText = getStatusText(doc.status);
-                            
-                            html += `
-                                <div class="col-lg-3 col-md-4 col-sm-6">
-                                    <div class="document-card" onclick="viewDocument(${doc.id})">
-                                        <div class="document-thumbnail">
-                                            ${doc.thumbnail ? `<img src="${doc.thumbnail}" alt="${doc.title}">` : `<i class="${typeIcon}"></i>`}
-                                        </div>
-                                        <div class="document-type-badge">${doc.document_type_display}</div>
-                                        <div class="document-title">${doc.title}</div>
-                                        <div class="document-meta">
-                                            <div><i class="fas fa-university"></i> ${doc.university_name}</div>
-                                            <div><i class="fas fa-user"></i> ${doc.uploaded_by}</div>
-                                            <div><i class="fas fa-calendar"></i> ${doc.created_at}</div>
-                                        </div>
-                                        <div class="mb-2">
-                                            <span class="status-badge ${statusClass}">
-                                                ${statusText}
-                                            </span>
-                                        </div>
-                                        <div class="document-stats">
-                                            <div>
-                                                <small><i class="fas fa-eye"></i> ${doc.view_count}</small>
-                                                <small class="ms-2"><i class="fas fa-download"></i> ${doc.download_count}</small>
-                                            </div>
-                                            <div>
-                                                <small><i class="fas fa-heart"></i> ${doc.like_count}</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        documentsContainer.innerHTML = html;
-                    } else {
-                        documentsContainer.innerHTML = `
-                            <div class="col-12">
-                                <div class="no-documents">
-                                    <i class="fas fa-folder-open"></i>
-                                    <h5>Chưa có tài liệu nào</h5>
-                                    <p>Môn học này chưa có tài liệu nào.</p>
-                                </div>
-                            </div>
-                        `;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading documents:', error);
-                    documentsLoading.style.display = 'none';
-                    documentsContainer.innerHTML = `
-                        <div class="col-12">
-                            <div class="no-documents">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <h5>Lỗi tải dữ liệu</h5>
-                                <p>Không thể tải danh sách tài liệu. Vui lòng thử lại sau.</p>
-                                <button class="btn btn-primary" onclick="loadCourseDocuments(${courseId})">
-                                    <i class="fas fa-refresh"></i> Thử lại
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-        }
-
-        // Go back to courses from course documents
-        function goBackToCourses() {
-            if (currentUniversityId && currentUniversityName) {
-                showCourses(currentUniversityId, currentUniversityName);
-            } else {
-                showDashboard();
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideUniversitiesSection();
+                hideAutocomplete();
             }
-        }
-
-        // Helper function to get document type icon
-        function getDocumentTypeIcon(type) {
-            const icons = {
-                'textbook': 'fas fa-book',
-                'exercise': 'fas fa-pencil-alt',
-                'exam': 'fas fa-file-alt',
-                'thesis': 'fas fa-graduation-cap',
-                'lecture': 'fas fa-chalkboard-teacher',
-                'other': 'fas fa-file'
-            };
-            return icons[type] || 'fas fa-file';
-        }
-
-        // Helper function to get status text
-        function getStatusText(status) {
-            const statusTexts = {
-                'approved': '<i class="fas fa-check"></i> Đã duyệt',
-                'pending': '<i class="fas fa-clock"></i> Chờ duyệt',
-                'rejected': '<i class="fas fa-times"></i> Từ chối'
-            };
-            return statusTexts[status] || status;
-        }
-
-        // Update breadcrumb navigation
-        function updateBreadcrumb(items) {
-            const breadcrumbNav = document.getElementById('breadcrumbNav');
-            const breadcrumbList = document.getElementById('breadcrumbList');
+        });
+        
+        // Smart Search Autocomplete
+        let searchTimeout = null;
+        const searchInput = document.getElementById('searchInput');
+        const autocompleteDropdown = document.getElementById('autocompleteDropdown');
+        
+        // Show autocomplete on focus (history & popular)
+        searchInput.addEventListener('focus', function() {
+            if (this.value.trim() === '') {
+                fetchSuggestionsEmpty();
+            }
+        });
+        
+        // Real-time search as user types
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
             
+            clearTimeout(searchTimeout);
+            
+            if (query === '') {
+                fetchSuggestionsEmpty();
+                return;
+            }
+            
+            // Debounce 300ms
+            searchTimeout = setTimeout(() => {
+                fetchSuggestions(query);
+            }, 300);
+        });
+        
+        // Fetch suggestions when input is empty (show history & popular)
+        function fetchSuggestionsEmpty() {
+            fetch('/api/search/suggestions/')
+                .then(res => res.json())
+                .then(data => {
+                    renderHistoryAndPopular(data);
+                })
+                .catch(err => console.error('Error fetching suggestions:', err));
+        }
+        
+        // Fetch real-time suggestions
+        function fetchSuggestions(query) {
+            fetch(`/api/search/suggestions/?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    renderSuggestions(data);
+                })
+                .catch(err => console.error('Error fetching suggestions:', err));
+        }
+        
+        // Render history and popular searches
+        function renderHistoryAndPopular(data) {
             let html = '';
-            items.forEach((item, index) => {
-                if (item.active) {
-                    html += `<li class="breadcrumb-item active" aria-current="page">${item.text}</li>`;
-                } else {
-                    html += `<li class="breadcrumb-item"><a href="#" onclick="${item.onclick}">${item.text}</a></li>`;
-                }
-            });
             
-            breadcrumbList.innerHTML = html;
-            breadcrumbNav.style.display = 'block';
-        }
-
-        // Filter functionality for main documents
-        document.addEventListener('DOMContentLoaded', function() {
-            const typeFilter = document.getElementById('documentTypeFilter');
-            const universityFilter = document.getElementById('universityFilter');
-            const statusFilter = document.getElementById('statusFilter');
-            const sortBy = document.getElementById('sortBy');
-
-            function filterDocuments() {
-                const documentItems = document.querySelectorAll('.document-item');
-                const typeValue = typeFilter.value;
-                const universityValue = universityFilter.value;
-                const statusValue = statusFilter.value;
-
-                documentItems.forEach(item => {
-                    let show = true;
-
-                    if (typeValue && item.dataset.type !== typeValue) {
-                        show = false;
-                    }
-
-                    if (universityValue && item.dataset.university !== universityValue) {
-                        show = false;
-                    }
-
-                    if (statusValue && item.dataset.status !== statusValue) {
-                        show = false;
-                    }
-
-                    item.style.display = show ? 'block' : 'none';
+            // Search history
+            if (data.history && data.history.length > 0) {
+                html += `
+                    <div class="autocomplete-section">
+                        <div class="autocomplete-header"><i class="fas fa-history"></i> Lịch sử tìm kiếm</div>
+                `;
+                
+                data.history.forEach(query => {
+                    html += `
+                        <div class="autocomplete-item" onclick="selectQuery('${escapeHtml(query)}')">
+                            <div class="autocomplete-icon history">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="autocomplete-content">
+                                <div class="autocomplete-title">${escapeHtml(query)}</div>
+                            </div>
+                            <div class="delete-history-icon" onclick="deleteHistoryItem(event, '${escapeHtml(query)}')" title="Xóa">
+                                <i class="fas fa-times"></i>
+                            </div>
+                        </div>
+                    `;
                 });
+                
+                // Add clear history button
+                html += `
+                    <button class="clear-history-btn" onclick="confirmClearHistory(event)">
+                        <i class="fas fa-trash"></i> Xóa lịch sử tìm kiếm
+                    </button>
+                `;
+                
+                html += '</div>';
             }
-
-            if (typeFilter) typeFilter.addEventListener('change', filterDocuments);
-            if (universityFilter) universityFilter.addEventListener('change', filterDocuments);
-            if (statusFilter) statusFilter.addEventListener('change', filterDocuments);
-
-            // Sort functionality (would need backend support)
-            if (sortBy) {
-                sortBy.addEventListener('change', function() {
-                    const sortValue = this.value;
-                    // Redirect with sort parameter
-                    const url = new URL(window.location);
-                    url.searchParams.set('sort', sortValue);
-                    window.location.href = url.toString();
+            
+            // Popular searches
+            if (data.popular && data.popular.length > 0) {
+                html += `
+                    <div class="autocomplete-section">
+                        <div class="autocomplete-header"><i class="fas fa-fire"></i> Tìm kiếm phổ biến</div>
+                `;
+                
+                data.popular.forEach(query => {
+                    html += `
+                        <div class="autocomplete-item" onclick="selectQuery('${escapeHtml(query)}')">
+                            <div class="autocomplete-icon history">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="autocomplete-content">
+                                <div class="autocomplete-title">${escapeHtml(query)}</div>
+                            </div>
+                        </div>
+                    `;
                 });
+                
+                html += '</div>';
+            }
+            
+            if (html) {
+                autocompleteDropdown.innerHTML = html;
+                autocompleteDropdown.classList.add('show');
+            } else {
+                hideAutocomplete();
+            }
+        }
+        
+        // Render real-time suggestions
+        function renderSuggestions(data) {
+            let html = '';
+            let hasResults = false;
+            
+            // Documents
+            if (data.documents && data.documents.length > 0) {
+                hasResults = true;
+                html += `
+                    <div class="autocomplete-section">
+                        <div class="autocomplete-header"><i class="fas fa-file-alt"></i> Tài liệu</div>
+                `;
+                
+                data.documents.forEach(doc => {
+                    html += `
+                        <div class="autocomplete-item" onclick="window.location.href='${doc.url}'">
+                            <div class="autocomplete-icon doc">
+                                <i class="fas ${doc.icon}"></i>
+                            </div>
+                            <div class="autocomplete-content">
+                                <div class="autocomplete-title">${escapeHtml(doc.title)}</div>
+                                <div class="autocomplete-subtitle">${escapeHtml(doc.university)} • ${escapeHtml(doc.course)}</div>
+                            </div>
+                            <span class="autocomplete-badge">Tài liệu</span>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            }
+            
+            // Courses
+            if (data.courses && data.courses.length > 0) {
+                hasResults = true;
+                html += `
+                    <div class="autocomplete-section">
+                        <div class="autocomplete-header"><i class="fas fa-book"></i> Môn học</div>
+                `;
+                
+                data.courses.forEach(course => {
+                    html += `
+                        <div class="autocomplete-item" onclick="window.location.href='${course.url}'">
+                            <div class="autocomplete-icon course">
+                                <i class="fas ${course.icon}"></i>
+                            </div>
+                            <div class="autocomplete-content">
+                                <div class="autocomplete-title">${escapeHtml(course.title)}</div>
+                                <div class="autocomplete-subtitle">${escapeHtml(course.university)}</div>
+                            </div>
+                            <span class="autocomplete-badge">Môn học</span>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            }
+            
+            // Universities
+            if (data.universities && data.universities.length > 0) {
+                hasResults = true;
+                html += `
+                    <div class="autocomplete-section">
+                        <div class="autocomplete-header"><i class="fas fa-university"></i> Trường đại học</div>
+                `;
+                
+                data.universities.forEach(uni => {
+                    html += `
+                        <div class="autocomplete-item" onclick="window.location.href='${uni.url}'">
+                            <div class="autocomplete-icon uni">
+                                <i class="fas ${uni.icon}"></i>
+                            </div>
+                            <div class="autocomplete-content">
+                                <div class="autocomplete-title">${escapeHtml(uni.title)}</div>
+                                ${uni.subtitle ? `<div class="autocomplete-subtitle">${escapeHtml(uni.subtitle)}</div>` : ''}
+                            </div>
+                            <span class="autocomplete-badge">Trường</span>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            }
+            
+            if (hasResults) {
+                autocompleteDropdown.innerHTML = html;
+                autocompleteDropdown.classList.add('show');
+            } else {
+                autocompleteDropdown.innerHTML = `
+                    <div class="autocomplete-section">
+                        <div style="text-align: center; padding: 20px; color: #6b7280;">
+                            <i class="fas fa-search fa-2x mb-2" style="opacity: 0.3;"></i>
+                            <p>Không tìm thấy kết quả phù hợp</p>
+                        </div>
+                    </div>
+                `;
+                autocompleteDropdown.classList.add('show');
+            }
+        }
+        
+        // Hide autocomplete
+        function hideAutocomplete() {
+            autocompleteDropdown.classList.remove('show');
+        }
+        
+        // Select query from history/popular
+        function selectQuery(query) {
+            searchInput.value = query;
+            document.getElementById('searchForm').submit();
+        }
+        
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Delete single history item
+        function deleteHistoryItem(event, query) {
+            event.stopPropagation();
+            
+            fetch('/api/search/delete-history-item/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query: query })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Refresh suggestions to show updated list
+                    fetchSuggestionsEmpty();
+                }
+            })
+            .catch(err => {
+                console.error('Error deleting history item:', err);
+            });
+        }
+        
+        // Confirm and clear search history
+        function confirmClearHistory(event) {
+            event.stopPropagation();
+            
+            if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử tìm kiếm?')) {
+                clearSearchHistory();
+            }
+        }
+        
+        // Clear search history via API
+        function clearSearchHistory() {
+            fetch('/api/search/clear-history/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Hide autocomplete and show success message
+                    hideAutocomplete();
+                    searchInput.value = '';
+                    
+                    // Show success alert
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success alert-dismissible fade show';
+                    alert.style.position = 'fixed';
+                    alert.style.top = '20px';
+                    alert.style.right = '20px';
+                    alert.style.zIndex = '9999';
+                    alert.innerHTML = `
+                        <i class="fas fa-check-circle"></i> ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    document.body.appendChild(alert);
+                    
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 3000);
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error('Error clearing history:', err);
+                alert('Có lỗi xảy ra khi xóa lịch sử');
+            });
+        }
+        
+        // Get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Close autocomplete when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
+                hideAutocomplete();
             }
         });
     </script>
-    {% endblock %}
     
 </body>
 </html>
