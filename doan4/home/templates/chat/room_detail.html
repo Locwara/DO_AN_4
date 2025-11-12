@@ -395,6 +395,47 @@
 </div>
 
 <style>
+.chat-container {
+    height: calc(100vh - 140px); /* Adjust this value based on your navbar/footer height */
+}
+
+.chat-main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.chat-header {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.chat-input {
+    padding: 1rem;
+    border-top: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    flex-shrink: 0;
+}
+
+.chat-sidebar {
+    height: 100%;
+    overflow-y: auto;
+    padding: 1rem;
+    background: #f9fafb;
+    border-left: 1px solid #e5e7eb;
+}
+
 /* ===== FILES & MEDIA STYLES ===== */
 .files-container {
     max-height: 300px;
