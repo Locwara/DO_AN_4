@@ -17,6 +17,17 @@ SECRET_KEY = 'django-insecure-2@0nlqs(9n2fvje)14!c*w2@!^2d#iha(@1*ucie-orlk&c^=)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# VNPay Payment Gateway Configuration
+VNPAY_TMN_CODE = os.environ.get('VNPAY_TMN_CODE', 'DFGFDNTM')
+VNPAY_HASH_SECRET = os.environ.get('VNPAY_HASH_SECRET', 'FVTT5K53USTT43KOPDD8UICRSGH8TYP5')
+VNPAY_URL = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'
+
+# Site URL for VNPay return - auto-detect based on environment
+if os.environ.get('VERCEL'):
+    SITE_URL = os.environ.get('SITE_URL', 'https://doan4-django.vercel.app')
+else:
+    SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
+
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'your-domain.com', '.vercel.app']
 
 # Application definition
@@ -40,7 +51,7 @@ INSTALLED_APPS = [
 JUDGE0_API_KEY = "30cd93ee1dmshd61ffa82465c463p152947jsn20ea0f13906a"
 JUDGE0_BASE_URL = "judge0-ce.p.rapidapi.com"
 AI_SETTINGS = {
-    'GEMINI_API_KEY': 'AIzaSyB5r_8Ou0fDq-XHoBWHGIXWcblxkoa9VgM',  # Move to environment variable
+    'GEMINI_API_KEY': 'AIzaSyAF6PC7ypx5F6KGVnuJr2-T2t1UZf2pg0c',  # Move to environment variable
     'MAX_DOCUMENT_SUGGESTIONS': 5,
     'MAX_CHATROOM_SUGGESTIONS': 5,
     'SEARCH_MIN_QUERY_LENGTH': 2,
@@ -60,6 +71,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'home.middleware.PremiumExpiryMiddleware',
 ]
 
 ROOT_URLCONF = 'doan4.urls'
@@ -178,6 +190,8 @@ SESSION_COOKIE_AGE = 1209600
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
 
 SECURE_FILE_UPLOADS = True
 

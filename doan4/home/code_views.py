@@ -9,12 +9,16 @@ from django.utils import timezone
 from django.contrib import messages
 from django.utils.text import slugify
 from django.db import transaction
+from django.db import models as db_models
 import json
 import time
 import uuid
 import tempfile
 import subprocess
 from datetime import timedelta
+from decimal import Decimal
+
+from .premium_views import check_course_enrollment_limit
 
 from .models import (
     CodeLanguage, CodeCourse, CodeLesson, CodeEnrollment,
@@ -155,6 +159,16 @@ def code_course_enroll(request, course_slug):
         messages.info(request, f'Bạn đã đăng ký khóa học "{course.title}" rồi!')
         return redirect('code_course_detail', course_slug=course.slug)
     
+    # Check enrollment limit for free users
+    can_enroll, enrolled_count = check_course_enrollment_limit(request.user)
+    if not can_enroll:
+        messages.warning(
+            request,
+            f'Bạn đã đăng ký {enrolled_count} khóa học (giới hạn cho tài khoản thường). '
+            f'Nâng cấp Premium để đăng ký không giới hạn!'
+        )
+        return redirect('premium_upgrade')
+    
     # Check premium requirement
     if course.requires_premium and not request.user.is_premium:
         messages.error(request, 'Khóa học này yêu cầu tài khoản Premium!')
@@ -259,6 +273,7 @@ def code_execute_api(request):
         code = data.get('code', '').strip()
         language_id = data.get('language_id')
         lesson_id = data.get('lesson_id')
+        stdin_input = data.get('input', '')  # Get stdin input from request
         
         if not code:
             return JsonResponse({
@@ -278,7 +293,8 @@ def code_execute_api(request):
         execution_result = execute_code_safely(
             code=code,
             language=language,
-            lesson=lesson
+            lesson=lesson,
+            stdin_input=stdin_input
         )
         
         return JsonResponse({
@@ -364,23 +380,51 @@ def code_submit_api(request):
         
         # Check if passed
         if execution_result.get('score', 0) >= 80:  # 80% to pass
-            progress.status = 'completed'
-            progress.completed_at = timezone.now()
+            if progress.status != 'completed':
+                progress.status = 'completed'
+                progress.completed_at = timezone.now()
             progress.points_earned = lesson.points_reward
             progress.best_score = max(progress.best_score, execution_result.get('score', 0))
         
         progress.save()
+
+        # Update enrollment stats
+        total_lessons = CodeLesson.objects.filter(course=enrollment.course, is_published=True).count()
+        completed_lessons = CodeLessonProgress.objects.filter(
+            enrollment=enrollment,
+            status='completed'
+        ).count()
         
-        # Get AI feedback (async in background)
-        if lesson.ai_prompt_template:
-            ai_feedback = get_ai_code_feedback(
-                code=code,
-                lesson=lesson,
-                test_results=execution_result.get('test_results', []),
-                score=execution_result.get('score', 0)
-            )
-            submission.ai_feedback = ai_feedback
-            submission.save()
+        if total_lessons > 0:
+            enrollment.completion_percentage = Decimal((completed_lessons / total_lessons) * 100)
+        else:
+            enrollment.completion_percentage = Decimal(0)
+        
+        # Update total points from all completed lessons
+        enrollment.total_points = CodeLessonProgress.objects.filter(
+            enrollment=enrollment,
+            status='completed'
+        ).aggregate(total=db_models.Sum('points_earned'))['total'] or 0
+        
+        # Update total time spent using estimated time from completed lessons
+        enrollment.total_time_spent = CodeLessonProgress.objects.filter(
+            enrollment=enrollment,
+            status='completed'
+        ).aggregate(total=db_models.Sum('lesson__estimated_time'))['total'] or 0
+        
+        enrollment.save()
+
+        # Get AI feedback (async in background) - DISABLED to reduce API calls
+        # TODO: Re-enable with rate limiting or make it optional
+        # if lesson.ai_prompt_template:
+        #     ai_feedback = get_ai_code_feedback(
+        #         code=code,
+        #         lesson=lesson,
+        #         test_results=execution_result.get('test_results', []),
+        #         score=execution_result.get('score', 0)
+        #     )
+        #     submission.ai_feedback = ai_feedback
+        #     submission.save()
         
         return JsonResponse({
             'success': True,
@@ -411,7 +455,7 @@ from django.conf import settings
 
 from django.conf import settings
 
-def execute_code_safely(code, language, lesson=None, timeout=10):
+def execute_code_safely(code, language, lesson=None, stdin_input='', timeout=10):
     """Execute code using Judge0 API with settings configuration"""
     try:
         # Judge0 language IDs
@@ -437,7 +481,7 @@ def execute_code_safely(code, language, lesson=None, timeout=10):
         if not api_key:
             # Fallback to local execution if no API key
             if language.name.lower() == 'python':
-                return execute_python_locally(code)
+                return execute_python_locally(code, stdin_input)
             return {
                 'status': 'error',
                 'output': '',
@@ -451,10 +495,17 @@ def execute_code_safely(code, language, lesson=None, timeout=10):
             "Content-Type": "application/json"
         }
         
+        # Smart input handling for Judge0
+        # Convert space-separated values to newline-separated
+        processed_stdin = stdin_input or ""
+        if processed_stdin and ' ' in processed_stdin.strip() and '\n' not in processed_stdin:
+            # Single line with spaces - convert to multiple lines
+            processed_stdin = processed_stdin.strip().replace(' ', '\n')
+        
         payload = {
             "language_id": lang_id,
             "source_code": code,
-            "stdin": "",
+            "stdin": processed_stdin,
         }
         
         start_time = time.time()
@@ -598,7 +649,7 @@ def execute_code_safely(code, language, lesson=None, timeout=10):
         
         # Timeout or max attempts reached
         if language.name.lower() == 'python':
-            return execute_python_locally(code)
+            return execute_python_locally(code, stdin_input)
             
         return {
             'status': 'error',
@@ -610,7 +661,7 @@ def execute_code_safely(code, language, lesson=None, timeout=10):
     except Exception as e:
         print(f"Execute code error: {e}")
         if language.name.lower() == 'python':
-            return execute_python_locally(code)
+            return execute_python_locally(code, stdin_input)
         return {
             'status': 'error',
             'output': '',
@@ -652,7 +703,7 @@ def safe_decode(encoded_data):
 # REPLACE execute_python_locally function with this:
 
 def execute_python_locally(code, test_input=''):
-    """Simple, working Python executor"""
+    """Simple, working Python executor with smart input handling"""
     try:
         import sys
         from io import StringIO
@@ -667,12 +718,23 @@ def execute_python_locally(code, test_input=''):
                 'error': 'Code contains forbidden operations'
             }
         
-        # Prepare input data
+        # Smart input handling:
+        # - Each line = separate input() call
+        # - OR single line with space-separated values
+        input_values = []
         if test_input and test_input.strip():
-            input_lines = test_input.strip().split('\n')
-            input_iterator = iter(input_lines)
-        else:
-            input_iterator = iter([''])  # Default empty input
+            lines = test_input.strip().split('\n')
+            for line in lines:
+                # Check if line has multiple values (space-separated)
+                if ' ' in line.strip():
+                    # Split by space and add each as separate input
+                    values = line.strip().split()
+                    input_values.extend(values)
+                else:
+                    # Single value per line
+                    input_values.append(line.strip())
+        
+        input_iterator = iter(input_values) if input_values else iter([''])
         
         # Mock input function
         def mock_input(prompt=''):
@@ -764,7 +826,7 @@ def execute_python_locally(code, test_input=''):
         }
 
 def execute_python_simple_with_input(code, test_input=''):
-    """Simple in-memory execution with input mocking"""
+    """Simple in-memory execution with smart input mocking"""
     try:
         import sys
         from io import StringIO
@@ -780,12 +842,19 @@ def execute_python_simple_with_input(code, test_input=''):
                 'error': 'Code contains forbidden operations'
             }
         
-        # Prepare input data
+        # Smart input handling (same as execute_python_locally)
+        input_values = []
         if test_input and test_input.strip():
-            input_lines = test_input.strip().split('\n')
-            input_iterator = iter(input_lines)
-        else:
-            input_iterator = iter([''])  # Empty input
+            lines = test_input.strip().split('\n')
+            for line in lines:
+                if ' ' in line.strip():
+                    # Multiple space-separated values
+                    input_values.extend(line.strip().split())
+                else:
+                    # Single value
+                    input_values.append(line.strip())
+        
+        input_iterator = iter(input_values) if input_values else iter([''])
         
         # Mock input function
         def mock_input(prompt=''):

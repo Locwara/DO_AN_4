@@ -626,7 +626,6 @@
     /* AI Chat mobile optimizations */
     .ai-chat {
         height: 100%;
-        display: flex !important;
     }
     
     .ai-messages {
@@ -875,8 +874,15 @@
     }
 }
 
-/* Print styles (hide complex editor on print) */
-@media print {
+        #stdinInput::placeholder {
+            color: #999; /* Lighter gray for placeholder */
+        }
+
+        #stdinInput {
+            color: white !important;
+        }
+
+        /* Print styles (hide complex editor on print) */@media print {
     .editor-container {
         display: none;
     }
@@ -1051,8 +1057,27 @@
                 <div class="mb-3">
                     <strong>Console Output:</strong>
                 </div>
+                
+                <!-- Add Input Field for stdin -->
+                <div class="mb-3">
+                    <label for="stdinInput" class="form-label" style="font-size: 0.85rem; color: white;">
+                        <i class="fas fa-keyboard"></i> Input (nếu code dùng input()):
+                    </label>
+                    <textarea 
+                        id="stdinInput" 
+                        class="form-control" 
+                        rows="3" 
+                        placeholder="Cách nhập input:\n• Mỗi dòng = 1 lần input()\n• HOẶC nhiều giá trị cách nhau bởi SPACE\nVD1: Alice (1 input)\nVD2: 5 3 (2 inputs: a=5, b=3)"
+                        style="font-family: monospace; font-size: 0.85rem; background: #1e1e1e; border: 1px solid #3e3e3e; resize: vertical;"
+                    ></textarea>
+                    <small style="color: #9ca3af; font-size: 0.75rem; display: block; margin-top: 4px;">
+                        💡 Tip: Nếu code có <code style="background: #374151; padding: 2px 4px; border-radius: 3px;">a = int(input())</code> và <code style="background: #374151; padding: 2px 4px; border-radius: 3px;">b = int(input())</code>, nhập: <strong>5 3</strong> hoặc <strong>5</strong> (dòng 1) + <strong>3</strong> (dòng 2)
+                    </small>
+                </div>
+                <hr style="margin: 0.5rem 0;">
+                
                 <div id="consoleContent">
-                    <p class="text-muted">Nhấn "Run" để xem kết quả...</p>
+                    <p style="color: white;">Nhấn "Run" để xem kết quả...</p>
                 </div>
             </div>
             
@@ -1086,10 +1111,12 @@
             </div>
         </div>
     </div>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
+<!-- Bootstrap JS (đặt trước closing body tag) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Monaco Editor -->
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.34.0/min/vs/loader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
         let editor;
@@ -1098,40 +1125,44 @@
         let isAIThinking = false; // Thêm biến để theo dõi trạng thái AI
         
         // Initialize Monaco Editor
-        require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.34.0/min/vs' } });
-        require(['vs/editor/editor.main'], function () {
-            editor = monaco.editor.create(document.getElementById('monaco-editor'), {
-                value: `{{ starter_code|escapejs }}`,
-                language: '{{ course.language.name }}',
-                theme: 'vs-dark',
-                fontSize: 14,
-                minimap: { enabled: true },
-                wordWrap: 'on',
-                automaticLayout: true,
-                scrollBeyondLastLine: false,
-                lineNumbers: 'on',
-                renderWhitespace: 'boundary',
-                contextmenu: true,
-                quickSuggestions: true,
-                suggestOnTriggerCharacters: true,
-                acceptSuggestionOnEnter: 'on'
+        if (!window.isMonacoInitialized) {
+            window.isMonacoInitialized = true;
+
+            require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.34.0/min/vs' } });
+            require(['vs/editor/editor.main'], function () {
+                editor = monaco.editor.create(document.getElementById('monaco-editor'), {
+                    value: `{{ starter_code|escapejs }}`,
+                    language: '{{ course.language.name }}',
+                    theme: 'vs-dark',
+                    fontSize: 14,
+                    minimap: { enabled: true },
+                    wordWrap: 'on',
+                    automaticLayout: true,
+                    scrollBeyondLastLine: false,
+                    lineNumbers: 'on',
+                    renderWhitespace: 'boundary',
+                    contextmenu: true,
+                    quickSuggestions: true,
+                    suggestOnTriggerCharacters: true,
+                    acceptSuggestionOnEnter: 'on'
+                });
+                
+                // Auto-save functionality
+                editor.onDidChangeModelContent(() => {
+                    clearTimeout(autoSaveInterval);
+                    autoSaveInterval = setTimeout(saveCodeToSession, 2000);
+                });
+                
+                // Keyboard shortcuts
+                editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+                    runCode();
+                });
+                
+                editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter, () => {
+                    submitCode();
+                });
             });
-            
-            // Auto-save functionality
-            editor.onDidChangeModelContent(() => {
-                clearTimeout(autoSaveInterval);
-                autoSaveInterval = setTimeout(saveCodeToSession, 2000);
-            });
-            
-            // Keyboard shortcuts
-            editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-                runCode();
-            });
-            
-            editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter, () => {
-                submitCode();
-            });
-        });
+        }
         
         // Event Listeners
         document.getElementById('runBtn').addEventListener('click', runCode);
@@ -1155,64 +1186,122 @@
             }
         }
         
-        function runCode() {
+        async function runCode() {
             const code = editor.getValue();
             if (!code.trim()) {
                 alert('Vui lòng nhập code!');
                 return;
             }
-            
+
+            const stdinInput = document.getElementById('stdinInput').value;
+            const inputs = stdinInput.split('\n').filter(input => input.trim() !== '');
+
             const runBtn = document.getElementById('runBtn');
             runBtn.disabled = true;
             runBtn.innerHTML = '<div class="loading-spinner"></div> Running...';
-            
+
             switchTab('console');
-            document.getElementById('consoleContent').innerHTML = '<p class="text-warning">Đang chạy code...</p>';
-            
-            fetch('/code/api/execute/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({
-                    code: code,
-                    language_id: LESSON_DATA.course.language.id,
-                    lesson_id: LESSON_DATA.id
+            const consoleContent = document.getElementById('consoleContent');
+            consoleContent.innerHTML = '<p class="text-warning">Đang chạy code...</p>';
+
+            if (inputs.length <= 1) {
+                // Keep original behavior for single or no input
+                fetch('/code/api/execute/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        language_id: LESSON_DATA.course.language.id,
+                        lesson_id: LESSON_DATA.id,
+                        input: stdinInput
+                    })
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                runBtn.disabled = false;
-                runBtn.innerHTML = '<i class="fas fa-play me-1"></i> Run';
-                
-                if (data.success) {
-                    const result = data.result;
-                    let output = '';
-                    
-                    if (result.status === 'success') {
-                        output = `<div class="text-success mb-2"><strong>✅ Execution successful</strong></div>`;
-                        output += `<div class="mb-2"><strong>Output:</strong></div>`;
-                        output += `<pre class="bg-dark p-3 rounded">${result.output || 'No output'}</pre>`;
-                        output += `<small class="text-muted">Execution time: ${(result.execution_time * 1000).toFixed(0)}ms</small>`;
+                .then(response => response.json())
+                .then(data => {
+                    runBtn.disabled = false;
+                    runBtn.innerHTML = '<i class="fas fa-play me-1"></i> Run';
+
+                    if (data.success) {
+                        const result = data.result;
+                        let output = '';
+
+                        if (result.status === 'success') {
+                            output = `<div class="text-success mb-2"><strong>✅ Execution successful</strong></div>`;
+                            output += `<div class="mb-2"><strong>Output:</strong></div>`;
+                            output += `<pre class="bg-dark p-3 rounded">${result.output || 'No output'}</pre>`;
+                            output += `<small style="color: white;">Execution time: ${(result.execution_time * 1000).toFixed(0)}ms</small>`;
+                        } else {
+                            output = `<div class="text-danger mb-2"><strong>❌ Execution failed</strong></div>`;
+                            output += `<div class="mb-2"><strong>Error:</strong></div>`;
+                            output += `<pre class="bg-danger p-3 rounded text-white">${result.error || 'Unknown error'}</pre>`;
+                        }
+
+                        consoleContent.innerHTML = output;
                     } else {
-                        output = `<div class="text-danger mb-2"><strong>❌ Execution failed</strong></div>`;
-                        output += `<div class="mb-2"><strong>Error:</strong></div>`;
-                        output += `<pre class="bg-danger p-3 rounded text-white">${result.error || 'Unknown error'}</pre>`;
+                        consoleContent.innerHTML =
+                            `<div class="text-danger">❌ ${data.error}</div>`;
                     }
-                    
-                    document.getElementById('consoleContent').innerHTML = output;
-                } else {
-                    document.getElementById('consoleContent').innerHTML = 
-                        `<div class="text-danger">❌ ${data.error}</div>`;
+                })
+                .catch(error => {
+                    runBtn.disabled = false;
+                    runBtn.innerHTML = '<i class="fas fa-play me-1"></i> Run';
+                    consoleContent.innerHTML =
+                        `<div class="text-danger">❌ Network error: ${error.message}</div>`;
+                });
+            } else {
+                // Handle multiple inputs
+                let allOutputs = '';
+                consoleContent.innerHTML = ''; // Clear the "Đang chạy code..." message
+
+                for (let i = 0; i < inputs.length; i++) {
+                    const input = inputs[i];
+                    allOutputs += `<hr><div><strong>Input:</strong><pre>${input}</pre></div>`;
+
+                    try {
+                        const response = await fetch('/code/api/execute/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCookie('csrftoken')
+                            },
+                            body: JSON.stringify({
+                                code: code,
+                                language_id: LESSON_DATA.course.language.id,
+                                lesson_id: LESSON_DATA.id,
+                                input: input
+                            })
+                        });
+                        const data = await response.json();
+
+                        if (data.success) {
+                            const result = data.result;
+                            let output = '';
+
+                            if (result.status === 'success') {
+                                output = `<div class="text-success mb-2"><strong>✅ Execution successful</strong></div>`;
+                                output += `<div class="mb-2"><strong>Output:</strong></div>`;
+                                output += `<pre class="bg-dark p-3 rounded">${result.output || 'No output'}</pre>`;
+                                output += `<small style="color: white;">Execution time: ${(result.execution_time * 1000).toFixed(0)}ms</small>`;
+                            } else {
+                                output = `<div class="text-danger mb-2"><strong>❌ Execution failed</strong></div>`;
+                                output += `<div class="mb-2"><strong>Error:</strong></div>`;
+                                output += `<pre class="bg-danger p-3 rounded text-white">${result.error || 'Unknown error'}</pre>`;
+                            }
+                            allOutputs += `<div class="test-result">${output}</div>`;
+                        } else {
+                            allOutputs += `<div class="test-result"><div class="text-danger">❌ ${data.error}</div></div>`;
+                        }
+                    } catch (error) {
+                        allOutputs += `<div class="test-result"><div class="text-danger">❌ Network error: ${error.message}</div></div>`;
+                    }
                 }
-            })
-            .catch(error => {
+                consoleContent.innerHTML = allOutputs;
                 runBtn.disabled = false;
                 runBtn.innerHTML = '<i class="fas fa-play me-1"></i> Run';
-                document.getElementById('consoleContent').innerHTML = 
-                    `<div class="text-danger">❌ Network error: ${error.message}</div>`;
-            });
+            }
         }
         
         function submitCode() {
@@ -1591,8 +1680,8 @@ function submitCodeMobile() {
 }
 
 // Enhanced run function with mobile navigation  
-function runCodeMobile() {
-    runCode();
+async function runCodeMobile() {
+    await runCode();
     // Switch to output tab on mobile after run
     if (window.innerWidth <= 768) {
         setTimeout(() => {
@@ -1711,6 +1800,11 @@ document.addEventListener('DOMContentLoaded', function() {
     initMobileGestures();
     initMobileOptimizations();
     
+    // Force initial section display on mobile
+    if (isMobile()) {
+        switchMobileSection('problem');
+    }
+    
     // Update button event listeners for mobile
     document.getElementById('runBtn').removeEventListener('click', runCode);
     document.getElementById('runBtn').addEventListener('click', runCodeMobile);
@@ -1786,13 +1880,7 @@ function showMobileToast(message, type = 'info') {
 }
 
 // Update existing functions to show mobile toasts
-const originalRunCode = runCode;
-runCode = function() {
-    originalRunCode();
-    if (isMobile()) {
-        showMobileToast('Đang chạy code...', 'info');
-    }
-};
+
 
 const originalSubmitCode = submitCode;  
 submitCode = function() {
@@ -1808,8 +1896,6 @@ window.initMobileTabs = initMobileTabs;
 window.handleResize = handleResize;
 window.showMobileToast = showMobileToast;
 </script>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<!-- Bootstrap JS (đặt trước closing body tag) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 {% endblock %}

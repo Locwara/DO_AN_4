@@ -25,22 +25,44 @@
   padding-bottom: 0.5rem;
 }
 
-.form-label {
+.help-text {
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  padding: 1rem;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.test-case-item, .hint-item {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.test-case-item .form-label, .hint-item .form-label {
   font-weight: 600;
-  color: #374151;
+  font-size: 0.9rem;
   margin-bottom: 0.5rem;
 }
 
-.form-control, .form-select {
+.btn-add-more {
+  background: #10b981;
+  color: white;
+  border: none;
   border-radius: 8px;
-  border: 1px solid #d1d5db;
-  padding: 0.75rem;
-  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
 }
 
-.form-control:focus, .form-select:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+.btn-remove {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
 }
 
 .code-editor {
@@ -49,47 +71,8 @@
   background: #f8fafc;
 }
 
-.btn-primary {
-  background: #6366f1;
-  border-color: #6366f1;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-}
-
-.btn-primary:hover {
-  background: #4f46e5;
-  border-color: #4f46e5;
-}
-
-.json-helper {
-  background: #f3f4f6;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-top: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.stats-card {
-  background: #f8fafc;
-  border-radius: 12px;
-  padding: 1.5rem;
-  text-align: center;
-  border: 1px solid #e2e8f0;
-}
-
-.stats-number {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-}
-
-.lesson-type-description {
-  background: #fef3c7;
-  border-left: 4px solid #f59e0b;
-  padding: 1rem;
-  border-radius: 0 8px 8px 0;
-  margin-top: 0.5rem;
+.rich-editor {
+  min-height: 200px;
 }
 </style>
 {% endblock %}
@@ -100,24 +83,20 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
       <h1 class="h3 mb-1">{{ page_title }}</h1>
-      <p class="text-muted">Tạo nội dung bài học cho khóa: <strong>{{ course.title }}</strong></p>
+      <p class="text-muted">Khóa học: <strong>{{ course.title }}</strong></p>
     </div>
     <div>
       <a href="{% url 'course_management_edit' course.id %}" class="btn btn-outline-secondary me-2">
         <i class="fas fa-arrow-left me-2"></i>
-        Quay lại khóa học
+        Quay lại
       </a>
-      {% if lesson %}
-      <a href="{% url 'course_lessons_manage' course.id %}" class="btn btn-outline-info">
-        <i class="fas fa-list me-2"></i>
-        Quản lý bài học
-      </a>
-      {% endif %}
     </div>
   </div>
 
-  <form method="post">
+  <form method="post" id="lessonForm">
     {% csrf_token %}
+    <!-- Hidden field to set lesson_type to coding by default -->
+    <input type="hidden" name="lesson_type" value="coding">
     
     <div class="row">
       <div class="col-lg-8">
@@ -127,6 +106,11 @@
             <i class="fas fa-info-circle text-primary me-2"></i>
             Thông Tin Cơ Bản
           </h3>
+          
+          <div class="help-text">
+            <i class="fas fa-lightbulb me-2"></i>
+            <strong>Hướng dẫn:</strong> Điền tên bài học và mô tả ngắn. Bài học sẽ mặc định là bài tập lập trình.
+          </div>
           
           <div class="row">
             <div class="col-12 mb-3">
@@ -144,42 +128,29 @@
                 Mô tả bài học
               </label>
               {{ form.description }}
+              <small class="text-muted">Mô tả ngắn gọn về nội dung bài học</small>
               {% if form.description.errors %}
                 <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
               {% endif %}
             </div>
             
             <div class="col-md-6 mb-3">
-              <label for="{{ form.lesson_type.id_for_label }}" class="form-label">
-                Loại bài học *
-              </label>
-              {{ form.lesson_type }}
-              {% if form.lesson_type.errors %}
-                <div class="text-danger small mt-1">{{ form.lesson_type.errors.0 }}</div>
-              {% endif %}
-              <div class="lesson-type-description">
-                <strong>Theory:</strong> Bài lý thuyết<br>
-                <strong>Coding:</strong> Bài tập lập trình<br>
-                <strong>Project:</strong> Dự án thực hành<br>
-                <strong>Quiz:</strong> Trắc nghiệm
-              </div>
-            </div>
-            
-            <div class="col-md-3 mb-3">
               <label for="{{ form.estimated_time.id_for_label }}" class="form-label">
-                Thời gian (phút)
+                Thời gian ước tính (phút)
               </label>
               {{ form.estimated_time }}
+              <small class="text-muted">Thời gian học viên cần để hoàn thành</small>
               {% if form.estimated_time.errors %}
                 <div class="text-danger small mt-1">{{ form.estimated_time.errors.0 }}</div>
               {% endif %}
             </div>
             
-            <div class="col-md-3 mb-3">
+            <div class="col-md-6 mb-3">
               <label for="{{ form.points_reward.id_for_label }}" class="form-label">
                 Điểm thưởng *
               </label>
               {{ form.points_reward }}
+              <small class="text-muted">Điểm học viên nhận khi hoàn thành</small>
               {% if form.points_reward.errors %}
                 <div class="text-danger small mt-1">{{ form.points_reward.errors.0 }}</div>
               {% endif %}
@@ -194,15 +165,20 @@
             Nội Dung Lý Thuyết
           </h3>
           
+          <div class="help-text">
+            <i class="fas fa-lightbulb me-2"></i>
+            <strong>Hướng dẫn:</strong> Viết nội dung lý thuyết cho bài học. Bạn có thể sử dụng văn bản đơn giản hoặc HTML.
+          </div>
+          
           <div class="mb-3">
             <label for="{{ form.theory_content.id_for_label }}" class="form-label">
-              Nội dung lý thuyết (HTML)
+              Nội dung lý thuyết
             </label>
             {{ form.theory_content }}
+            <small class="text-muted">Giải thích khái niệm, cú pháp, ví dụ...</small>
             {% if form.theory_content.errors %}
               <div class="text-danger small mt-1">{{ form.theory_content.errors.0 }}</div>
             {% endif %}
-            <div class="form-text">Sử dụng HTML để định dạng nội dung lý thuyết</div>
           </div>
         </div>
         
@@ -213,11 +189,17 @@
             Bài Tập Lập Trình
           </h3>
           
+          <div class="help-text">
+            <i class="fas fa-lightbulb me-2"></i>
+            <strong>Hướng dẫn:</strong> Viết đề bài rõ ràng, cung cấp code mẫu ban đầu và lời giải để tham khảo.
+          </div>
+          
           <div class="mb-3">
             <label for="{{ form.problem_statement.id_for_label }}" class="form-label">
               Đề bài
             </label>
             {{ form.problem_statement }}
+            <small class="text-muted">Mô tả bài toán: yêu cầu, input, output, ví dụ...</small>
             {% if form.problem_statement.errors %}
               <div class="text-danger small mt-1">{{ form.problem_statement.errors.0 }}</div>
             {% endif %}
@@ -229,6 +211,7 @@
                 Code mẫu ban đầu
               </label>
               {{ form.starter_code }}
+              <small class="text-muted">Code có sẵn cho học viên</small>
               {% if form.starter_code.errors %}
                 <div class="text-danger small mt-1">{{ form.starter_code.errors.0 }}</div>
               {% endif %}
@@ -239,81 +222,62 @@
                 Lời giải mẫu
               </label>
               {{ form.solution_code }}
+              <small class="text-muted">Chỉ giáo viên có thể xem</small>
               {% if form.solution_code.errors %}
                 <div class="text-danger small mt-1">{{ form.solution_code.errors.0 }}</div>
               {% endif %}
-              <div class="form-text">Chỉ giảng viên có thể xem</div>
             </div>
           </div>
         </div>
         
-        <!-- Test Cases -->
+        <!-- Test Cases Builder -->
         <div class="form-section">
           <h3 class="section-title">
             <i class="fas fa-check-circle text-primary me-2"></i>
             Test Cases
           </h3>
           
-          <div class="mb-3">
-            <label for="{{ form.test_cases.id_for_label }}" class="form-label">
-              Test cases (JSON)
-            </label>
-            {{ form.test_cases }}
-            {% if form.test_cases.errors %}
-              <div class="text-danger small mt-1">{{ form.test_cases.errors.0 }}</div>
-            {% endif %}
-            
-            <div class="json-helper">
-              <strong>Ví dụ JSON test cases:</strong>
-              <pre><code>[
-  {
-    "input": "",
-    "expected_output": "6"
-  },
-  {
-    "input": "", 
-    "expected_output": "6"
-  }
-]</code></pre>
-              <div class="mt-2 small text-muted">
-                <strong>Lưu ý:</strong> Nếu bài tập không cần input, để "input" là chuỗi rỗng "".<br>
-                <strong>Có input:</strong> "input": "5\n10" (nhiều dòng dùng \n)<br>
-                <strong>Không input:</strong> "input": "" (chuỗi rỗng)
-              </div>
-            </div>
+          <div class="help-text">
+            <i class="fas fa-lightbulb me-2"></i>
+            <strong>Hướng dẫn:</strong> Tạo các test cases để kiểm tra code của học viên. Nếu bài tập không cần input, để trống ô "Input".
           </div>
+          
+          <div id="testCasesContainer">
+            <!-- Test cases will be added here dynamically -->
+          </div>
+          
+          <button type="button" class="btn btn-add-more" onclick="addTestCase()">
+            <i class="fas fa-plus me-2"></i>
+            Thêm Test Case
+          </button>
+          
+          <!-- Hidden field để lưu JSON -->
+          {{ form.test_cases }}
         </div>
         
-        <!-- Hints -->
+        <!-- Hints Builder -->
         <div class="form-section">
           <h3 class="section-title">
             <i class="fas fa-lightbulb text-primary me-2"></i>
             Gợi Ý
           </h3>
           
-          <div class="mb-3">
-            <label for="{{ form.hints.id_for_label }}" class="form-label">
-              Gợi ý (JSON)
-            </label>
-            {{ form.hints }}
-            {% if form.hints.errors %}
-              <div class="text-danger small mt-1">{{ form.hints.errors.0 }}</div>
-            {% endif %}
-            
-            <div class="json-helper">
-              <strong>Ví dụ JSON hints:</strong>
-              <pre><code>[
-  {
-    "title": "Gợi ý 1",
-    "content": "Sử dụng vòng lặp for để duyệt qua mảng"
-  },
-  {
-    "title": "Gợi ý 2", 
-    "content": "Kiểm tra điều kiện trước khi thực hiện phép toán"
-  }
-]</code></pre>
-            </div>
+          <div class="help-text">
+            <i class="fas fa-lightbulb me-2"></i>
+            <strong>Hướng dẫn:</strong> Tạo các gợi ý để giúp học viên khi gặp khó khăn. Gợi ý sẽ hiển thị lần lượt sau mỗi lần thử.
           </div>
+          
+          <div id="hintsContainer">
+            <!-- Hints will be added here dynamically -->
+          </div>
+          
+          <button type="button" class="btn btn-add-more" onclick="addHint()">
+            <i class="fas fa-plus me-2"></i>
+            Thêm Gợi Ý
+          </button>
+          
+          <!-- Hidden field để lưu JSON -->
+          {{ form.hints }}
         </div>
       </div>
       
@@ -328,8 +292,8 @@
           
           <div class="mb-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <span>Trạng thái hiện tại:</span>
-              <span class="badge bg-{% if lesson.is_published %}success{% else %}warning{% endif %} fs-6" id="status-badge">
+              <span>Trạng thái:</span>
+              <span class="badge bg-{% if lesson.is_published %}success{% else %}warning{% endif %} fs-6">
                 {% if lesson.is_published %}
                   <i class="fas fa-check me-1"></i>Published
                 {% else %}
@@ -337,78 +301,38 @@
                 {% endif %}
               </span>
             </div>
-            
-            <div id="publish-button-container">
-              {% if not lesson.is_published %}
-              <button type="button" class="btn btn-success w-100" onclick="publishLesson({{ course.id }}, {{ lesson.id }}, 'publish')" id="publish-btn">
-                <i class="fas fa-rocket me-2"></i>
-                <span class="btn-text">Publish Bài Học</span>
-              </button>
-              {% else %}
-              <button type="button" class="btn btn-warning w-100" onclick="publishLesson({{ course.id }}, {{ lesson.id }}, 'unpublish')" id="publish-btn">
-                <i class="fas fa-pause me-2"></i>
-                <span class="btn-text">Unpublish</span>
-              </button>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-        
-        <!-- Lesson Stats -->
-        <div class="form-section">
-          <h3 class="section-title">
-            <i class="fas fa-chart-bar text-primary me-2"></i>
-            Thống Kê
-          </h3>
-          
-          <div class="row">
-            <div class="col-12 mb-3">
-              <div class="stats-card">
-                <div class="stats-number text-primary">{{ lesson_stats.attempts }}</div>
-                <div class="text-muted small">Lần thử</div>
-              </div>
-            </div>
-            
-            <div class="col-6 mb-3">
-              <div class="stats-card">
-                <div class="stats-number text-success">{{ lesson_stats.completions }}</div>
-                <div class="text-muted small">Hoàn thành</div>
-              </div>
-            </div>
-            
-            <div class="col-6">
-              <div class="stats-card">
-                <div class="stats-number text-warning">{{ lesson_stats.avg_score|floatformat:0 }}%</div>
-                <div class="text-muted small">Điểm TB</div>
-              </div>
-            </div>
           </div>
         </div>
         {% endif %}
         
-        <!-- Help Section -->
+        <!-- Quick Tips -->
         <div class="form-section">
           <h3 class="section-title">
             <i class="fas fa-question-circle text-primary me-2"></i>
-            Hướng Dẫn
+            Mẹo Nhanh
           </h3>
           
           <div class="small">
-            <p><strong>Loại bài học:</strong></p>
+            <p><strong>✓ Đề bài rõ ràng:</strong></p>
             <ul>
-              <li><strong>Theory:</strong> Chỉ có nội dung lý thuyết</li>
-              <li><strong>Coding:</strong> Bài tập lập trình với test cases</li>
-              <li><strong>Project:</strong> Dự án lớn, nhiều bước</li>
-              <li><strong>Quiz:</strong> Câu hỏi trắc nghiệm</li>
+              <li>Mô tả bài toán cụ thể</li>
+              <li>Cho ví dụ input/output</li>
+              <li>Giải thích ràng buộc</li>
             </ul>
             
-            <p><strong>Test Cases:</strong></p>
-            <p>Mỗi test case cần có "input" và "expected_output".<br>
-            - Không cần input: "input": ""<br>
-            - Có input: "input": "5" hoặc "10\n20" (nhiều dòng)</p>
+            <p><strong>✓ Test Cases:</strong></p>
+            <ul>
+              <li>Tối thiểu 2-3 test cases</li>
+              <li>Bao gồm trường hợp đặc biệt</li>
+              <li>Test case đầu tiên nên đơn giản</li>
+            </ul>
             
-            <p><strong>Gợi ý:</strong></p>
-            <p>Sẽ hiển thị cho học viên sau số lần thử nhất định</p>
+            <p><strong>✓ Gợi Ý:</strong></p>
+            <ul>
+              <li>Gợi ý từ dễ đến khó</li>
+              <li>Không tiết lộ đáp án trực tiếp</li>
+              <li>Hướng dẫn cách tiếp cận</li>
+            </ul>
           </div>
         </div>
       </div>
@@ -432,460 +356,194 @@
 </div>
 
 <script>
-function handleLessonPublishSubmit(form) {
-  return handlePublishAjax(form, true);
-}
-function handleLessonPublishSubmit(form) {
-  return handlePublishAjax(form, true);
-}
+let testCaseCounter = 0;
+let hintCounter = 0;
 
-// Main AJAX handler for both course and lesson publish/unpublish
-function handlePublishAjax(form, isLesson = false) {
-  console.log(`=== ${isLesson ? 'LESSON' : 'COURSE'} PUBLISH AJAX START ===`);
+// Initialize from existing data
+function initializeTestCases() {
+  const testCasesInput = document.getElementById('{{ form.test_cases.id_for_label }}');
+  const existingData = testCasesInput.value;
   
-  const button = form.querySelector('button[type="submit"]');
-  const btnText = button.querySelector('.btn-text');
-  const icon = button.querySelector('i');
-  const actionInput = form.querySelector('input[name="action"]');
-  
-  if (!actionInput) {
-    console.error('Action input not found');
-    return false;
-  }
-  
-  const action = actionInput.value;
-  console.log(`Current action: ${action}`);
-  
-  // Prevent double submission
-  if (button.disabled) {
-    console.log('Button already disabled, preventing double submit');
-    return false;
-  }
-  
-  // Show loading state
-  button.disabled = true;
-  const originalText = btnText ? btnText.textContent : '';
-  const originalIconClass = icon ? icon.className : '';
-  const originalButtonClass = button.className;
-  
-  console.log(`Original state - Text: "${originalText}", Icon: "${originalIconClass}"`);
-  
-  if (btnText) btnText.textContent = 'Đang xử lý...';
-  if (icon) icon.className = 'fas fa-spinner fa-spin me-2';
-  
-  // Prepare form data
-  const formData = new FormData(form);
-  
-  fetch(form.action, {
-    method: 'POST',
-    body: formData,
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest',
+  if (existingData && existingData.trim()) {
+    try {
+      const testCases = JSON.parse(existingData);
+      testCases.forEach((tc, index) => {
+        addTestCase(tc.input, tc.expected_output);
+      });
+    } catch (e) {
+      console.error('Error parsing test cases:', e);
+      // Add 2 empty test cases as default
+      addTestCase();
+      addTestCase();
     }
-  })
-  .then(response => {
-    console.log('Response status:', response.status);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-  })
-  .then(data => {
-    console.log('Response data:', data);
-    
-    if (data.success) {
-      console.log('Success! Updating UI...');
-      
-      // Determine new state
-      const newAction = action === 'publish' ? 'unpublish' : 'publish';
-      const isPublishing = action === 'publish';
-      
-      // Update form action input
-      actionInput.value = newAction;
-      console.log(`Action updated to: ${newAction}`);
-      
-      // Update button text and icon
-      let newText, newIcon, newButtonClass;
-      
-      if (isLesson) {
-        newText = isPublishing ? 'Unpublish' : 'Publish Bài Học';
-        newIcon = isPublishing ? 'fas fa-pause me-2' : 'fas fa-rocket me-2';
-        newButtonClass = isPublishing ? 'btn btn-warning w-100' : 'btn btn-success w-100';
-      } else {
-        newText = isPublishing ? 'Unpublish' : 'Publish Khóa Học';  
-        newIcon = isPublishing ? 'fas fa-pause me-2' : 'fas fa-rocket me-2';
-        newButtonClass = isPublishing ? 'btn btn-warning' : 'btn btn-success';
-      }
-      
-      // Apply updates
-      button.className = newButtonClass;
-      if (btnText) btnText.textContent = newText;
-      if (icon) icon.className = newIcon;
-      
-      console.log(`Updated - Text: "${newText}", Icon: "${newIcon}", Class: "${newButtonClass}"`);
-      
-      // Update status badge if exists
-      updateStatusBadge(isPublishing);
-      
-      // Show success notification
-      showNotification(data.message, 'success');
-      
-    } else {
-      console.log('Server returned error:', data.error);
-      // Restore original state on error
-      restoreButtonState(button, btnText, icon, originalText, originalIconClass, originalButtonClass);
-      showNotification(data.error || 'Có lỗi xảy ra', 'error');
-    }
-  })
-  .catch(error => {
-    console.error('Fetch error:', error);
-    // Restore original state on error
-    restoreButtonState(button, btnText, icon, originalText, originalIconClass, originalButtonClass);
-    showNotification('Có lỗi xảy ra khi xử lý yêu cầu', 'error');
-  })
-  .finally(() => {
-    // Re-enable button
-    button.disabled = false;
-    console.log(`=== ${isLesson ? 'LESSON' : 'COURSE'} PUBLISH AJAX END ===`);
-  });
-  
-  // Prevent default form submission
-  return false;
-}
-
-// Helper function to restore button state
-function restoreButtonState(button, btnText, icon, originalText, originalIconClass, originalButtonClass) {
-  console.log('Restoring button state...');
-  button.className = originalButtonClass;
-  if (btnText) btnText.textContent = originalText;
-  if (icon) icon.className = originalIconClass;
-}
-
-// Helper function to update status badge
-function updateStatusBadge(isPublished) {
-  const statusBadge = document.querySelector('.badge.bg-success, .badge.bg-warning');
-  if (statusBadge) {
-    console.log('Updating status badge...');
-    if (isPublished) {
-      statusBadge.className = 'badge bg-success fs-6';
-      statusBadge.innerHTML = '<i class="fas fa-check me-1"></i>Published';
-    } else {
-      statusBadge.className = 'badge bg-warning fs-6';
-      statusBadge.innerHTML = '<i class="fas fa-edit me-1"></i>Draft';
-    }
+  } else {
+    // Add 2 empty test cases as default
+    addTestCase();
+    addTestCase();
   }
 }
 
-// Utility function to show notifications
-function showNotification(message, type = 'info') {
-  console.log(`Showing notification: ${type} - ${message}`);
+function initializeHints() {
+  const hintsInput = document.getElementById('{{ form.hints.id_for_label }}');
+  const existingData = hintsInput.value;
   
-  // Remove existing notifications
-  const existingNotifications = document.querySelectorAll('.toast-notification');
-  existingNotifications.forEach(n => n.remove());
+  if (existingData && existingData.trim()) {
+    try {
+      const hints = JSON.parse(existingData);
+      hints.forEach((hint, index) => {
+        addHint(hint.title, hint.content);
+      });
+    } catch (e) {
+      console.error('Error parsing hints:', e);
+      // Add 1 empty hint as default
+      addHint();
+    }
+  } else {
+    // Add 1 empty hint as default
+    addHint();
+  }
+}
+
+function addTestCase(inputVal = '', outputVal = '') {
+  testCaseCounter++;
+  const container = document.getElementById('testCasesContainer');
   
-  // Create notification element
-  const notification = document.createElement('div');
-  notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed toast-notification`;
-  notification.style.cssText = 'top: 20px; right: 20px; z-index: 1060; min-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
-  
-  const iconMap = {
-    'success': 'fa-check-circle',
-    'error': 'fa-exclamation-circle', 
-    'warning': 'fa-exclamation-triangle',
-    'info': 'fa-info-circle'
-  };
-  
-  notification.innerHTML = `
-    <div class="d-flex align-items-center">
-      <i class="fas ${iconMap[type] || iconMap.info} me-2"></i>
-      <div class="flex-grow-1">${message}</div>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  const div = document.createElement('div');
+  div.className = 'test-case-item';
+  div.id = `testCase_${testCaseCounter}`;
+  div.innerHTML = `
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="mb-0">Test Case #${testCaseCounter}</h6>
+      <button type="button" class="btn btn-remove" onclick="removeTestCase(${testCaseCounter})">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="row">
+      <div class="col-md-6 mb-2">
+        <label class="form-label">Input (để trống nếu không cần)</label>
+        <textarea class="form-control" rows="3" data-tc-input="${testCaseCounter}" placeholder="VD: 5\n10">${inputVal}</textarea>
+        <small class="text-muted">Mỗi dòng là một input</small>
+      </div>
+      <div class="col-md-6 mb-2">
+        <label class="form-label">Output mong đợi *</label>
+        <textarea class="form-control" rows="3" data-tc-output="${testCaseCounter}" placeholder="VD: 15" required>${outputVal}</textarea>
+        <small class="text-muted">Kết quả chính xác</small>
+      </div>
     </div>
   `;
   
-  document.body.appendChild(notification);
-  
-  // Auto remove after 5 seconds
-  setTimeout(() => {
-    if (notification.parentNode) {
-      notification.style.opacity = '0';
-      setTimeout(() => notification.remove(), 300);
-    }
-  }, 5000);
+  container.appendChild(div);
+  updateTestCasesJSON();
 }
 
-// DOM Ready - Initialize everything
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('DOM loaded, initializing...');
-  
-  // Tags selection functionality
-  initializeTagSelection();
-  
-  // JSON validation for lesson forms
-  initializeJSONValidation();
-  
-  // Form validation
-  initializeFormValidation();
-});
-
-// Initialize tag selection
-function initializeTagSelection() {
-  const tagCheckboxes = document.querySelectorAll('.tag-checkbox');
-  console.log(`Found ${tagCheckboxes.length} tag checkboxes`);
-  
-  tagCheckboxes.forEach(checkbox => {
-    const input = checkbox.querySelector('input[type="checkbox"]');
-    
-    if (input && input.checked) {
-      checkbox.classList.add('selected');
-    }
-    
-    checkbox.addEventListener('click', function(e) {
-      // Prevent double handling if user clicks directly on input
-      if (e.target.type === 'checkbox') return;
-      
-      if (input) {
-        input.checked = !input.checked;
-        
-        if (input.checked) {
-          checkbox.classList.add('selected');
-        } else {
-          checkbox.classList.remove('selected');
-        }
-      }
-    });
-  });
-}
-
-// Initialize JSON validation
-function initializeJSONValidation() {
-  const jsonFields = [
-    document.getElementById('id_test_cases'),
-    document.getElementById('id_hints')
-  ];
-  
-  jsonFields.forEach(field => {
-    if (field) {
-      field.addEventListener('blur', function() {
-        validateJSONField(this);
-      });
-      
-      // Also validate on input for immediate feedback
-      field.addEventListener('input', function() {
-        // Clear validation classes while typing
-        this.classList.remove('is-valid', 'is-invalid');
-      });
-    }
-  });
-}
-
-// Validate individual JSON field
-function validateJSONField(field) {
-  if (!field.value.trim()) {
-    field.classList.remove('is-valid', 'is-invalid');
-    return;
-  }
-  
-  try {
-    const parsed = JSON.parse(field.value);
-    console.log('Valid JSON:', parsed);
-    field.classList.remove('is-invalid');
-    field.classList.add('is-valid');
-    
-    // Additional validation for specific fields
-    if (field.id === 'id_test_cases') {
-      if (!Array.isArray(parsed)) {
-        throw new Error('Test cases must be an array');
-      }
-    } else if (field.id === 'id_hints') {
-      if (parsed && Array.isArray(parsed)) {
-        parsed.forEach((hint, index) => {
-          if (!hint.title || !hint.content) {
-            throw new Error(`Hint ${index + 1} missing title or content`);
-          }
-        });
-      }
-    }
-    
-  } catch (e) {
-    console.log('Invalid JSON:', e.message);
-    field.classList.remove('is-valid');
-    field.classList.add('is-invalid');
+function removeTestCase(id) {
+  const elem = document.getElementById(`testCase_${id}`);
+  if (elem) {
+    elem.remove();
+    updateTestCasesJSON();
   }
 }
 
-// Initialize form validation
-function initializeFormValidation() {
-  const courseForm = document.getElementById('courseForm');
-  if (courseForm) {
-    courseForm.addEventListener('submit', function(e) {
-      // Basic validation for course form
-      const title = this.querySelector('input[name="title"]');
-      const description = this.querySelector('textarea[name="description"]');
-      
-      if (title && !title.value.trim()) {
-        e.preventDefault();
-        showNotification('Vui lòng nhập tên khóa học', 'error');
-        title.focus();
-        return false;
-      }
-      
-      if (description && !description.value.trim()) {
-        e.preventDefault();
-        showNotification('Vui lòng nhập mô tả khóa học', 'error');
-        description.focus();
-        return false;
-      }
-    });
-  }
-}
-
-// Handle page visibility change (optional - for better UX)
-document.addEventListener('visibilitychange', function() {
-  if (!document.hidden) {
-    // Page became visible - could refresh status if needed
-    console.log('Page became visible');
-  }
-});
-
-// Keyboard shortcuts (optional enhancement)
-document.addEventListener('keydown', function(e) {
-  // Ctrl+S to save form
-  if (e.ctrlKey && e.key === 's') {
-    e.preventDefault();
-    const submitBtn = document.querySelector('button[type="submit"]:not([data-action])');
-    if (submitBtn && !submitBtn.disabled) {
-      submitBtn.click();
-    }
-  }
-});
-
-// AJAX Lesson Publish/Unpublish functionality
-function publishLesson(courseId, lessonId, action) {
-  console.log('=== LESSON PUBLISH AJAX START ===');
-  console.log('Course ID:', courseId);
-  console.log('Lesson ID:', lessonId);
-  console.log('Action:', action);
+function addHint(titleVal = '', contentVal = '') {
+  hintCounter++;
+  const container = document.getElementById('hintsContainer');
   
-  const button = document.getElementById('publish-btn');
-  const btnText = button.querySelector('.btn-text');
-  const icon = button.querySelector('i');
-  const statusBadge = document.getElementById('status-badge');
-  
-  if (button.disabled) {
-    console.log('Button already disabled, preventing double click');
-    return;
-  }
-  
-  // Show loading state
-  console.log('Setting button to loading state...');
-  button.disabled = true;
-  
-  const originalText = btnText.textContent;
-  const originalIconClass = icon.className;
-  
-  btnText.textContent = 'Đang xử lý...';
-  icon.className = 'fas fa-spinner fa-spin me-2';
-  
-  // Get CSRF token
-  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-  
-  // Prepare form data
-  const formData = new FormData();
-  formData.append('action', action);
-  formData.append('csrfmiddlewaretoken', csrfToken);
-  
-  console.log('Sending AJAX request...');
-  
-  // Send AJAX request
-  fetch(`/code/manage/${courseId}/lessons/${lessonId}/publish/`, {
-    method: 'POST',
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest'
-    },
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    console.log('AJAX response:', data);
-    
-    if (data.success) {
-      // Update UI based on new status
-      updateLessonStatusUI(data.is_published, courseId, lessonId);
-      
-      // Show success message
-      showMessage(data.message, 'success');
-    } else {
-      // Restore original button state on error
-      btnText.textContent = originalText;
-      icon.className = originalIconClass;
-      
-      // Show error message
-      showMessage(data.error, 'error');
-    }
-  })
-  .catch(error => {
-    console.error('AJAX error:', error);
-    
-    // Restore original button state
-    btnText.textContent = originalText;
-    icon.className = originalIconClass;
-    
-    showMessage('Có lỗi xảy ra khi gửi yêu cầu!', 'error');
-  })
-  .finally(() => {
-    // Re-enable button
-    button.disabled = false;
-    console.log('=== LESSON PUBLISH AJAX END ===');
-  });
-}
-
-function updateLessonStatusUI(isPublished, courseId, lessonId) {
-  const button = document.getElementById('publish-btn');
-  const btnText = button.querySelector('.btn-text');
-  const icon = button.querySelector('i');
-  const statusBadge = document.getElementById('status-badge');
-  
-  if (isPublished) {
-    button.className = 'btn btn-warning w-100';
-    button.onclick = () => publishLesson(courseId, lessonId, 'unpublish');
-    btnText.textContent = 'Unpublish';
-    icon.className = 'fas fa-pause me-2';
-    statusBadge.className = 'badge bg-success fs-6';
-    statusBadge.innerHTML = '<i class="fas fa-check me-1"></i>Published';
-  } else {
-    button.className = 'btn btn-success w-100';
-    button.onclick = () => publishLesson(courseId, lessonId, 'publish');
-    btnText.textContent = 'Publish Bài Học';
-    icon.className = 'fas fa-rocket me-2';
-    statusBadge.className = 'badge bg-warning fs-6';
-    statusBadge.innerHTML = '<i class="fas fa-edit me-1"></i>Draft';
-  }
-  button.disabled = false;
-}
-
-// Helper function to show messages
-function showMessage(message, type) {
-  // Create alert element
-  const alertDiv = document.createElement('div');
-  alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
-  alertDiv.innerHTML = `
-    ${message}
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  const div = document.createElement('div');
+  div.className = 'hint-item';
+  div.id = `hint_${hintCounter}`;
+  div.innerHTML = `
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="mb-0">Gợi Ý #${hintCounter}</h6>
+      <button type="button" class="btn btn-remove" onclick="removeHint(${hintCounter})">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="mb-2">
+      <label class="form-label">Tiêu đề gợi ý *</label>
+      <input type="text" class="form-control" data-hint-title="${hintCounter}" placeholder="VD: Sử dụng vòng lặp" value="${titleVal}" required>
+    </div>
+    <div class="mb-2">
+      <label class="form-label">Nội dung gợi ý *</label>
+      <textarea class="form-control" rows="3" data-hint-content="${hintCounter}" placeholder="Hướng dẫn chi tiết..." required>${contentVal}</textarea>
+    </div>
   `;
   
-  // Insert at top of main container
-  const container = document.querySelector('.lesson-form-container');
-  container.insertBefore(alertDiv, container.firstChild);
-  
-  // Auto-remove after 5 seconds
-  setTimeout(() => {
-    if (alertDiv.parentNode) {
-      alertDiv.remove();
-    }
-  }, 5000);
+  container.appendChild(div);
+  updateHintsJSON();
 }
 
+function removeHint(id) {
+  const elem = document.getElementById(`hint_${id}`);
+  if (elem) {
+    elem.remove();
+    updateHintsJSON();
+  }
+}
+
+function updateTestCasesJSON() {
+  const testCases = [];
+  const inputs = document.querySelectorAll('[data-tc-input]');
+  const outputs = document.querySelectorAll('[data-tc-output]');
+  
+  inputs.forEach((input, index) => {
+    const output = outputs[index];
+    if (output && output.value.trim()) {
+      testCases.push({
+        input: input.value.trim(),
+        expected_output: output.value.trim()
+      });
+    }
+  });
+  
+  document.getElementById('{{ form.test_cases.id_for_label }}').value = JSON.stringify(testCases);
+}
+
+function updateHintsJSON() {
+  const hints = [];
+  const titles = document.querySelectorAll('[data-hint-title]');
+  const contents = document.querySelectorAll('[data-hint-content]');
+  
+  titles.forEach((title, index) => {
+    const content = contents[index];
+    if (title.value.trim() && content && content.value.trim()) {
+      hints.push({
+        title: title.value.trim(),
+        content: content.value.trim()
+      });
+    }
+  });
+  
+  document.getElementById('{{ form.hints.id_for_label }}').value = JSON.stringify(hints);
+}
+
+// Update JSON when inputs change
+document.addEventListener('DOMContentLoaded', function() {
+  initializeTestCases();
+  initializeHints();
+  
+  // Listen for changes
+  document.addEventListener('input', function(e) {
+    if (e.target.hasAttribute('data-tc-input') || e.target.hasAttribute('data-tc-output')) {
+      updateTestCasesJSON();
+    }
+    if (e.target.hasAttribute('data-hint-title') || e.target.hasAttribute('data-hint-content')) {
+      updateHintsJSON();
+    }
+  });
+  
+  // Validate before submit
+  document.getElementById('lessonForm').addEventListener('submit', function(e) {
+    updateTestCasesJSON();
+    updateHintsJSON();
+    
+    const testCasesJSON = document.getElementById('{{ form.test_cases.id_for_label }}').value;
+    if (!testCasesJSON || testCasesJSON === '[]') {
+      alert('Vui lòng thêm ít nhất 1 test case!');
+      e.preventDefault();
+      return false;
+    }
+  });
+});
 </script>
-{% endblock %}
+{% endblock %} 
+

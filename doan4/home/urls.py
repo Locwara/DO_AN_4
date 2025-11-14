@@ -1,7 +1,15 @@
 from django.urls import path, include
 from . import views
+from . import premium_views
 
 urlpatterns = [
+    # Premium URLs
+    path('premium/info/', premium_views.premium_info_view, name='premium_info'),
+    path('premium/success/', premium_views.premium_success_view, name='premium_success'),
+    path('premium/upgrade/', premium_views.premium_upgrade_view, name='premium_upgrade'),
+    path('premium/process/', premium_views.process_premium_payment, name='process_premium_payment'),
+    path('premium/return/', premium_views.premium_return, name='premium_return'),
+    
     path('', views.dashboard_view, name='home'),
     path('login/', views.home_login_view, name='home_login'),
     
@@ -23,6 +31,11 @@ urlpatterns = [
     # API endpoints cho universities và courses
     path('api/university/<int:university_id>/courses/', views.university_courses_view, name='university_courses'),
     path('api/course/<int:course_id>/documents/', views.course_documents_view, name='course_documents'),
+    
+    # Search suggestions API
+    path('api/search/suggestions/', views.search_suggestions_api, name='search_suggestions'),
+    path('api/search/clear-history/', views.clear_search_history_api, name='clear_search_history'),
+    path('api/search/delete-history-item/', views.delete_search_history_item_api, name='delete_search_history_item'),
     
     # Profile URLs
     path('profile/', views.profile_view, name='profile'),

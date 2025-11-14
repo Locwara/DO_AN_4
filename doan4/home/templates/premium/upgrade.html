@@ -1,0 +1,124 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block title %}Nâng cấp Premium{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-warning text-white text-center">
+                    <h2><i class="fas fa-crown"></i> Nâng cấp Premium</h2>
+                </div>
+                <div class="card-body">
+                    <!-- Current Status -->
+                    <div class="alert alert-info">
+                        <h5>Trạng thái hiện tại:</h5>
+                        <p class="mb-1"><strong>Tải tài liệu hôm nay:</strong> {{ downloads_today }}/{{ download_limit }}</p>
+                        <p class="mb-0"><strong>Khóa học đã đăng ký:</strong> {{ enrolled_courses }}/{{ course_limit }}</p>
+                    </div>
+                    
+                    <!-- Premium Benefits -->
+                    <h4 class="mt-4 mb-3">Quyền lợi Premium (30 ngày):</h4>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <strong>Tải tài liệu không giới hạn</strong> - Không còn giới hạn {{ download_limit }} lần/ngày
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <strong>Đăng ký khóa học không giới hạn</strong> - Học mọi khóa bạn muốn
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <strong>Huy hiệu Premium</strong> - Hiển thị trên profile của bạn
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <strong>Thời hạn 30 ngày</strong> - Có thể gia hạn khi hết hạn
+                        </li>
+                    </ul>
+                    
+                    <!-- Price -->
+                    <div class="text-center mb-4">
+                        <h3 class="text-primary">
+                            Chỉ <span class="display-4 font-weight-bold">{{ premium_price|floatformat:0 }}₫</span>
+                        </h3>
+                        <p class="text-muted">Gói 1 tháng (30 ngày)</p>
+                    </div>
+                    
+                    <!-- Payment Button -->
+                    <div class="text-center">
+                        <form method="POST" action="{% url 'process_premium_payment' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning btn-lg px-5">
+                                <i class="fas fa-crown"></i> Nâng cấp ngay với VNPay
+                            </button>
+                        </form>
+                        <p class="text-muted mt-3">
+                            <small>
+                                <i class="fas fa-shield-alt"></i> 
+                                Thanh toán an toàn qua VNPay
+                            </small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 15px;
+}
+
+.card-header {
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+.list-group-item {
+    border: none;
+    padding: 15px;
+}
+
+.list-group-item i {
+    font-size: 1.2rem;
+    margin-right: 10px;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    border: none;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+.btn-warning:hover {
+    transform: scale(1.05);
+}
+</style>
+
+<script>
+// Suppress console errors from VNPay sandbox
+(function() {
+    const originalError = console.error;
+    console.error = function(...args) {
+        const errorMessage = args.join(' ');
+        // Filter out VNPay sandbox errors
+        if (errorMessage.includes('sandbox.vnpayment.vn') || 
+            errorMessage.includes('timer is not defined') ||
+            errorMessage.includes('Content-Security-Policy')) {
+            return; // Suppress VNPay errors
+        }
+        originalError.apply(console, args);
+    };
+})();
+</script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap JS (đặt trước closing body tag) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

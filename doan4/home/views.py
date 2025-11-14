@@ -2027,8 +2027,8 @@ def verify_google_token(token):
         return None
 
 # Gemini API configuration
-GEMINI_API_KEY = "AIzaSyB5r_8Ou0fDq-XHoBWHGIXWcblxkoa9VgM"
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent"
+GEMINI_API_KEY = "AIzaSyAtPjbLwXXTAGKitdMc3M5vll0shUpzN_k"
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 # Supported file types
 SUPPORTED_FILE_TYPES = {
     'application/pdf': '.pdf',
@@ -3699,6 +3699,7 @@ def ai_text_chat_api(request):
         })
         
         # ENHANCED: Gọi API với database integration
+        # TODO: Add rate limiting here to prevent API overload
         print("Calling enhanced Gemini API with DB context...")
         api_response = call_gemini_api_enhanced(messages, image_data=None, user=request.user)
         

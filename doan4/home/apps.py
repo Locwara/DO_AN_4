@@ -3,12 +3,12 @@ from django.apps import AppConfig
 
 class YourAppConfig(AppConfig):
     """
-    Cấu hình ứng dụng StudyShare
+    Cấu hình ứng dụng StudyBot
   
     """
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'home'  # Thay bằng tên app thực tế
-    verbose_name = 'StudyShare - Document Management'
+    verbose_name = 'StudyBot - Document Management'
     
     def ready(self):
         """

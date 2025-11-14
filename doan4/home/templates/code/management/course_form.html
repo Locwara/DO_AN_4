@@ -161,11 +161,17 @@
           </h3>
           
           <div class="row">
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>Lưu ý:</strong> Chỉ tài khoản Premium mới có thể tạo và quản lý khóa học.
+            </div>
+            
             <div class="col-12 mb-3">
               <label for="{{ form.title.id_for_label }}" class="form-label">
                 Tên khóa học *
               </label>
               {{ form.title }}
+              <small class="text-muted">VD: Python cơ bản cho người mới bắt đầu</small>
               {% if form.title.errors %}
                 <div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>
               {% endif %}
@@ -223,34 +229,7 @@
           </div>
         </div>
         
-        <!-- Course Settings -->
-        <div class="form-section">
-          <h3 class="section-title">
-            <i class="fas fa-cog text-primary me-2"></i>
-            Cài Đặt Khóa Học
-          </h3>
-          
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <div class="form-check">
-                {{ form.is_free }}
-                <label class="form-check-label" for="{{ form.is_free.id_for_label }}">
-                  Khóa học miễn phí
-                </label>
-              </div>
-            </div>
-            
-            <div class="col-md-6 mb-3">
-              <div class="form-check">
-                {{ form.requires_premium }}
-                <label class="form-check-label" for="{{ form.requires_premium.id_for_label }}">
-                  Yêu cầu tài khoản Premium
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-        
+
         <!-- Tags -->
         <div class="form-section">
           <h3 class="section-title">

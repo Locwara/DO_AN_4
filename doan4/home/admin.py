@@ -49,3 +49,11 @@ class CourseAdmin(admin.ModelAdmin):
     list_filter = ['university', 'is_active']
     search_fields = ['code', 'name']
     list_editable = ['is_active']
+
+@admin.register(SearchHistory)
+class SearchHistoryAdmin(admin.ModelAdmin):
+    list_display = ['query', 'user', 'result_count', 'clicked_result_type', 'created_at']
+    list_filter = ['clicked_result_type', 'created_at']
+    search_fields = ['query', 'user__username']
+    readonly_fields = ['created_at']
+    date_hierarchy = 'created_at'

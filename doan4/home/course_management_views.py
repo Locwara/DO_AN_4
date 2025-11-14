@@ -19,6 +19,7 @@ from .models import (
     User, University
 )
 from .forms import CodeCourseForm, CodeLessonForm
+from .decorators import premium_required
 
 @login_required
 def course_management_dashboard(request):
@@ -61,8 +62,9 @@ def course_management_dashboard(request):
     return render(request, 'code/management/dashboard.html', context)
 
 @login_required
+@premium_required
 def course_create(request):
-    """Tạo khóa học mới"""
+    """Tạo khóa học mới - YÊU CẦU PREMIUM"""
     if request.method == 'POST':
         form = CodeCourseForm(request.POST, request.FILES)
         if form.is_valid():
@@ -93,8 +95,9 @@ def course_create(request):
     return render(request, 'code/management/course_form.html', context)
 
 @login_required
+@premium_required
 def course_edit(request, course_id):
-    """Chỉnh sửa khóa học"""
+    """Chỉnh sửa khóa học - YÊU CẦU PREMIUM"""
     course = get_object_or_404(
         CodeCourse, 
         id=course_id, 
@@ -134,8 +137,9 @@ def course_edit(request, course_id):
     return render(request, 'code/management/course_form.html', context)
 
 @login_required
+@premium_required
 def course_lessons_manage(request, course_id):
-    """Quản lý bài học trong khóa học"""
+    """Quản lý bài học trong khóa học - YÊU CẦU PREMIUM"""
     course = get_object_or_404(
         CodeCourse, 
         id=course_id, 
@@ -163,8 +167,9 @@ def course_lessons_manage(request, course_id):
     return render(request, 'code/management/lessons_manage.html', context)
 
 @login_required
+@premium_required
 def lesson_create(request, course_id):
-    """Tạo bài học mới"""
+    """Tạo bài học mới - YÊU CẦU PREMIUM"""
     course = get_object_or_404(
         CodeCourse, 
         id=course_id, 
@@ -207,8 +212,9 @@ def lesson_create(request, course_id):
     return render(request, 'code/management/lesson_form.html', context)
 
 @login_required
+@premium_required
 def lesson_edit(request, course_id, lesson_id):
-    """Chỉnh sửa bài học"""
+    """Chỉnh sửa bài học - YÊU CẦU PREMIUM"""
     course = get_object_or_404(
         CodeCourse, 
         id=course_id, 

@@ -14,6 +14,7 @@ class User(AbstractUser):
     phone = models.CharField(max_length=15, null=True, blank=True)
     is_premium = models.BooleanField(default=False)
     premium_expiry = models.DateTimeField(null=True, blank=True)
+    premium_activated_at = models.DateTimeField(null=True, blank=True)
     is_banned = models.BooleanField(default=False)
     ban_reason = models.TextField(null=True, blank=True)
     google_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
@@ -1232,3 +1233,35 @@ class UserCodingProfile(models.Model):
     
     class Meta:
         db_table = 'user_coding_profiles'
+
+
+class DocumentDownloadLog(models.Model):
+    """Track document downloads for rate limiting"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    downloaded_at = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    
+    class Meta:
+        db_table = 'document_download_logs'
+        indexes = [
+            models.Index(fields=['user', 'downloaded_at']),
+        ]
+
+
+class SearchHistory(models.Model):
+    """Track user search history and popular searches"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    query = models.CharField(max_length=255)
+    result_count = models.IntegerField(default=0)
+    clicked_result_id = models.IntegerField(null=True, blank=True)
+    clicked_result_type = models.CharField(max_length=20, null=True, blank=True)  # document, course, university
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'search_history'
+        indexes = [
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['query', '-created_at']),
+        ]

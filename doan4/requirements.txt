@@ -22,6 +22,7 @@ google-auth-oauthlib==1.2.2
 httplib2==0.31.0
 idna==3.10
 kombu==5.5.4
+Levenshtein==0.27.3
 lxml==6.0.1
 msgpack==1.1.1
 numpy==2.3.3
@@ -38,8 +39,10 @@ pyparsing==3.2.5
 PyPDF2==3.0.1
 python-dateutil==2.9.0.post0
 python-docx==1.2.0
+python-Levenshtein==0.27.3
 python-pptx==1.0.2
 pytz==2025.2
+RapidFuzz==3.14.3
 redis==6.4.0
 requests==2.32.5
 requests-oauthlib==2.0.0
@@ -48,6 +51,7 @@ six==1.17.0
 sqlparse==0.5.3
 typing_extensions==4.15.0
 tzdata==2025.2
+Unidecode==1.4.0
 urllib3==2.5.0
 vine==5.1.0
 wcwidth==0.2.14

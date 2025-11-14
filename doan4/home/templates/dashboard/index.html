@@ -27,7 +27,7 @@
         
         /* Hero Section - Clean and Focused */
         .hero-section {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            background: #6366f1;
             color: white;
             padding: 60px 0;
             margin-bottom: 40px;
@@ -224,7 +224,7 @@
         .document-thumbnail {
             width: 100%;
             height: 150px;
-            background: linear-gradient(45deg, #f3f4f6, #e5e7eb);
+            background: #f3f4f6;
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -339,7 +339,7 @@
         }
         
         .premium-badge {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            background: #f59e0b;
             color: white;
             padding: 4px 12px;
             border-radius: 20px;
@@ -602,7 +602,7 @@
                     {% if user.is_authenticated %}
                         {% if not user.is_premium %}
                         <li class="nav-item me-2">
-                            <a href="{% url 'premium_upgrade' %}" class="btn btn-sm" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 0.85rem; transition: transform 0.2s;"
+                            <a href="{% url 'premium_upgrade' %}" class="btn btn-sm" style="background: #f59e0b; color: white; border: none; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 0.85rem; transition: transform 0.2s;"
                                onmouseover="this.style.transform='translateY(-2px)'"
                                onmouseout="this.style.transform='translateY(0)'">
                                 <i class="fas fa-crown"></i> Nâng cấp Premium
@@ -611,12 +611,12 @@
                         {% endif %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" style="font-weight: 500; color: #1f2937; padding: 8px 12px; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
-                                <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: #6366f1; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
                                     {{ user.get_full_name|default:user.username|slice:":1"|upper }}
                                 </div>
                                 <span class="d-none d-lg-inline">{{ user.get_full_name|default:user.username }}</span>
                                 {% if user.is_premium %}
-                                <span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
+                                <span style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
                                     <i class="fas fa-crown"></i> Premium
                                 </span>
                                 {% endif %}

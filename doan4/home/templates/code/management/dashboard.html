@@ -114,7 +114,7 @@
 {% block content %}
 <div class="container-fluid px-4">
   <!-- Hero Section -->
-  <div class="management-hero">
+  <div class="management-hero" style="animation: fadeInDown 0.5s ease-out;">
     <div class="row align-items-center">
       <div class="col-md-8">
         <h1 class="h2 mb-3">
@@ -135,28 +135,28 @@
   </div>
 
   <!-- Statistics Cards -->
-  <div class="stats-grid">
-    <div class="stat-card">
+  <div class="stats-grid" style="animation: fadeInUp 0.6s ease-out;">
+    <div class="stat-card hover-lift">
       <div class="stat-number text-primary">{{ stats.total_courses }}</div>
       <div class="text-muted">Tổng Khóa Học</div>
     </div>
     
-    <div class="stat-card">
+    <div class="stat-card hover-lift">
       <div class="stat-number text-success">{{ stats.published_courses }}</div>
       <div class="text-muted">Đã Publish</div>
     </div>
     
-    <div class="stat-card">
+    <div class="stat-card hover-lift">
       <div class="stat-number text-warning">{{ stats.draft_courses }}</div>
       <div class="text-muted">Bản Nháp</div>
     </div>
     
-    <div class="stat-card">
+    <div class="stat-card hover-lift">
       <div class="stat-number text-info">{{ stats.total_students }}</div>
       <div class="text-muted">Tổng Học Viên</div>
     </div>
     
-    <div class="stat-card">
+    <div class="stat-card hover-lift">
       <div class="stat-number text-secondary">{{ stats.total_lessons }}</div>
       <div class="text-muted">Tổng Bài Học</div>
     </div>
