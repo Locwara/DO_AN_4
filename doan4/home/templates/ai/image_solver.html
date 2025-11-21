@@ -380,7 +380,6 @@
 .btn-outline-white:hover {
   border-color: white;
   background: white;
-  color: var(--primary) !important;
   text-decoration: none;
   transform: translateY(-2px);
 
@@ -700,6 +699,14 @@
 
 .chat-card:hover {
   border-left-color: #0056b3;
+}
+
+.course-card {
+  border-left: 3px solid #fd7e14; /* Orange color for courses */
+}
+
+.course-card:hover {
+  border-left-color: #e85d04;
 }
 
 /* Responsive */
@@ -1036,10 +1043,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeFileUpload();
   initializeChat();
   
-  // Add quick action buttons after a short delay
-  setTimeout(() => {
-    addQuickActionButtons();
-  }, 1000);
+  addQuickActionButtons();
   
   // Check for existing conversation from URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -1070,12 +1074,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 function addQuickActionButtons() {
   const chatInputContainer = document.querySelector('.chat-input-container');
-  if (!chatInputContainer || chatInputContainer.querySelector('.dropdown')) {
+  if (!chatInputContainer || chatInputContainer.querySelector('#quickActionsDropdown')) {
     return; // Already added or container not found
   }
   
   const quickActionsHtml = `
-    <div class="dropdown me-2">
+    <div class="dropdown me-2" id="quickActionsDropdown" style="display: none;">
       <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
         <i class="fas fa-magic me-1"></i>Gợi ý
       </button>
@@ -1084,6 +1088,8 @@ function addQuickActionButtons() {
           <i class="fas fa-file-alt me-2"></i>Tìm tài liệu</a></li>
         <li><a class="dropdown-item" href="#" onclick="askForChatRoomSuggestion()">
           <i class="fas fa-comments me-2"></i>Tìm phòng chat</a></li>
+        <li><a class="dropdown-item" href="#" onclick="askForCourseSuggestion()">
+          <i class="fas fa-book-open me-2"></i>Tìm khóa học</a></li>
         <li><hr class="dropdown-divider"></li>
         <li><a class="dropdown-item" href="#" onclick="askStudyQuestion()">
           <i class="fas fa-graduation-cap me-2"></i>Câu hỏi học tập</a></li>
@@ -1100,6 +1106,12 @@ function askForDocumentSuggestion() {
 }
 function askForChatRoomSuggestion() {
   const message = "Có phòng chat nào phù hợp để tôi thảo luận và học hỏi không?";
+  document.getElementById('chatInput').value = message;
+  sendMessage();
+}
+
+function askForCourseSuggestion() {
+  const message = "Gợi ý cho tôi một vài khóa học lập trình hay.";
   document.getElementById('chatInput').value = message;
   sendMessage();
 }
@@ -1124,6 +1136,10 @@ function formatMessageWithSuggestions(content) {
     } else if (url.includes('/chat/room/')) {
       return `<a href="${url}" class="chat-room-suggestion-link" target="_blank">
                 <i class="fas fa-comments me-1"></i>${text}
+              </a>`;
+    } else if (url.includes('/code/courses/')) {
+      return `<a href="${url}" class="course-suggestion-link" target="_blank">
+                <i class="fas fa-book-open me-1"></i>${text}
               </a>`;
     } else {
       return `<a href="${url}" target="_blank">${text}</a>`;
@@ -1231,28 +1247,91 @@ function displayChatRoomSuggestions(chatRooms) {
   suggestionsHtml += '</div>';
   addMessage('assistant', suggestionsHtml);
 }
+
+function searchCourses(query) {
+    const formData = new FormData();
+    formData.append('query', query);
+
+    fetch('/ai/search-courses/', {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.courses.length > 0) {
+            console.log('Found courses:', data.courses);
+            displayCourseSuggestions(data.courses);
+        }
+    })
+    .catch(error => console.error('Course search error:', error));
+}
+
+function displayCourseSuggestions(courses) {
+    if (!courses || courses.length === 0) return;
+
+    let suggestionsHtml = '<div class="ai-suggestions courses-suggestions">';
+    suggestionsHtml += '<h6><i class="fas fa-book-open me-2"></i>Khóa học lập trình gợi ý:</h6>';
+
+    courses.forEach(course => {
+        const rating = course.rating > 0 ? course.rating.toFixed(1) : 'N/A';
+        const difficultyBadge = course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1);
+        
+        suggestionsHtml += `
+            <div class="suggestion-card course-card" onclick="window.open('${course.url}', '_blank')">
+                <div class="suggestion-header">
+                    <strong>${course.title}</strong>
+                    <span class="suggestion-stats">
+                        <i class="fas fa-user-friends me-1"></i>${course.enrollment_count}
+                        <i class="fas fa-star me-1 ms-2"></i>${rating}
+                    </span>
+                </div>
+                <div class="suggestion-meta">
+                    <small class="text-muted">
+                        <i class="fas fa-code me-1"></i>${course.language} • 
+                        <i class="fas fa-signal me-1"></i>${difficultyBadge}
+                    </small>
+                </div>
+                ${course.description ? `<div class="suggestion-desc">${course.description}</div>` : ''}
+            </div>
+        `;
+    });
+
+    suggestionsHtml += '</div>';
+    addMessage('assistant', suggestionsHtml);
+}
+
 function detectAndShowSuggestions(message, aiResponse) {
   const lowerMessage = message.toLowerCase();
   
-  // Check if user is asking for documents
+  // Check for documents
   if (lowerMessage.includes('tài liệu') || lowerMessage.includes('sách') || 
       lowerMessage.includes('bài tập') || lowerMessage.includes('đề thi') ||
       lowerMessage.includes('giáo trình') || lowerMessage.includes('slides')) {
-    
     const keywords = extractKeywords(message);
     if (keywords.length > 0) {
       setTimeout(() => searchDocuments(keywords.join(' ')), 1000);
     }
   }
   
-  // Check if user is asking for chat rooms
+  // Check for chat rooms
   if (lowerMessage.includes('phòng chat') || lowerMessage.includes('thảo luận') || 
       lowerMessage.includes('nhóm học') || lowerMessage.includes('cùng học') ||
       lowerMessage.includes('group') || lowerMessage.includes('chat')) {
-    
     const keywords = extractKeywords(message);
     if (keywords.length > 0) {
       setTimeout(() => searchChatRooms(keywords.join(' ')), 1000);
+    }
+  }
+
+  // Check for courses
+  if (lowerMessage.includes('khóa học') || lowerMessage.includes('học lập trình') ||
+      lowerMessage.includes('học python') || lowerMessage.includes('học javascript') ||
+      lowerMessage.includes('học java') || lowerMessage.includes('c++') ||
+      lowerMessage.includes('course') || lowerMessage.includes('programming')) {
+    const keywords = extractKeywords(message);
+    if (keywords.length > 0) {
+      setTimeout(() => searchCourses(keywords.join(' ')), 1000);
     }
   }
 }
@@ -1306,6 +1385,9 @@ function initImageMode() {
   document.getElementById('chatModeIndicator').className = 'chat-mode-indicator mode-image';
   document.getElementById('chatStatus').textContent = 'Upload hình ảnh để bắt đầu';
   
+  const quickActions = document.getElementById('quickActionsDropdown');
+  if (quickActions) quickActions.style.display = 'none';
+  
   document.getElementById('chatMessages').innerHTML = `
     <div class="text-center py-4">
       <i class="fas fa-image text-primary mb-3" style="font-size: 2.5rem;"></i>
@@ -1323,6 +1405,9 @@ function initFileMode() {
   document.getElementById('chatModeIndicator').textContent = 'Chế độ tài liệu';
   document.getElementById('chatModeIndicator').className = 'chat-mode-indicator mode-file';
   document.getElementById('chatStatus').textContent = 'Upload tài liệu để bắt đầu';
+  
+  const quickActions = document.getElementById('quickActionsDropdown');
+  if (quickActions) quickActions.style.display = 'none';
   
   document.getElementById('chatMessages').innerHTML = `
     <div class="text-center py-4">
@@ -1343,6 +1428,9 @@ function initTextMode() {
   document.getElementById('chatModeIndicator').className = 'chat-mode-indicator mode-text';
   document.getElementById('chatStatus').textContent = 'Sẵn sàng trả lời câu hỏi';
   document.getElementById('sendBtn').disabled = false;
+  
+  const quickActions = document.getElementById('quickActionsDropdown');
+  if (quickActions) quickActions.style.display = 'block';
   
   document.getElementById('chatMessages').innerHTML = `
     <div class="message assistant">
@@ -1989,9 +2077,5 @@ function getCookie(name) {
 }
 
 </script>
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<!-- Bootstrap JS (đặt trước closing body tag) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}

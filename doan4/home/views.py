@@ -1,10 +1,12 @@
 from django.shortcuts import render
 import time
 from django.utils import timezone
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 import mimetypes
 from unidecode import unidecode
 from Levenshtein import ratio
+from urllib.parse import quote
+import requests
 
 # Create your views here.
 from django.shortcuts import render, redirect
@@ -1336,14 +1338,13 @@ def chat_send_message(request, room_id):
             
             # Upload to Cloudinary
             result = upload(uploaded_file, **upload_options)
-            file_url = result['secure_url']
             
             message = ChatMessage.objects.create(
                 room=room,
                 user=request.user,
                 message=message_text,
                 message_type=message_type,
-                file_url=file_url,
+                file_url=result['public_id'],
                 file_name=file_name,
                 file_size=file_size,
                 file_type=file_type,
@@ -1660,7 +1661,7 @@ def chat_room_files(request, room_id):
         return JsonResponse({'error': 'Lỗi server', 'files': []}, status=500)
 @login_required
 def chat_file_download(request, room_id, message_id):
-    """Download file từ chat message"""
+    """Download file from chat message by proxying it from Cloudinary."""
     room = get_object_or_404(ChatRoom, id=room_id, is_active=True)
     
     # Check membership
@@ -1671,14 +1672,53 @@ def chat_file_download(request, room_id, message_id):
     
     if not message.file_url:
         return JsonResponse({'error': 'File không tồn tại!'}, status=404)
-    
-    # Redirect to Cloudinary URL with proper headers for download
-    response = HttpResponse()
-    response['X-Accel-Redirect'] = message.file_url
-    response['Content-Type'] = mimetypes.guess_type(message.file_name or '')[0] or 'application/octet-stream'
-    response['Content-Disposition'] = f'attachment; filename="{message.file_name or "file"}"'
-    
-    return response
+
+    try:
+        import cloudinary.utils
+        public_id = message.file_url.public_id
+        
+        # Determine the correct resource type based on the message type
+        resource_type = 'raw' if message.message_type == 'file' else 'image'
+        
+        # For 'raw' files (non-images), the file extension must be specified
+        # in the delivery URL. We use the 'format' parameter for this.
+        file_format = message.file_type if resource_type == 'raw' else None
+
+        # Build the correct delivery URL
+        direct_url = cloudinary.utils.cloudinary_url(
+            public_id,
+            resource_type=resource_type,
+            format=file_format
+        )[0]
+        
+        # Make a streaming request to the file URL
+        cloudinary_response = requests.get(direct_url, stream=True)
+        
+        # Check if the request to Cloudinary was successful
+        cloudinary_response.raise_for_status()
+
+        # Get content type from Cloudinary's response
+        content_type = cloudinary_response.headers.get('Content-Type', 'application/octet-stream')
+
+        # Create a streaming response to send to the user
+        response = StreamingHttpResponse(
+            cloudinary_response.iter_content(chunk_size=8192),
+            content_type=content_type
+        )
+        
+        # URL-encode the filename for the Content-Disposition header for safety
+        safe_filename = quote(message.file_name)
+        response['Content-Disposition'] = f"attachment; filename*=UTF-8''{safe_filename}"
+        response['Content-Length'] = cloudinary_response.headers.get('Content-Length')
+
+        return response
+
+    except requests.exceptions.RequestException as e:
+        # If there's an error fetching from Cloudinary (e.g., 404)
+        return HttpResponse(f"Error fetching file from storage: {e}", status=502) # 502 Bad Gateway
+    except (AttributeError, TypeError):
+        # Fallback for old data where file_url might be a full URL, attempt to redirect
+        return redirect(str(message.file_url))
 # API tìm kiếm tài liệu cho chat
 def normalize_vietnamese(text):
     """Normalize Vietnamese text for fuzzy search"""
@@ -2027,7 +2067,7 @@ def verify_google_token(token):
         return None
 
 # Gemini API configuration
-GEMINI_API_KEY = "AIzaSyAtPjbLwXXTAGKitdMc3M5vll0shUpzN_k"
+GEMINI_API_KEY = "AIzaSyBprYsqu_-RYc6KGYHu1FU_E4rn7369p_s"
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 # Supported file types
 SUPPORTED_FILE_TYPES = {
@@ -2229,6 +2269,69 @@ def search_chat_rooms_for_ai(query, user, limit=5):
         import traceback
         traceback.print_exc()
         return []
+
+def search_courses_for_ai(query, user, limit=5):
+    """Search coding courses relevant to user query"""
+    try:
+        from .models import CodeCourse
+        
+        print(f"=== DEBUG SEARCH COURSES FOR AI ===")
+        print(f"Query: '{query}'")
+        print(f"User: {user.username}")
+        
+        # Count total courses
+        total_courses = CodeCourse.objects.filter(status='published').count()
+        print(f"Total published courses: {total_courses}")
+        
+        # Search courses
+        courses = CodeCourse.objects.filter(
+            Q(status='published') &
+            (Q(title__icontains=query) |
+             Q(description__icontains=query) |
+             Q(language__display_name__icontains=query) |
+             Q(language__name__icontains=query) |
+             Q(difficulty__icontains=query))
+        ).select_related('language', 'created_by', 'university').order_by('-enrollment_count', '-rating_average')[:limit]
+        
+        print(f"Search results: {courses.count()}")
+        
+        # Fallback if no results
+        if courses.count() == 0:
+            print("No results with query, trying fallback...")
+            courses = CodeCourse.objects.filter(
+                status='published'
+            ).select_related('language', 'created_by', 'university').order_by('-enrollment_count', '-rating_average')[:limit]
+            print(f"Fallback results: {courses.count()}")
+        
+        # Format results
+        results = []
+        for course in courses:
+            try:
+                result_item = {
+                    'id': course.id,
+                    'title': course.title,
+                    'description': course.description[:200] if course.description else '',
+                    'language': course.language.display_name,
+                    'difficulty': course.get_difficulty_display() if hasattr(course, 'get_difficulty_display') else course.difficulty,
+                    'enrollment_count': course.enrollment_count,
+                    'rating': float(course.rating_average) if course.rating_average else 0,
+                    'url': f"/code/courses/{course.slug}/"
+                }
+                results.append(result_item)
+                print(f"Formatted course: {result_item['title']}")
+            except Exception as e:
+                print(f"Error formatting course {course.id}: {e}")
+                continue
+        
+        print(f"Formatted results: {len(results)}")
+        print("=== END DEBUG ===")
+        
+        return results
+    except Exception as e:
+        print(f"Error searching courses: {e}")
+        import traceback
+        traceback.print_exc()
+        return []
 def search_documents_simple(query, user, limit=5):
     """Simple search function as backup"""
     try:
@@ -2302,9 +2405,10 @@ def enhance_ai_prompt_with_context(user_message, user, conversation_type='text')
         # Get user context
         user_courses = get_user_courses_and_interests(user)
         
-        # Search for relevant documents and chat rooms
+        # Search for relevant documents, chat rooms, and courses
         docs = search_documents_for_ai(user_message, user, limit=3)
         chat_rooms = search_chat_rooms_for_ai(user_message, user, limit=3)
+        courses = search_courses_for_ai(user_message, user, limit=3)
         
         # Build enhanced context
         context_parts = []
@@ -2324,6 +2428,12 @@ def enhance_ai_prompt_with_context(user_message, user, conversation_type='text')
                 room_info.append(f"- [{room['name']}]({room['url']}) - {room['course']} ({room['member_count']} thành viên)")
             context_parts.append(f"Phòng chat liên quan:\n" + "\n".join(room_info))
         
+        if courses:
+            course_info = []
+            for course in courses:
+                course_info.append(f"- [{course['title']}]({course['url']}) - {course['language']}, {course['difficulty']} ({course['enrollment_count']} học viên, ⭐{course['rating']:.1f})")
+            context_parts.append(f"Khóa học lập trình:\n" + "\n".join(course_info))
+        
         return "\n\n".join(context_parts) if context_parts else ""
         
     except Exception as e:
@@ -2340,20 +2450,21 @@ def call_gemini_api_enhanced(messages, image_data=None, user=None):
         contents = []
         
         # FIXED: Enhanced system prompt - chỉ gợi ý tài liệu có thật
-        system_prompt = '''Bạn là AI assistant thông minh của một website chia sẻ tài liệu học tập.
+        system_prompt = '''Bạn là AI assistant thông minh của một website chia sẻ tài liệu học tập và khóa học lập trình.
         
         Khả năng của bạn:
         1. Giải thích kiến thức học tập (toán, lý, hóa, văn, anh, v.v.)
         2. Giải bài tập và hướng dẫn từng bước
         3. Trả lời câu hỏi thường thức
-        4. Gợi ý tài liệu và phòng chat CÓ TRONG HỆ THỐNG
+        4. Gợi ý tài liệu, phòng chat, và khóa học lập trình CÓ TRONG HỆ THỐNG
         5. Hỗ trợ học tập và nghiên cứu
         
         QUY TẮC QUAN TRỌNG:
-        - CHỈ gợi ý tài liệu và phòng chat được cung cấp trong phần "Thông tin từ hệ thống"
-        - KHÔNG tự tạo ra tài liệu hoặc phòng chat không tồn tại
+        - CHỈ gợi ý tài liệu, phòng chat, và khóa học được cung cấp trong phần "Thông tin từ hệ thống"
+        - KHÔNG tự tạo ra tài liệu, phòng chat, hoặc khóa học không tồn tại
         - Nếu không có tài liệu phù hợp trong hệ thống, nói rằng "Hiện tại chưa có tài liệu phù hợp trong hệ thống"
         - Nếu không có phòng chat phù hợp, nói rằng "Hiện tại chưa có phòng chat phù hợp trong hệ thống"
+        - Nếu không có khóa học phù hợp, nói rằng "Hiện tại chưa có khóa học phù hợp trong hệ thống"
         
         Khi có thông tin từ hệ thống:
         📚 **Tài liệu liên quan:**
@@ -2362,10 +2473,13 @@ def call_gemini_api_enhanced(messages, image_data=None, user=None):
         💬 **Phòng chat để thảo luận:**
         [Chỉ liệt kê phòng chat được cung cấp với đúng link]
         
+        💻 **Khóa học lập trình:**
+        [Chỉ liệt kê khóa học được cung cấp với đúng link]
+        
         Khi không có thông tin từ hệ thống:
         - Trả lời câu hỏi bình thường
-        - Nói rõ là hiện tại chưa có tài liệu/phòng chat phù hợp
-        - KHÔNG đưa ra gợi ý tài liệu/phòng chat giả tạo
+        - Nói rõ là hiện tại chưa có tài liệu/phòng chat/khóa học phù hợp
+        - KHÔNG đưa ra gợi ý tài liệu/phòng chat/khóa học giả tạo
         
         Luôn trả lời bằng tiếng Việt, thân thiện và khích lệ người học.
         '''
@@ -3520,6 +3634,150 @@ def ai_search_chat_rooms_api(request):
             'error': f'Search error: {str(e)}'
         })
 
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def ai_search_courses_api(request):
+    """API để tìm kiếm khóa học lập trình theo yêu cầu của user"""
+    try:
+        query = request.POST.get('query', '').strip()
+        if not query:
+            return JsonResponse({
+                'success': False,
+                'error': 'Missing search query'
+            })
+        
+        # Import CodeCourse model
+        from .models import CodeCourse
+        
+        print(f"=== DEBUG SEARCH COURSES ===")
+        print(f"Query: '{query}'")
+        print(f"User: {request.user.username}")
+        
+        # Search courses with fuzzy matching
+        courses = CodeCourse.objects.filter(
+            Q(status='published') &
+            (Q(title__icontains=query) |
+             Q(description__icontains=query) |
+             Q(language__display_name__icontains=query) |
+             Q(language__name__icontains=query) |
+             Q(difficulty__icontains=query))
+        ).select_related('language', 'created_by', 'university').order_by('-enrollment_count', '-rating_average')[:10]
+        
+        print(f"Found courses: {courses.count()}")
+        
+        # Fallback if no results
+        if courses.count() == 0:
+            print("No results with query, trying fallback...")
+            courses = CodeCourse.objects.filter(
+                status='published'
+            ).select_related('language', 'created_by', 'university').order_by('-enrollment_count', '-rating_average')[:10]
+            print(f"Fallback results: {courses.count()}")
+        
+        # Format results
+        results = []
+        for course in courses:
+            try:
+                result_item = {
+                    'id': course.id,
+                    'title': course.title,
+                    'description': course.description[:200] if course.description else '',
+                    'language': course.language.display_name,
+                    'difficulty': course.get_difficulty_display() if hasattr(course, 'get_difficulty_display') else course.difficulty,
+                    'enrollment_count': course.enrollment_count,
+                    'rating': float(course.rating_average) if course.rating_average else 0,
+                    'url': f"/code/courses/{course.slug}/"
+                }
+                results.append(result_item)
+                print(f"Formatted course: {result_item['title']}")
+            except Exception as e:
+                print(f"Error formatting course {course.id}: {e}")
+                continue
+        
+        print(f"Formatted results: {len(results)}")
+        print("=== END DEBUG ===")
+        
+        return JsonResponse({
+            'success': True,
+            'courses': results,
+            'count': len(results)
+        })
+        
+    except Exception as e:
+        print(f"Course search error: {e}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({
+            'success': False,
+            'error': f'Search error: {str(e)}'
+        })
+
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def ai_export_solutions(request):
+    """Export selected AI solutions to PDF"""
+    try:
+        import csv
+        from io import StringIO
+        
+        data = json.loads(request.body)
+        solution_ids = data.get('solution_ids', [])
+        
+        if not solution_ids:
+            return JsonResponse({
+                'success': False,
+                'error': 'No solutions selected'
+            })
+        
+        # Get solutions
+        solutions = AIImageSolution.objects.filter(
+            id__in=solution_ids,
+            user=request.user
+        ).order_by('-created_at')
+        
+        if not solutions.exists():
+            return JsonResponse({
+                'success': False,
+                'error': 'No solutions found'
+            })
+        
+        # Create CSV file
+        output = StringIO()
+        writer = csv.writer(output)
+        
+        # Write headers
+        writer.writerow(['ID', 'Tiêu đề', 'Loại', 'Ngày tạo', 'Thời gian xử lý (ms)', 'Lượt xem', 'Lượt thích', 'Nội dung AI'])
+        
+        # Write data
+        for solution in solutions:
+            solution_type = 'Hình ảnh' if solution.solution_type == 'image' else ('Tài liệu' if solution.solution_type == 'document' else 'Text Chat')
+            writer.writerow([
+                solution.id,
+                solution.title,
+                solution_type,
+                solution.created_at.strftime('%d/%m/%Y %H:%M'),
+                solution.processing_time or 0,
+                solution.view_count,
+                solution.like_count,
+                solution.ai_solution[:500] + '...' if len(solution.ai_solution) > 500 else solution.ai_solution
+            ])
+        
+        # Create response
+        response = HttpResponse(output.getvalue(), content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="ai_solutions_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        
+        return response
+        
+    except Exception as e:
+        print(f"Export error: {e}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({
+            'success': False,
+            'error': f'Export error: {str(e)}'
+        })
+
 # Keep all other existing functions unchanged...
 # (Include all the existing functions like ai_solve_image_api, ai_solve_file_api, etc.)
 @login_required
@@ -4281,3 +4539,5 @@ def google_callback(request):
     
     messages.success(request, f'Chào mừng {user.get_full_name() or user.username}!')
     return redirect('dashboard')
+
+

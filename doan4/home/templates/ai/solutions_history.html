@@ -15,8 +15,8 @@
 }
 
 .history-header {
-  background: #667eea;
-  border-radius: 20px;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  border-radius: 16px;
   padding: 2rem;
   color: white;
   margin-bottom: 2rem;
@@ -24,6 +24,120 @@
   overflow: hidden;
 }
 
+.solution-card {
+  display: flex;
+  position: relative;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  padding: 10px;
+  margin-bottom: 1.5rem;
+  justify-content: space-around;
+  gap: 5px;
+}
+
+.solution-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+  transform: translateY(-2px);
+}
+
+.card-media {
+  width: 150px;
+  flex-shrink: 0;
+  position: relative;
+  background-color: #f3f4f6;
+  border-radius: 11px;
+  
+}
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 11px ;
+  margin-right: 10px;
+  border: 1px solid #000;
+}
+
+
+.card-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: #9ca3af;
+  background: linear-gradient(135deg, #f9fafb, #e5e7eb);
+  border-radius: 11px 0 0 11px;
+  margin-right: 10px;
+}
+
+.card-body {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden; /* Prevent content from overflowing */
+  padding-left: 10px;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #6b7280;
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.card-stats {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.card-preview {
+  color: #4b5563;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+  flex-grow: 1;
+}
+
+.solution-checkbox {
+  top: 0.75rem;
+  left: 0.75rem;
+  width: 18px;
+  height: 18px;
+  z-index: 2;
+  cursor: pointer;
+}
+
+
+/* Keep other styles below this line */
 .history-header::before {
   content: '';
   position: absolute;
@@ -39,75 +153,6 @@
   position: relative;
   z-index: 1;
 }
-
-.solution-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-  cursor: pointer;
-  overflow: hidden;
-  margin-bottom: 1.5rem;
-}
-
-.solution-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-}
-
-.card-image {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 16px 16px 0 0;
-}
-
-.card-body {
-  padding: 1.5rem;
-}
-
-.card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--dark);
-  margin-bottom: 0.75rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.card-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #6b7280;
-  font-size: 0.85rem;
-  margin-bottom: 1rem;
-}
-
-.card-stats {
-  display: flex;
-  gap: 1rem;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.card-preview {
-  color: #6b7280;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  margin-bottom: 1rem;
-}
-
 .filter-section {
   background: white;
   border-radius: 16px;
@@ -247,15 +292,6 @@
   gap: 1rem;
 }
 
-.solution-checkbox {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  width: 20px;
-  height: 20px;
-  z-index: 2;
-}
-
 @media (max-width: 768px) {
   .history-header {
     padding: 1.5rem;
@@ -266,10 +302,20 @@
     flex-direction: column;
     align-items: stretch;
   }
-  
-  .card-meta {
+
+  .solution-card {
     flex-direction: column;
-    gap: 0.5rem;
+  }
+  
+  .card-media, .card-image, .card-icon {
+    width: 100%;
+    height: 150px;
+    border-radius: 11px 11px 0 0;
+  }
+
+  .card-meta {
+    flex-direction: row; /* Keep it row on mobile */
+    font-size: 0.75rem;
   }
   
   .stats-overview {
@@ -424,40 +470,56 @@
   {% if user.is_authenticated %}
     {% if solutions %}
       <div class="row">
-      {% for solution in solutions %}
-        <div class="col-lg-4 col-md-6 mb-4">
+        {% for solution in solutions %}
+        <div class="col-12">
           <div class="solution-card" onclick="viewSolution({{ solution.id }})">
-            <!-- Checkbox for bulk selection -->
-            <input type="checkbox" class="solution-checkbox" 
-                   value="{{ solution.id }}" onclick="event.stopPropagation()">
+            <input type="checkbox" class="solution-checkbox" value="{{ solution.id }}" onclick="event.stopPropagation()">
             
-            <!-- Image -->
-            <img src="{{ solution.image_url.url }}" alt="{{ solution.title }}" class="card-image">
-            
-            <!-- Content -->
+            <div class="card-media">
+                {% if solution.image_url %}
+                    {% load cloudinary %}
+                    <img src="{% cloudinary_url solution.image_url width=150 height=200 crop='fill' %}" alt="{{ solution.title }}" class="card-image" onerror="this.style.display='none'; this.parentElement.querySelector('.card-icon').style.display='flex';">
+                    <div class="card-icon" style="display: none;">
+                        <i class="fas fa-image"></i>
+                    </div>
+                {% else %}
+                    <div class="card-icon">
+                        {% if solution.solution_type == 'text_chat' %}
+                            <i class="fas fa-comments"></i>
+                        {% elif solution.solution_type == 'document' %}
+                            <i class="fas fa-file-alt"></i>
+                        {% else %}
+                            <i class="fas fa-robot"></i>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        
             <div class="card-body">
               <h5 class="card-title">{{ solution.title }}</h5>
               
               <div class="card-meta">
-                <span>{{ solution.created_at|date:"d/m/Y H:i" }}</span>
+                <span>
+                    <i class="fas fa-calendar-alt me-2" title="Ngày tạo"></i>{{ solution.created_at|date:"d/m/Y H:i" }}
+                </span>
                 <div class="card-stats">
-                  <span class="stat-item">
+                  <span class="stat-item" title="Lượt xem">
                     <i class="fas fa-eye"></i>
-                    {{ solution.view_count }}
+                    {{ solution.view_count|default:0 }}
                   </span>
-                  <span class="stat-item">
-                    <i class="fas fa-heart"></i>
-                    {{ solution.like_count }}
+                  <span class="stat-item" title="Lượt thích">
+                    <i class="fas fa-heart text-danger"></i>
+                    {{ solution.like_count|default:0 }}
                   </span>
                 </div>
               </div>
               
               <div class="card-preview">
-                {{ solution.ai_solution|truncatechars:150 }}
+                {{ solution.ai_solution|striptags|truncatechars:200 }}
               </div>
               
               {% if solution.processing_time %}
-                <div class="text-muted small">
+                <div class="text-muted small mt-auto text-end">
                   <i class="fas fa-clock me-1"></i>
                   Xử lý trong {{ solution.processing_time }}ms
                 </div>
@@ -465,7 +527,7 @@
             </div>
           </div>
         </div>
-      {% endfor %}
+        {% endfor %}
       </div>
 
       <!-- Pagination -->
@@ -647,9 +709,62 @@ function bulkExport() {
   if (selectedSolutions.size === 0) return;
   
   const solutionIds = Array.from(selectedSolutions);
-  console.log('Exporting solutions:', solutionIds);
   
+  // Show a toast message to inform the user
   showToast('info', 'Đang chuẩn bị file tải xuống...');
+
+  // Make a POST request to the export endpoint
+  fetch("{% url 'ai_export_solutions' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: JSON.stringify({ solution_ids: solutionIds })
+  })
+  .then(response => {
+    if (response.ok) {
+      // Get the filename from the Content-Disposition header
+      const disposition = response.headers.get('Content-Disposition');
+      let filename = 'solutions_export.csv'; // default filename
+      if (disposition && disposition.indexOf('attachment') !== -1) {
+        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+        const matches = filenameRegex.exec(disposition);
+        if (matches != null && matches[1]) { 
+          filename = matches[1].replace(/['"]/g, '');
+        }
+      }
+      return response.blob().then(blob => ({ blob, filename }));
+    } else {
+      // Handle server errors
+      response.json().then(data => {
+        showToast('error', `Lỗi xuất file: ${data.error || 'Lỗi không xác định'}`);
+      });
+      return Promise.reject('Server error');
+    }
+  })
+  .then(({ blob, filename }) => {
+    // Create a link to download the blob
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    
+    showToast('success', 'File đã được tải xuống thành công!');
+  })
+  .catch(error => {
+    if (error !== 'Server error') {
+      console.error('Export error:', error);
+      showToast('error', 'Lỗi không xác định khi xuất file.');
+    }
+  });
 }
 
 function clearSelection() {

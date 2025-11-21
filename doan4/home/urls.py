@@ -88,6 +88,8 @@ urlpatterns = [
     path('ai/conversation/<int:conversation_id>/', views.get_conversation_api, name='get_conversation'),
     path('ai/search-documents/', views.ai_search_documents_api, name='ai_search_documents'),
     path('ai/search-chat-rooms/', views.ai_search_chat_rooms_api, name='ai_search_chat_rooms'),
+    path('ai/search-courses/', views.ai_search_courses_api, name='ai_search_courses'),
+    path('ai/export-solutions/', views.ai_export_solutions, name='ai_export_solutions'),
     # Report API
     path('api/user-report/', views.user_report_api, name='user_report'),
     
