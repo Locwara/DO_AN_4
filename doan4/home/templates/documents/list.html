@@ -143,9 +143,9 @@
                 </div>
                 
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold small">Ngành học</label>
+                    <label class="form-label fw-semibold small">Môn học</label>
                     <select name="course" class="form-select" id="courseSelect">
-                        <option value="">Tất cả ngành</option>
+                        <option value="">Tất cả Môn</option>
                         {% for course in courses %}
                             <option value="{{ course.id }}" data-university="{{ course.university.id }}"
                                 {% if request.GET.course == course.id|stringformat:"s" %}selected{% endif %}>

@@ -743,11 +743,6 @@
                     <span class="stat-number">{{ user_total_likes|default:0 }}</span>
                     <div class="stat-label">Lượt thích</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-icon text-warning"><i class="fas fa-trophy"></i></div>
-                    <span class="stat-number">0</span>
-                    <div class="stat-label">Quiz hoàn thành</div>
-                </div>
             </div>
         </div>
         {% endif %}
@@ -1151,336 +1146,48 @@
         });
         
         // Smart Search Autocomplete
-        let searchTimeout = null;
+        console.log('Dashboard JS: Script start');
         const searchInput = document.getElementById('searchInput');
-        const autocompleteDropdown = document.getElementById('autocompleteDropdown');
-        
-        // Show autocomplete on focus (history & popular)
-        searchInput.addEventListener('focus', function() {
-            if (this.value.trim() === '') {
-                fetchSuggestionsEmpty();
-            }
-        });
-        
-        // Real-time search as user types
-        searchInput.addEventListener('input', function() {
-            const query = this.value.trim();
+        console.log('Dashboard JS: searchInput element:', searchInput);
+
+        if (searchInput) {
+            console.log('Dashboard JS: searchInput found, adding event listeners.');
+            let searchTimeout = null;
+            const autocompleteDropdown = document.getElementById('autocompleteDropdown');
             
-            clearTimeout(searchTimeout);
-            
-            if (query === '') {
-                fetchSuggestionsEmpty();
-                return;
-            }
-            
-            // Debounce 300ms
-            searchTimeout = setTimeout(() => {
-                fetchSuggestions(query);
-            }, 300);
-        });
-        
-        // Fetch suggestions when input is empty (show history & popular)
-        function fetchSuggestionsEmpty() {
-            fetch('/api/search/suggestions/')
-                .then(res => res.json())
-                .then(data => {
-                    renderHistoryAndPopular(data);
-                })
-                .catch(err => console.error('Error fetching suggestions:', err));
-        }
-        
-        // Fetch real-time suggestions
-        function fetchSuggestions(query) {
-            fetch(`/api/search/suggestions/?q=${encodeURIComponent(query)}`)
-                .then(res => res.json())
-                .then(data => {
-                    renderSuggestions(data);
-                })
-                .catch(err => console.error('Error fetching suggestions:', err));
-        }
-        
-        // Render history and popular searches
-        function renderHistoryAndPopular(data) {
-            let html = '';
-            
-            // Search history
-            if (data.history && data.history.length > 0) {
-                html += `
-                    <div class="autocomplete-section">
-                        <div class="autocomplete-header"><i class="fas fa-history"></i> Lịch sử tìm kiếm</div>
-                `;
-                
-                data.history.forEach(query => {
-                    html += `
-                        <div class="autocomplete-item" onclick="selectQuery('${escapeHtml(query)}')">
-                            <div class="autocomplete-icon history">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div class="autocomplete-content">
-                                <div class="autocomplete-title">${escapeHtml(query)}</div>
-                            </div>
-                            <div class="delete-history-icon" onclick="deleteHistoryItem(event, '${escapeHtml(query)}')" title="Xóa">
-                                <i class="fas fa-times"></i>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                // Add clear history button
-                html += `
-                    <button class="clear-history-btn" onclick="confirmClearHistory(event)">
-                        <i class="fas fa-trash"></i> Xóa lịch sử tìm kiếm
-                    </button>
-                `;
-                
-                html += '</div>';
-            }
-            
-            // Popular searches
-            if (data.popular && data.popular.length > 0) {
-                html += `
-                    <div class="autocomplete-section">
-                        <div class="autocomplete-header"><i class="fas fa-fire"></i> Tìm kiếm phổ biến</div>
-                `;
-                
-                data.popular.forEach(query => {
-                    html += `
-                        <div class="autocomplete-item" onclick="selectQuery('${escapeHtml(query)}')">
-                            <div class="autocomplete-icon history">
-                                <i class="fas fa-search"></i>
-                            </div>
-                            <div class="autocomplete-content">
-                                <div class="autocomplete-title">${escapeHtml(query)}</div>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                html += '</div>';
-            }
-            
-            if (html) {
-                autocompleteDropdown.innerHTML = html;
-                autocompleteDropdown.classList.add('show');
-            } else {
-                hideAutocomplete();
-            }
-        }
-        
-        // Render real-time suggestions
-        function renderSuggestions(data) {
-            let html = '';
-            let hasResults = false;
-            
-            // Documents
-            if (data.documents && data.documents.length > 0) {
-                hasResults = true;
-                html += `
-                    <div class="autocomplete-section">
-                        <div class="autocomplete-header"><i class="fas fa-file-alt"></i> Tài liệu</div>
-                `;
-                
-                data.documents.forEach(doc => {
-                    html += `
-                        <div class="autocomplete-item" onclick="window.location.href='${doc.url}'">
-                            <div class="autocomplete-icon doc">
-                                <i class="fas ${doc.icon}"></i>
-                            </div>
-                            <div class="autocomplete-content">
-                                <div class="autocomplete-title">${escapeHtml(doc.title)}</div>
-                                <div class="autocomplete-subtitle">${escapeHtml(doc.university)} • ${escapeHtml(doc.course)}</div>
-                            </div>
-                            <span class="autocomplete-badge">Tài liệu</span>
-                        </div>
-                    `;
-                });
-                
-                html += '</div>';
-            }
-            
-            // Courses
-            if (data.courses && data.courses.length > 0) {
-                hasResults = true;
-                html += `
-                    <div class="autocomplete-section">
-                        <div class="autocomplete-header"><i class="fas fa-book"></i> Môn học</div>
-                `;
-                
-                data.courses.forEach(course => {
-                    html += `
-                        <div class="autocomplete-item" onclick="window.location.href='${course.url}'">
-                            <div class="autocomplete-icon course">
-                                <i class="fas ${course.icon}"></i>
-                            </div>
-                            <div class="autocomplete-content">
-                                <div class="autocomplete-title">${escapeHtml(course.title)}</div>
-                                <div class="autocomplete-subtitle">${escapeHtml(course.university)}</div>
-                            </div>
-                            <span class="autocomplete-badge">Môn học</span>
-                        </div>
-                    `;
-                });
-                
-                html += '</div>';
-            }
-            
-            // Universities
-            if (data.universities && data.universities.length > 0) {
-                hasResults = true;
-                html += `
-                    <div class="autocomplete-section">
-                        <div class="autocomplete-header"><i class="fas fa-university"></i> Trường đại học</div>
-                `;
-                
-                data.universities.forEach(uni => {
-                    html += `
-                        <div class="autocomplete-item" onclick="window.location.href='${uni.url}'">
-                            <div class="autocomplete-icon uni">
-                                <i class="fas ${uni.icon}"></i>
-                            </div>
-                            <div class="autocomplete-content">
-                                <div class="autocomplete-title">${escapeHtml(uni.title)}</div>
-                                ${uni.subtitle ? `<div class="autocomplete-subtitle">${escapeHtml(uni.subtitle)}</div>` : ''}
-                            </div>
-                            <span class="autocomplete-badge">Trường</span>
-                        </div>
-                    `;
-                });
-                
-                html += '</div>';
-            }
-            
-            if (hasResults) {
-                autocompleteDropdown.innerHTML = html;
-                autocompleteDropdown.classList.add('show');
-            } else {
-                autocompleteDropdown.innerHTML = `
-                    <div class="autocomplete-section">
-                        <div style="text-align: center; padding: 20px; color: #6b7280;">
-                            <i class="fas fa-search fa-2x mb-2" style="opacity: 0.3;"></i>
-                            <p>Không tìm thấy kết quả phù hợp</p>
-                        </div>
-                    </div>
-                `;
-                autocompleteDropdown.classList.add('show');
-            }
-        }
-        
-        // Hide autocomplete
-        function hideAutocomplete() {
-            autocompleteDropdown.classList.remove('show');
-        }
-        
-        // Select query from history/popular
-        function selectQuery(query) {
-            searchInput.value = query;
-            document.getElementById('searchForm').submit();
-        }
-        
-        // Escape HTML to prevent XSS
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        // Delete single history item
-        function deleteHistoryItem(event, query) {
-            event.stopPropagation();
-            
-            fetch('/api/search/delete-history-item/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ query: query })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    // Refresh suggestions to show updated list
+            // Show autocomplete on focus (history & popular)
+            searchInput.addEventListener('focus', function() {
+                if (this.value.trim() === '') {
                     fetchSuggestionsEmpty();
                 }
-            })
-            .catch(err => {
-                console.error('Error deleting history item:', err);
             });
-        }
-        
-        // Confirm and clear search history
-        function confirmClearHistory(event) {
-            event.stopPropagation();
             
-            if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử tìm kiếm?')) {
-                clearSearchHistory();
-            }
-        }
-        
-        // Clear search history via API
-        function clearSearchHistory() {
-            fetch('/api/search/clear-history/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
+            // Real-time search as user types
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                
+                clearTimeout(searchTimeout);
+                
+                if (query === '') {
+                    fetchSuggestionsEmpty();
+                    return;
                 }
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    // Hide autocomplete and show success message
-                    hideAutocomplete();
-                    searchInput.value = '';
-                    
-                    // Show success alert
-                    const alert = document.createElement('div');
-                    alert.className = 'alert alert-success alert-dismissible fade show';
-                    alert.style.position = 'fixed';
-                    alert.style.top = '20px';
-                    alert.style.right = '20px';
-                    alert.style.zIndex = '9999';
-                    alert.innerHTML = `
-                        <i class="fas fa-check-circle"></i> ${data.message}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    `;
-                    document.body.appendChild(alert);
-                    
-                    setTimeout(() => {
-                        alert.remove();
-                    }, 3000);
-                } else {
-                    alert('Lỗi: ' + data.message);
-                }
-            })
-            .catch(err => {
-                console.error('Error clearing history:', err);
-                alert('Có lỗi xảy ra khi xóa lịch sử');
+                
+                // Debounce 300ms
+                searchTimeout = setTimeout(() => {
+                    fetchSuggestions(query);
+                }, 300);
             });
-        }
-        
-        // Get CSRF token from cookies
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
+
+            // Close autocomplete when clicking outside
+            document.addEventListener('click', function(e) {
+                if (autocompleteDropdown && !searchInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
+                    hideAutocomplete();
                 }
-            }
-            return cookieValue;
+            });
+        } else {
+            console.log('Dashboard JS: searchInput NOT found, skipping event listeners.');
         }
-        
-        // Close autocomplete when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!searchInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
-                hideAutocomplete();
-            }
-        });
     </script>
     
 </body>

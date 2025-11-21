@@ -15,7 +15,7 @@ urlpatterns = [
     # API endpoints
     path('api/universities/', views.api_universities, name='api_universities'),
     path('api/courses/', views.api_courses, name='api_courses'),
-    path('api/upload/', views.api_upload_document, name='api_upload_document'),
+
     path('api/delete/<int:document_id>/', views.api_delete_document, name='api_delete_document'),
     # uploads/urls.py
     path('api/temporary-upload/', views.api_temporary_upload, name='api_temporary_upload'),

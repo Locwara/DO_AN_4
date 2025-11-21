@@ -157,6 +157,21 @@
             position: relative;
         }
 
+        .password-input-group {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+        }
+
         .form-label {
             font-weight: 500;
             margin-bottom: 8px;
@@ -453,13 +468,20 @@
                         <i class="fas fa-user"></i> Tên đăng nhập hoặc Email
                     </label>
                     {{ login_form.username }}
+                    <div id="username-feedback" class="mt-2"></div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="{{ login_form.password.id_for_label }}">
                         <i class="fas fa-lock"></i> Mật khẩu
                     </label>
-                    {{ login_form.password }}
+                    <div class="password-input-group">
+                        {{ login_form.password }}
+                        <button type="button" class="password-toggle" data-target="{{ login_form.password.id_for_label }}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div id="password-feedback" class="mt-2"></div>
                 </div>
 
                 <div class="form-check">
@@ -490,69 +512,100 @@
             <form id="register-form" class="auth-form {% if show_register %}active{% endif %}" method="post" action="{% url 'register' %}">
                 {% csrf_token %}
                 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label" for="{{ register_form.first_name.id_for_label }}">
-                            <i class="fas fa-user"></i> Họ
-                        </label>
-                        {{ register_form.first_name }}
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="{{ register_form.last_name.id_for_label }}">
-                            Tên
-                        </label>
-                        {{ register_form.last_name }}
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="{{ register_form.username.id_for_label }}">
-                        <i class="fas fa-at"></i> Tên đăng nhập
-                    </label>
-                    {{ register_form.username }}
-                    <div class="availability-indicator" id="username-indicator"></div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="{{ register_form.email.id_for_label }}">
-                        <i class="fas fa-envelope"></i> Email
-                    </label>
-                    {{ register_form.email }}
-                    <div class="availability-indicator" id="email-indicator"></div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="{{ register_form.phone.id_for_label }}">
-                        <i class="fas fa-phone"></i> Số điện thoại
-                    </label>
-                    {{ register_form.phone }}
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="{{ register_form.password1.id_for_label }}">
-                        <i class="fas fa-lock"></i> Mật khẩu
-                    </label>
-                    {{ register_form.password1 }}
-                    <div class="password-strength" id="password-strength">
-                        <div class="password-strength-bar">
-                            <div class="password-strength-fill" id="strength-fill"></div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ register_form.first_name.id_for_label }}">
+                                <i class="fas fa-user"></i> Họ
+                            </label>
+                            {{ register_form.first_name }}
+                            <div id="first_name-feedback" class="mt-2"></div>
                         </div>
-                        <small id="strength-text"></small>
                     </div>
-                </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ register_form.last_name.id_for_label }}">
+                                Tên
+                            </label>
+                            {{ register_form.last_name }}
+                            <div id="last_name-feedback" class="mt-2"></div>
+                        </div>
+                    </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="{{ register_form.password2.id_for_label }}">
-                        <i class="fas fa-lock"></i> Xác nhận mật khẩu
-                    </label>
-                    {{ register_form.password2 }}
-                </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ register_form.username.id_for_label }}">
+                                <i class="fas fa-at"></i> Tên đăng nhập
+                            </label>
+                            {{ register_form.username }}
+                            <div class="availability-indicator" id="username-indicator"></div>
+                            <div id="register-username-feedback" class="mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ register_form.email.id_for_label }}">
+                                <i class="fas fa-envelope"></i> Email
+                            </label>
+                            {{ register_form.email }}
+                            <div class="availability-indicator" id="email-indicator"></div>
+                            <div id="register-email-feedback" class="mt-2"></div>
+                        </div>
+                    </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="{{ register_form.bio.id_for_label }}">
-                        <i class="fas fa-user-edit"></i> Giới thiệu
-                    </label>
-                    {{ register_form.bio }}
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ register_form.phone.id_for_label }}">
+                                <i class="fas fa-phone"></i> Số điện thoại
+                            </label>
+                            {{ register_form.phone }}
+                            <div id="phone-feedback" class="mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ register_form.bio.id_for_label }}">
+                                <i class="fas fa-user-edit"></i> Giới thiệu
+                            </label>
+                            {{ register_form.bio }}
+                            <div id="bio-feedback" class="mt-2"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ register_form.password1.id_for_label }}">
+                                <i class="fas fa-lock"></i> Mật khẩu
+                            </label>
+                            <div class="password-input-group">
+                                {{ register_form.password1 }}
+                                <button type="button" class="password-toggle" data-target="{{ register_form.password1.id_for_label }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="password-strength" id="password-strength">
+                                <div class="password-strength-bar">
+                                    <div class="password-strength-fill" id="strength-fill"></div>
+                                </div>
+                                <small id="strength-text"></small>
+                            </div>
+                            <div id="password1-feedback" class="mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ register_form.password2.id_for_label }}">
+                                <i class="fas fa-lock"></i> Xác nhận mật khẩu
+                            </label>
+                            <div class="password-input-group">
+                                {{ register_form.password2 }}
+                                <button type="button" class="password-toggle" data-target="{{ register_form.password2.id_for_label }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div id="password2-feedback" class="mt-2"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn-primary" id="register-btn">
@@ -591,14 +644,469 @@
             }
         }
 
+        // --- START LOGIN REAL-TIME VALIDATION LOGIC ---
+
+        // Function to validate login username
+        function validateLoginUsername() {
+            const usernameInput = document.getElementById('{{ login_form.username.id_for_label }}');
+            const feedbackDiv = document.getElementById('username-feedback');
+            
+            if (!usernameInput || !feedbackDiv) return true;
+
+            const value = usernameInput.value.trim();
+
+            if (value === '') {
+                usernameInput.classList.add('is-invalid');
+                usernameInput.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Tên đăng nhập không được để trống!</span>';
+                return false;
+            } else if (value.length < 3) { // Simplified length check for login
+                usernameInput.classList.add('is-invalid');
+                usernameInput.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Tên đăng nhập phải có ít nhất 3 ký tự!</span>';
+                return false;
+            } else {
+                usernameInput.classList.add('is-valid');
+                usernameInput.classList.remove('is-invalid');
+                feedbackDiv.innerHTML = '<span style="color: var(--primary-color); font-size: 0.9em;">Tên đăng nhập hợp lệ.</span>';
+                return true;
+            }
+        }
+
+        // Function to validate login password
+        function validateLoginPassword() {
+            const passwordInput = document.getElementById('{{ login_form.password.id_for_label }}');
+            const feedbackDiv = document.getElementById('password-feedback');
+
+            if (!passwordInput || !feedbackDiv) return true;
+
+            const value = passwordInput.value.trim();
+
+            if (value === '') {
+                passwordInput.classList.add('is-invalid');
+                passwordInput.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Mật khẩu không được để trống!</span>';
+                return false;
+            } else if (value.length < 6) { // Simplified length check for login
+                passwordInput.classList.add('is-invalid');
+                passwordInput.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Mật khẩu phải có ít nhất 6 ký tự!</span>';
+                return false;
+            } else {
+                passwordInput.classList.add('is-valid');
+                passwordInput.classList.remove('is-invalid');
+                feedbackDiv.innerHTML = '<span style="color: var(--primary-color); font-size: 0.9em;">Mật khẩu hợp lệ.</span>';
+                return true;
+            }
+        }
+
+        // Attach event listeners for login form
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginUsernameInput = document.getElementById('{{ login_form.username.id_for_label }}');
+            if (loginUsernameInput) {
+                loginUsernameInput.addEventListener('input', validateLoginUsername);
+            }
+
+            const loginPasswordInput = document.getElementById('{{ login_form.password.id_for_label }}');
+            if (loginPasswordInput) {
+                loginPasswordInput.addEventListener('input', validateLoginPassword);
+            }
+
+            // Password visibility toggle handler
+            document.querySelectorAll('.password-toggle').forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const input = document.getElementById(targetId);
+                    const icon = this.querySelector('i');
+
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.replace('fa-eye', 'fa-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.replace('fa-eye-slash', 'fa-eye');
+                    }
+                });
+            });
+        });
+
+        // --- END LOGIN REAL-TIME VALIDATION LOGIC ---
+
+
+        // --- START REGISTER REAL-TIME VALIDATION LOGIC ---
+
+        // Function to validate first name
+        function validateFirstName() {
+            const input = document.getElementById('{{ register_form.first_name.id_for_label }}');
+            const feedbackDiv = document.getElementById('first_name-feedback');
+            if (!input || !feedbackDiv) return true; // Return true if elements not found to avoid blocking
+
+            const value = input.value.trim();
+            if (value === '') {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Họ không được để trống!</span>';
+                return false;
+            } else if (value.length < 2 || value.length > 50) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Họ phải từ 2-50 ký tự!</span>';
+                return false;
+            } else {
+                input.classList.add('is-valid');
+                input.classList.remove('is-invalid');
+                feedbackDiv.innerHTML = '<span style="color: var(--primary-color); font-size: 0.9em;">Họ hợp lệ.</span>';
+                return true;
+            }
+        }
+
+        // Function to validate last name
+        function validateLastName() {
+            const input = document.getElementById('{{ register_form.last_name.id_for_label }}');
+            const feedbackDiv = document.getElementById('last_name-feedback');
+            if (!input || !feedbackDiv) return true;
+
+            const value = input.value.trim();
+            if (value === '') {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Tên không được để trống!</span>';
+                return false;
+            } else if (value.length < 2 || value.length > 50) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Tên phải từ 2-50 ký tự!</span>';
+                return false;
+            } else {
+                input.classList.add('is-valid');
+                input.classList.remove('is-invalid');
+                feedbackDiv.innerHTML = '<span style="color: var(--primary-color); font-size: 0.9em;">Tên hợp lệ.</span>';
+                return true;
+            }
+        }
+
+        // Function to validate register username (combines doan3 logic with doan4 AJAX)
+        let registerUsernameTimeout;
+        function validateRegisterUsername() {
+            const input = document.getElementById('{{ register_form.username.id_for_label }}');
+            const feedbackDiv = document.getElementById('register-username-feedback');
+            const indicator = document.getElementById('username-indicator');
+            if (!input || !feedbackDiv || !indicator) return true;
+
+            const value = input.value.trim();
+            clearTimeout(registerUsernameTimeout);
+            indicator.innerHTML = ''; // Clear previous indicator
+
+            if (value === '') {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Tên đăng nhập không được để trống!</span>';
+                return false;
+            } else if (value.length < 6 || value.length > 15) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Tên đăng nhập phải từ 6-15 ký tự!</span>';
+                return false;
+            } else {
+                input.classList.add('is-valid');
+                input.classList.remove('is-invalid');
+                feedbackDiv.innerHTML = '<span style="color: var(--primary-color); font-size: 0.9em;">Tên đăng nhập hợp lệ.</span>';
+                
+                // Proceed with AJAX availability check if basic validation passes
+                indicator.innerHTML = '<i class="fas fa-spinner fa-spin checking"></i>';
+                registerUsernameTimeout = setTimeout(() => {
+                    fetch(`/api/check-username/?username=${encodeURIComponent(value)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.available) {
+                                indicator.innerHTML = '<i class="fas fa-check available"></i>';
+                                input.classList.remove('is-invalid');
+                                input.classList.add('is-valid');
+                                feedbackDiv.innerHTML = '<span style="color: var(--primary-color); font-size: 0.9em;">Tên đăng nhập có thể sử dụng.</span>';
+                            } else {
+                                indicator.innerHTML = '<i class="fas fa-times unavailable"></i>';
+                                input.classList.remove('is-valid');
+                                input.classList.add('is-invalid');
+                                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Tên đăng nhập đã tồn tại.</span>';
+                            }
+                        })
+                        .catch(() => {
+                            indicator.innerHTML = '';
+                            feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Lỗi kiểm tra tên đăng nhập.</span>';
+                        });
+                }, 500);
+                return true; // Return true for basic validation, AJAX handles final status
+            }
+        }
+
+        // Function to validate register email (combines doan3 logic with doan4 AJAX)
+        let registerEmailTimeout;
+        function validateRegisterEmail() {
+            const input = document.getElementById('{{ register_form.email.id_for_label }}');
+            const feedbackDiv = document.getElementById('register-email-feedback');
+            const indicator = document.getElementById('email-indicator');
+            if (!input || !feedbackDiv || !indicator) return true;
+
+            const value = input.value.trim();
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+            clearTimeout(registerEmailTimeout);
+            indicator.innerHTML = ''; // Clear previous indicator
+
+            if (value === '') {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Email không được để trống!</span>';
+                return false;
+            } else if (!emailRegex.test(value)) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Email phải có định dạng @gmail.com!</span>';
+                return false;
+            } else {
+                input.classList.add('is-valid');
+                input.classList.remove('is-invalid');
+                feedbackDiv.innerHTML = '<span style="color: var(--primary-color); font-size: 0.9em;">Email hợp lệ.</span>';
+
+                // Proceed with AJAX availability check if basic validation passes
+                indicator.innerHTML = '<i class="fas fa-spinner fa-spin checking"></i>';
+                registerEmailTimeout = setTimeout(() => {
+                    fetch(`/api/check-email/?email=${encodeURIComponent(value)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.available) {
+                                indicator.innerHTML = '<i class="fas fa-check available"></i>';
+                                input.classList.remove('is-invalid');
+                                input.classList.add('is-valid');
+                                feedbackDiv.innerHTML = '<span style="color: var(--primary-color); font-size: 0.9em;">Email có thể sử dụng.</span>';
+                            } else {
+                                indicator.innerHTML = '<i class="fas fa-times unavailable"></i>';
+                                input.classList.remove('is-valid');
+                                input.classList.add('is-invalid');
+                                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Email đã tồn tại.</span>';
+                            }
+                        })
+                        .catch(() => {
+                            indicator.innerHTML = '';
+                            feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Lỗi kiểm tra email.</span>';
+                        });
+                }, 500);
+                return true; // Return true for basic validation, AJAX handles final status
+            }
+        }
+
+        // Function to validate phone (10 digits, starts with 0)
+        function validatePhone() {
+            const input = document.getElementById('{{ register_form.phone.id_for_label }}');
+            const feedbackDiv = document.getElementById('phone-feedback');
+            if (!input || !feedbackDiv) return true;
+
+            const value = input.value.trim();
+            const phoneRegex = /^0\d{9}$/;
+
+            if (value === '') {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Số điện thoại không được để trống!</span>';
+                return false;
+            } else if (!phoneRegex.test(value)) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Số điện thoại phải có 10 chữ số và bắt đầu bằng 0.</span>';
+                return false;
+            } else {
+                input.classList.add('is-valid');
+                input.classList.remove('is-invalid');
+                feedbackDiv.innerHTML = '<span style="color: var(--primary-color); font-size: 0.9em;">Số điện thoại hợp lệ.</span>';
+                return true;
+            }
+        }
+
+        // Function to validate register password1 (combines doan3 logic with doan4 strength check)
+        function validateRegisterPassword1() {
+            const input = document.getElementById('{{ register_form.password1.id_for_label }}');
+            const feedbackDiv = document.getElementById('password1-feedback');
+            const strengthFill = document.getElementById('strength-fill');
+            const strengthText = document.getElementById('strength-text');
+            if (!input || !feedbackDiv || !strengthFill || !strengthText) return true;
+
+            const value = input.value; // Do not trim password
+
+            if (value === '') {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Mật khẩu không được để trống!</span>';
+                strengthFill.style.width = '0%';
+                strengthText.textContent = '';
+                return false;
+            } else if (value.length < 6 || value.length > 15) { // doan3 length check
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Mật khẩu phải từ 6-15 ký tự!</span>';
+                
+                // Still show strength for feedback
+                const strength = calculatePasswordStrength(value);
+                strengthFill.style.width = strength.percentage + '%';
+                strengthFill.style.backgroundColor = strength.color;
+                strengthText.textContent = strength.text;
+                strengthText.style.color = strength.color;
+                return false;
+            } else {
+                input.classList.add('is-valid');
+                input.classList.remove('is-invalid');
+                feedbackDiv.innerHTML = '<span style="color: var(--primary-color); font-size: 0.9em;">Mật khẩu hợp lệ.</span>';
+                
+                // Show strength
+                const strength = calculatePasswordStrength(value);
+                strengthFill.style.width = strength.percentage + '%';
+                strengthFill.style.backgroundColor = strength.color;
+                strengthText.textContent = strength.text;
+                strengthText.style.color = strength.color;
+                return true;
+            }
+        }
+
+        // Function to validate register password2 (combines doan3 logic with doan4 match check)
+        function validateRegisterPassword2() {
+            const password1Input = document.getElementById('{{ register_form.password1.id_for_label }}');
+            const password2Input = document.getElementById('{{ register_form.password2.id_for_label }}');
+            const feedbackDiv = document.getElementById('password2-feedback');
+            if (!password1Input || !password2Input || !feedbackDiv) return true;
+
+            const value1 = password1Input.value;
+            const value2 = password2Input.value;
+
+            if (value2 === '') {
+                password2Input.classList.add('is-invalid');
+                password2Input.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Vui lòng nhập lại mật khẩu!</span>';
+                return false;
+            } else if (value1 !== value2) {
+                password2Input.classList.add('is-invalid');
+                password2Input.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Mật khẩu nhập lại không khớp!</span>';
+                return false;
+            } else {
+                password2Input.classList.add('is-valid');
+                password2Input.classList.remove('is-invalid');
+                feedbackDiv.innerHTML = '<span style="color: var(--primary-color); font-size: 0.9em;">Mật khẩu nhập lại hợp lệ.</span>';
+                return true;
+            }
+        }
+
+        // Function to validate bio (simple empty check, if needed)
+        function validateBio() {
+            const input = document.getElementById('{{ register_form.bio.id_for_label }}');
+            const feedbackDiv = document.getElementById('bio-feedback');
+            if (!input || !feedbackDiv) return true;
+
+            const value = input.value.trim();
+            // Assuming bio is optional, only check if not empty and has some length constraint if desired
+            if (value.length > 0 && value.length < 5) { // Example: if bio is entered, must be at least 5 chars
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                feedbackDiv.innerHTML = '<span style="color: var(--error-color); font-size: 0.9em;">Giới thiệu phải có ít nhất 5 ký tự.</span>';
+                return false;
+            } else {
+                input.classList.add('is-valid');
+                input.classList.remove('is-invalid');
+                feedbackDiv.innerHTML = ''; // Clear feedback if valid or empty (optional)
+                return true;
+            }
+        }
+
+
+        // Attach event listeners for register form
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstNameInput = document.getElementById('{{ register_form.first_name.id_for_label }}');
+            if (firstNameInput) {
+                firstNameInput.addEventListener('input', validateFirstName);
+                firstNameInput.addEventListener('focus', validateFirstName);
+            }
+
+            const lastNameInput = document.getElementById('{{ register_form.last_name.id_for_label }}');
+            if (lastNameInput) {
+                lastNameInput.addEventListener('input', validateLastName);
+                lastNameInput.addEventListener('focus', validateLastName);
+            }
+
+            const registerUsernameInput = document.getElementById('{{ register_form.username.id_for_label }}');
+            if (registerUsernameInput) {
+                registerUsernameInput.addEventListener('input', validateRegisterUsername);
+                registerUsernameInput.addEventListener('focus', validateRegisterUsername);
+            }
+
+            const registerEmailInput = document.getElementById('{{ register_form.email.id_for_label }}');
+            if (registerEmailInput) {
+                registerEmailInput.addEventListener('input', validateRegisterEmail);
+                registerEmailInput.addEventListener('focus', validateRegisterEmail);
+            }
+
+            const phoneInput = document.getElementById('{{ register_form.phone.id_for_label }}');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', validatePhone);
+                phoneInput.addEventListener('focus', validatePhone);
+            }
+
+            const registerPassword1Input = document.getElementById('{{ register_form.password1.id_for_label }}');
+            if (registerPassword1Input) {
+                registerPassword1Input.addEventListener('input', validateRegisterPassword1);
+                registerPassword1Input.addEventListener('focus', validateRegisterPassword1);
+            }
+
+            const registerPassword2Input = document.getElementById('{{ register_form.password2.id_for_label }}');
+            if (registerPassword2Input) {
+                registerPassword2Input.addEventListener('input', validateRegisterPassword2);
+                registerPassword2Input.addEventListener('focus', validateRegisterPassword2);
+            }
+
+            const bioInput = document.getElementById('{{ register_form.bio.id_for_label }}');
+            if (bioInput) {
+                bioInput.addEventListener('input', validateBio);
+                bioInput.addEventListener('focus', validateBio);
+            }
+
+            // Xử lý hiển thị/ẩn mật khẩu cho form đăng ký
+            var showPasswordCheckbox = document.getElementById('htmk'); // Assuming this checkbox is for both forms or a new one is needed
+            var regPassword1Input = document.getElementById('{{ register_form.password1.id_for_label }}');
+            var regPassword2Input = document.getElementById('{{ register_form.password2.id_for_label }}');
+            if (showPasswordCheckbox && regPassword1Input && regPassword2Input) {
+                showPasswordCheckbox.addEventListener('change', function() {
+                    regPassword1Input.type = this.checked ? 'text' : 'password';
+                    regPassword2Input.type = this.checked ? 'text' : 'password';
+                });
+            }
+        });
+
+        // --- END REGISTER REAL-TIME VALIDATION LOGIC ---
+
+
         // Form submissions with AJAX
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
+            // Run validation before submitting
+            const isUsernameValid = validateLoginUsername();
+            const isPasswordValid = validateLoginPassword();
+            if (!isUsernameValid || !isPasswordValid) {
+                return; // Stop submission if validation fails
+            }
             submitForm(this, 'login-btn');
         });
 
         document.getElementById('register-form').addEventListener('submit', function(e) {
             e.preventDefault();
+            // Run all register validations before submitting
+            const isFirstNameValid = validateFirstName();
+            const isLastNameValid = validateLastName();
+            const isRegisterUsernameValid = validateRegisterUsername();
+            const isRegisterEmailValid = validateRegisterEmail();
+            const isPhoneValid = validatePhone();
+            const isRegisterPassword1Valid = validateRegisterPassword1();
+            const isRegisterPassword2Valid = validateRegisterPassword2();
+            const isBioValid = validateBio();
+
+            if (!isFirstNameValid || !isLastNameValid || !isRegisterUsernameValid || !isRegisterEmailValid || !isPhoneValid || !isRegisterPassword1Valid || !isRegisterPassword2Valid || !isBioValid) {
+                return; // Stop submission if any validation fails
+            }
             submitForm(this, 'register-btn');
         });
 
@@ -682,6 +1190,9 @@
             document.querySelectorAll('.form-control').forEach(input => {
                 input.classList.remove('is-invalid', 'is-valid');
             });
+            document.querySelectorAll('[id$="-feedback"]').forEach(div => {
+                div.innerHTML = '';
+            });
         }
 
         function displayErrors(errors) {
@@ -697,90 +1208,7 @@
             });
         }
 
-        // Username availability check
-        let usernameTimeout;
-        document.getElementById('username').addEventListener('input', function() {
-            const username = this.value.trim();
-            const indicator = document.getElementById('username-indicator');
-            
-            clearTimeout(usernameTimeout);
-            
-            if (username.length < 3) {
-                indicator.innerHTML = '';
-                return;
-            }
-            
-            indicator.innerHTML = '<i class="fas fa-spinner fa-spin checking"></i>';
-            
-            usernameTimeout = setTimeout(() => {
-                fetch(`/api/check-username/?username=${encodeURIComponent(username)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.available) {
-                            indicator.innerHTML = '<i class="fas fa-check available"></i>';
-                            document.getElementById('username').classList.remove('is-invalid');
-                            document.getElementById('username').classList.add('is-valid');
-                        } else {
-                            indicator.innerHTML = '<i class="fas fa-times unavailable"></i>';
-                            document.getElementById('username').classList.remove('is-valid');
-                            document.getElementById('username').classList.add('is-invalid');
-                        }
-                    })
-                    .catch(() => {
-                        indicator.innerHTML = '';
-                    });
-            }, 500);
-        });
-
-        // Email availability check
-        let emailTimeout;
-        document.getElementById('email').addEventListener('input', function() {
-            const email = this.value.trim();
-            const indicator = document.getElementById('email-indicator');
-            
-            clearTimeout(emailTimeout);
-            
-            if (!email || !email.includes('@')) {
-                indicator.innerHTML = '';
-                return;
-            }
-            
-            indicator.innerHTML = '<i class="fas fa-spinner fa-spin checking"></i>';
-            
-            emailTimeout = setTimeout(() => {
-                fetch(`/api/check-email/?email=${encodeURIComponent(email)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.available) {
-                            indicator.innerHTML = '<i class="fas fa-check available"></i>';
-                            document.getElementById('email').classList.remove('is-invalid');
-                            document.getElementById('email').classList.add('is-valid');
-                        } else {
-                            indicator.innerHTML = '<i class="fas fa-times unavailable"></i>';
-                            document.getElementById('email').classList.remove('is-valid');
-                            document.getElementById('email').classList.add('is-invalid');
-                        }
-                    })
-                    .catch(() => {
-                        indicator.innerHTML = '';
-                    });
-            }, 500);
-        });
-
-        // Password strength checker
-        document.getElementById('password1').addEventListener('input', function() {
-            const password = this.value;
-            const strengthFill = document.getElementById('strength-fill');
-            const strengthText = document.getElementById('strength-text');
-            
-            const strength = calculatePasswordStrength(password);
-            
-            strengthFill.style.width = strength.percentage + '%';
-            strengthFill.style.backgroundColor = strength.color;
-            strengthText.textContent = strength.text;
-            strengthText.style.color = strength.color;
-        });
-
+        // Password strength checker (already existing)
         function calculatePasswordStrength(password) {
             let score = 0;
             let feedback = [];
@@ -820,23 +1248,7 @@
             return result;
         }
 
-        // Password confirmation check
-        document.getElementById('password2').addEventListener('input', function() {
-            const password1 = document.getElementById('password1').value;
-            const password2 = this.value;
-            
-            if (password2) {
-                if (password1 === password2) {
-                    this.classList.remove('is-invalid');
-                    this.classList.add('is-valid');
-                } else {
-                    this.classList.remove('is-valid');
-                    this.classList.add('is-invalid');
-                }
-            }
-        });
-
-        // Google login implementation
+        // Google login implementation (already existing)
         function loginWithGoogle() {
             const clientId = '14310137293-ltolga7peevcmvb8jhq7al070416rrtm.apps.googleusercontent.com';
             const redirectUri = window.location.origin + '/accounts/google/login/callback/';
@@ -852,7 +1264,7 @@
             window.location.href = url;
         }
 
-        // Auto-hide messages after 5 seconds
+        // Auto-hide messages after 5 seconds (already existing)
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 const messages = document.getElementById('messages');

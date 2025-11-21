@@ -5,7 +5,7 @@
         :root {
             --primary-color: #6366f1;
             --primary-dark: #4f46e5;
-            --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-bg: #667eea;
             --shadow-lg: 0 10px 40px rgba(0,0,0,0.15);
             --border-radius: 16px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -13,15 +13,13 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--gradient-bg);
+            background-color: #5f79f0;
             min-height: 100vh;
         }
 
         .edit-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            padding: 2rem 0;
+           padding: 40px 0 ;
+           background: #5f79f0;
         }
 
         .edit-card {
@@ -139,10 +137,10 @@
     <!-- Navbar -->
 
 
-    <div class="edit-container" style="margin-top: 80px;">
+    <div class="edit-container">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-lg-8">
+                <div class="col-lg-5">
                     <div class="edit-card fade-in">
                         <div class="edit-header">
                             <h2 class="mb-0">
@@ -176,6 +174,7 @@
                                                 <div class="invalid-feedback">{{ error }}</div>
                                             {% endfor %}
                                         {% endif %}
+                                        <div id="first_name-feedback" class="mt-1"></div>
                                     </div>
 
                                     <div class="col-md-6 mb-3">
@@ -188,6 +187,7 @@
                                                 <div class="invalid-feedback">{{ error }}</div>
                                             {% endfor %}
                                         {% endif %}
+                                        <div id="last_name-feedback" class="mt-1"></div>
                                     </div>
                                 </div>
 
@@ -201,6 +201,7 @@
                                             <div class="invalid-feedback">{{ error }}</div>
                                         {% endfor %}
                                     {% endif %}
+                                    <div id="email-feedback" class="mt-1"></div>
                                 </div>
 
                                 <div class="mb-3">
@@ -213,6 +214,7 @@
                                             <div class="invalid-feedback">{{ error }}</div>
                                         {% endfor %}
                                     {% endif %}
+                                    <div id="phone-feedback" class="mt-1"></div>
                                 </div>
 
                                 <div class="mb-4">
@@ -225,6 +227,7 @@
                                             <div class="invalid-feedback">{{ error }}</div>
                                         {% endfor %}
                                     {% endif %}
+                                    <div id="bio-feedback" class="mt-1"></div>
                                     <small class="text-muted">Tối đa 500 ký tự</small>
                                 </div>
 
@@ -246,100 +249,145 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Form validation
         document.addEventListener('DOMContentLoaded', function() {
+            // --- START HELPER FUNCTION ---
+            function setFeedback(feedbackDiv, message, type) {
+                let color = type === 'success' ? 'var(--primary-color)' : 'var(--error-color)';
+                feedbackDiv.innerHTML = `<small style="color: ${color}; font-size: 0.9em;">${message}</small>`;
+            }
+            // --- END HELPER FUNCTION ---
+
+            // --- START VALIDATION LOGIC ---
             const form = document.querySelector('form');
-            const inputs = form.querySelectorAll('.form-control');
+            const firstNameInput = document.getElementById('{{ form.first_name.id_for_label }}');
+            const lastNameInput = document.getElementById('{{ form.last_name.id_for_label }}');
+            const emailInput = document.getElementById('{{ form.email.id_for_label }}');
+            const phoneInput = document.getElementById('{{ form.phone.id_for_label }}');
+            const bioInput = document.getElementById('{{ form.bio.id_for_label }}');
 
-            // Real-time validation
-            inputs.forEach(input => {
-                input.addEventListener('blur', function() {
-                    validateField(this);
-                });
+            const firstNameFeedback = document.getElementById('first_name-feedback');
+            const lastNameFeedback = document.getElementById('last_name-feedback');
+            const emailFeedback = document.getElementById('email-feedback');
+            const phoneFeedback = document.getElementById('phone-feedback');
+            const bioFeedback = document.getElementById('bio-feedback');
 
-                input.addEventListener('input', function() {
-                    if (this.classList.contains('is-invalid')) {
-                        validateField(this);
-                    }
-                });
-            });
+            function validateFirstName() {
+                const value = firstNameInput.value.trim();
+                if (value === '') {
+                    setFeedback(firstNameFeedback, 'Họ không được để trống!', 'danger');
+                    firstNameInput.classList.add('is-invalid');
+                    firstNameInput.classList.remove('is-valid');
+                    return false;
+                } else if (value.length < 2 || value.length > 50) {
+                    setFeedback(firstNameFeedback, 'Họ phải từ 2-50 ký tự!', 'danger');
+                    firstNameInput.classList.add('is-invalid');
+                    firstNameInput.classList.remove('is-valid');
+                    return false;
+                } else {
+                    setFeedback(firstNameFeedback, 'Họ hợp lệ.', 'success');
+                    firstNameInput.classList.add('is-valid');
+                    firstNameInput.classList.remove('is-invalid');
+                    return true;
+                }
+            }
 
-            // Form submit validation
+            function validateLastName() {
+                const value = lastNameInput.value.trim();
+                if (value === '') {
+                    setFeedback(lastNameFeedback, 'Tên không được để trống!', 'danger');
+                    lastNameInput.classList.add('is-invalid');
+                    lastNameInput.classList.remove('is-valid');
+                    return false;
+                } else if (value.length < 2 || value.length > 50) {
+                    setFeedback(lastNameFeedback, 'Tên phải từ 2-50 ký tự!', 'danger');
+                    lastNameInput.classList.add('is-invalid');
+                    lastNameInput.classList.remove('is-valid');
+                    return false;
+                } else {
+                    setFeedback(lastNameFeedback, 'Tên hợp lệ.', 'success');
+                    lastNameInput.classList.add('is-valid');
+                    lastNameInput.classList.remove('is-invalid');
+                    return true;
+                }
+            }
+
+            function validateEmail() {
+                const value = emailInput.value.trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (value === '') {
+                    setFeedback(emailFeedback, 'Email không được để trống!', 'danger');
+                    emailInput.classList.add('is-invalid');
+                    emailInput.classList.remove('is-valid');
+                    return false;
+                } else if (!emailRegex.test(value)) {
+                    setFeedback(emailFeedback, 'Email không hợp lệ!', 'danger');
+                    emailInput.classList.add('is-invalid');
+                    emailInput.classList.remove('is-valid');
+                    return false;
+                } else {
+                    setFeedback(emailFeedback, 'Email hợp lệ.', 'success');
+                    emailInput.classList.add('is-valid');
+                    emailInput.classList.remove('is-invalid');
+                    return true;
+                }
+            }
+
+            function validatePhone() {
+                const value = phoneInput.value.trim();
+                const phoneRegex = /^0\d{9}$/;
+                if (value === '') {
+                    setFeedback(phoneFeedback, 'Số điện thoại không được để trống!', 'danger');
+                    phoneInput.classList.add('is-invalid');
+                    phoneInput.classList.remove('is-valid');
+                    return false;
+                } else if (!phoneRegex.test(value)) {
+                    setFeedback(phoneFeedback, 'Số điện thoại phải là 10 chữ số, bắt đầu bằng 0!', 'danger');
+                    phoneInput.classList.add('is-invalid');
+                    phoneInput.classList.remove('is-valid');
+                    return false;
+                } else {
+                    setFeedback(phoneFeedback, 'Số điện thoại hợp lệ.', 'success');
+                    phoneInput.classList.add('is-valid');
+                    phoneInput.classList.remove('is-invalid');
+                    return true;
+                }
+            }
+
+            function validateBio() {
+                const value = bioInput.value.trim();
+                if (value.length > 500) {
+                    setFeedback(bioFeedback, 'Giới thiệu không được vượt quá 500 ký tự.', 'danger');
+                    bioInput.classList.add('is-invalid');
+                    bioInput.classList.remove('is-valid');
+                    return false;
+                } else {
+                    setFeedback(bioFeedback, '', 'success'); // Clear feedback if valid
+                    bioInput.classList.remove('is-invalid');
+                    return true;
+                }
+            }
+            // --- END VALIDATION LOGIC ---
+
+
+            // --- START EVENT LISTENERS ---
+            firstNameInput.addEventListener('input', validateFirstName);
+            lastNameInput.addEventListener('input', validateLastName);
+            emailInput.addEventListener('input', validateEmail);
+            phoneInput.addEventListener('input', validatePhone);
+            bioInput.addEventListener('input', validateBio);
+
             form.addEventListener('submit', function(e) {
-                let isValid = true;
-                inputs.forEach(input => {
-                    if (!validateField(input)) {
-                        isValid = false;
-                    }
-                });
+                const isFirstNameValid = validateFirstName();
+                const isLastNameValid = validateLastName();
+                const isEmailValid = validateEmail();
+                const isPhoneValid = validatePhone();
+                const isBioValid = validateBio();
 
-                if (!isValid) {
-                    e.preventDefault();
+                if (!isFirstNameValid || !isLastNameValid || !isEmailValid || !isPhoneValid || !isBioValid) {
+                    e.preventDefault(); // Stop form submission
                 }
             });
-
-            function validateField(field) {
-                const value = field.value.trim();
-                let isValid = true;
-
-                // Remove previous error styling
-                field.classList.remove('is-invalid');
-                const existingError = field.parentNode.querySelector('.invalid-feedback');
-                if (existingError) {
-                    existingError.remove();
-                }
-
-                // Email validation
-                if (field.type === 'email' && value) {
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(value)) {
-                        showFieldError(field, 'Email không hợp lệ');
-                        isValid = false;
-                    }
-                }
-
-                // Phone validation
-                if (field.name === 'phone' && value) {
-                    const phoneRegex = /^[0-9]{10,11}$/;
-                    if (!phoneRegex.test(value)) {
-                        showFieldError(field, 'Số điện thoại phải có 10-11 chữ số');
-                        isValid = false;
-                    }
-                }
-
-                // Bio length validation
-                if (field.name === 'bio' && value.length > 500) {
-                    showFieldError(field, 'Giới thiệu không được vượt quá 500 ký tự');
-                    isValid = false;
-                }
-
-                return isValid;
-            }
-
-            function showFieldError(field, message) {
-                field.classList.add('is-invalid');
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'invalid-feedback';
-                errorDiv.textContent = message;
-                field.parentNode.appendChild(errorDiv);
-            }
-
-            // Character counter for bio
-            const bioField = document.querySelector('textarea[name="bio"]');
-            if (bioField) {
-                const counter = document.createElement('small');
-                counter.className = 'text-muted float-end';
-                bioField.parentNode.appendChild(counter);
-
-                function updateCounter() {
-                    const remaining = 500 - bioField.value.length;
-                    counter.textContent = `${remaining} ký tự còn lại`;
-                    counter.style.color = remaining < 50 ? '#ef4444' : '#6b7280';
-                }
-
-                bioField.addEventListener('input', updateCounter);
-                updateCounter();
-            }
+            // --- END EVENT LISTENERS ---
         });
     </script>
 {% endblock %}

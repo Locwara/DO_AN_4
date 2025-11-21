@@ -12,7 +12,7 @@ click-didyoumean==0.3.1
 click-plugins==1.1.1.2
 click-repl==0.3.0
 cloudinary==1.44.1
-Django==5.2.6
+Django==5.2.8
 django-cloudinary-storage==0.3.0
 docker==7.1.0
 et_xmlfile==2.0.0
