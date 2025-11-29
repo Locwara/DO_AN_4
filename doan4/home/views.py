@@ -1344,7 +1344,7 @@ def chat_send_message(request, room_id):
                 user=request.user,
                 message=message_text,
                 message_type=message_type,
-                file_url=result['public_id'],
+                file_url=result['secure_url'],
                 file_name=file_name,
                 file_size=file_size,
                 file_type=file_type,
@@ -1367,54 +1367,21 @@ def chat_send_message(request, room_id):
             reply_to=reply_to
         )
     
+    # IMPORTANT: Refresh the message from the DB to correctly load CloudinaryField properties
+    message.refresh_from_db()
+    
     # Update last seen
     membership.last_seen = timezone.now()
     membership.save()
     
-    # Prepare response data
+    # Prepare response data using the centralized formatter
+    message_data = format_message_data(message, request.user)
     response_data = {
         'success': True,
-        'message': {
-            'id': message.id,
-            'user': request.user.get_full_name() or request.user.username,
-            'user_avatar': request.user.avatar.url if request.user.avatar else None,
-            'message': message.message,
-            'message_type': message.message_type,
-            'created_at': message.created_at.strftime('%H:%M'),
-            'reply_to': {
-                'user': reply_to.user.get_full_name() or reply_to.user.username,
-                'message': reply_to.message[:50] + '...' if reply_to and len(reply_to.message) > 50 else reply_to.message if reply_to else ''
-            } if reply_to else None
-        }
+        'message': message_data
     }
     
-    # Add specific data based on message type
-    if message.message_type == 'image':
-        response_data['message'].update({
-            'file_url': message.file_url,
-            'file_name': message.file_name,
-            'image_width': message.image_width,
-            'image_height': message.image_height,
-        })
-    elif message.message_type == 'file':
-        response_data['message'].update({
-            'file_url': message.file_url,
-            'file_name': message.file_name,
-            'file_size': message.get_file_size_display(),
-            'file_icon': message.get_file_icon(),
-        })
-    elif message.message_type == 'document_share':
-        response_data['message'].update({
-            'document': {
-                'id': message.shared_document.id,
-                'title': message.shared_document.title,
-                'description': message.shared_document.description or '',
-                'university': message.shared_document.university.name if message.shared_document.university else '',
-                'course': message.shared_document.course.name if message.shared_document.course else '',
-                'file_type': message.shared_document.file_type or 'pdf',
-                'view_url': f'/documents/{message.shared_document.id}/view/',
-            }
-        })
+    # Log activity for file uploads
     if uploaded_file:
         UserActivity.objects.create(
             user=request.user,
@@ -1619,7 +1586,7 @@ def serialize_message_for_json(message):
     return {
         'id': message.id,
         'message_type': message.message_type,
-        'file_url': message.file_url or '',
+        'file_url': get_safe_cloudinary_url(message.file_url) or '',
         'file_name': message.file_name or 'Unknown',
         'file_size': message.get_file_size_display() if hasattr(message, 'get_file_size_display') and message.file_size else '',
         'file_type': message.file_type or '',
@@ -1877,7 +1844,7 @@ def format_message_data(msg, current_user):
     message_data = {
         'id': msg.id,
         'user': msg.user.get_full_name() or msg.user.username,
-        'user_avatar': msg.user.avatar.url if msg.user.avatar else None,
+        'user_avatar': get_safe_cloudinary_url(msg.user.avatar),
         'message': msg.message,
         'message_type': msg.message_type,
         'created_at': msg.created_at.strftime('%H:%M'),
@@ -1900,14 +1867,14 @@ def format_message_data(msg, current_user):
     # Add specific data based on message type
     if msg.message_type == 'image':
         message_data.update({
-            'file_url': msg.file_url,
+            'file_url': get_safe_cloudinary_url(msg.file_url),
             'file_name': msg.file_name,
             'image_width': msg.image_width,
             'image_height': msg.image_height,
         })
     elif msg.message_type == 'file':
         message_data.update({
-            'file_url': msg.file_url,
+            'file_url': get_safe_cloudinary_url(msg.file_url),
             'file_name': msg.file_name,
             'file_size': msg.get_file_size_display(),
             'file_icon': msg.get_file_icon(),
