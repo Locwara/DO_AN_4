@@ -917,13 +917,41 @@ def execute_code_with_tests(code, language, lesson):
     """Execute code with test cases - FIXED VERSION"""
     if not lesson.test_cases:
         return execute_python_simple_with_input(code)
+
+    import json
+    test_cases_data = lesson.test_cases
+    if isinstance(test_cases_data, str):
+        try:
+            test_cases_data = json.loads(test_cases_data)
+        except json.JSONDecodeError:
+            return {
+                'status': 'error',
+                'output': 'Invalid test case format (not valid JSON).',
+                'error': 'Failed to decode test cases from string.'
+            }
+
+    if not isinstance(test_cases_data, list):
+        return {
+            'status': 'error',
+            'output': 'Invalid test case format (not a list).',
+            'error': 'Test cases are not structured as a list.'
+        }
     
     test_results = []
     tests_passed = 0
-    tests_total = len(lesson.test_cases)
+    tests_total = len(test_cases_data)
     total_execution_time = 0
     
-    for i, test_case in enumerate(lesson.test_cases):
+    for i, test_case in enumerate(test_cases_data):
+        # Ensure test_case is a dictionary
+        if not isinstance(test_case, dict):
+            test_results.append({
+                'test_number': i + 1,
+                'error': 'Invalid test case item (not a dictionary).',
+                'passed': False,
+            })
+            continue
+
         test_input = test_case.get('input', '')
         expected_output = test_case.get('expected_output', '').strip()
         
