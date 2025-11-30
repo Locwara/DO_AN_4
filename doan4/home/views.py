@@ -235,7 +235,7 @@ def logout_view(request):
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.db.models import Sum, Count
-from .models import Document, University, Course, UserActivity
+from .models import Document, University, Course, UserActivity, ChatRoom
 
 def dashboard_view(request):
     """Trang dashboard - cho phép truy cập không cần đăng nhập"""
@@ -270,9 +270,12 @@ def dashboard_view(request):
         documents_count=Count('document')
     ).order_by('name')
     
+    student_count = User.objects.filter(is_superuser=False).count()
+    
     context = {
         'documents': documents,
         'universities': universities,
+        'student_count': student_count,
         'user_documents_count': user_documents_count,
         'user_total_downloads': user_total_downloads,
         'user_total_likes': user_total_likes,
@@ -2034,7 +2037,7 @@ def verify_google_token(token):
         return None
 
 # Gemini API configuration
-GEMINI_API_KEY = "AIzaSyBprYsqu_-RYc6KGYHu1FU_E4rn7369p_s"
+GEMINI_API_KEY = "AIzaSyBXMgXlIapfgHJn3cvW0guMbMZ2hpfxgf4"
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 # Supported file types
 SUPPORTED_FILE_TYPES = {

@@ -67,12 +67,12 @@ class Document(models.Model):
     ]
     
     DOCUMENT_TYPE_CHOICES = [
-        ('textbook', 'Textbook'),
-        ('exercise', 'Exercise'),
-        ('exam', 'Exam'),
-        ('thesis', 'Thesis'),
-        ('lecture', 'Lecture'),
-        ('other', 'Other'),
+        ('textbook', 'Sách giáo khoa'),
+        ('exercise', 'bài tập'),
+        ('exam', 'Bài thi'),
+        ('thesis', 'Luận văn'),
+        ('lecture', 'Bài giảng'),
+        ('other', 'Khác'),
     ]
 
     title = models.CharField(max_length=255)

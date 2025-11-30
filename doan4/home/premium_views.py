@@ -51,10 +51,17 @@ def premium_upgrade_view(request):
     """Trang giới thiệu premium"""
     user = request.user
     
-    # Check nếu đã premium
-    if user.is_premium:
-        messages.info(request, 'Bạn đã là thành viên Premium!')
-        return redirect('dashboard')
+    # Check nếu đã premium và còn trên 5 ngày
+    if user.is_premium and user.premium_expiry:
+        days_left = (user.premium_expiry - timezone.now()).days
+        # If premium and more than 4 days left (i.e., 5 days or more)
+        if days_left >= 5:
+            messages.info(request, 'Bạn đã là thành viên Premium và gói của bạn vẫn còn hơn 5 ngày. Bạn có thể gia hạn khi gói của bạn còn dưới 5 ngày!')
+            return redirect('premium_info') # Redirect to premium info page, not dashboard
+    elif user.is_premium and not user.premium_expiry:
+        # This case should ideally not happen if user.is_premium is true, but as a safeguard
+        messages.info(request, 'Bạn đã là thành viên Premium! Vui lòng kiểm tra thông tin gói của bạn.')
+        return redirect('premium_info')
     
     # Thống kê user hiện tại
     today = timezone.now().date()
@@ -95,11 +102,13 @@ def process_premium_payment(request):
         user = request.user
         print(f"[PREMIUM] User is_premium: {user.is_premium}")
         
-        # Check đã premium chưa
-        if user.is_premium:
-            print("[PREMIUM] User already premium, redirecting...")
-            messages.error(request, 'Bạn đã là thành viên Premium!')
-            return redirect('dashboard')
+        # Check nếu đã premium và còn trên 5 ngày
+        if user.is_premium and user.premium_expiry:
+            days_left = (user.premium_expiry - timezone.now()).days
+            if days_left >= 5:
+                print(f"[PREMIUM] User already premium with {days_left} days left, redirecting...")
+                messages.error(request, 'Gói Premium của bạn vẫn còn hạn trên 5 ngày. Bạn không cần gia hạn lúc này.')
+                return redirect('premium_info')
         
         # ALWAYS create new transaction to avoid expired ones
         print(f"[PREMIUM] Creating new transaction...")
@@ -245,14 +254,25 @@ def premium_return(request):
                 premium_transaction.status = 'completed'
                 premium_transaction.transaction_id = input_data.get('vnp_TransactionNo', '')
                 premium_transaction.started_at = timezone.now()
-                premium_transaction.expires_at = timezone.now() + timedelta(days=PREMIUM_DURATION_DAYS)
+                # Calculate new expiry date based on cumulative logic
+                user = premium_transaction.user
+                
+                if user.is_premium and user.premium_expiry and user.premium_expiry > timezone.now():
+                    # If user has an existing active premium, add to their current expiry
+                    new_expiry = user.premium_expiry + timedelta(days=PREMIUM_DURATION_DAYS)
+                    print(f"[PREMIUM RETURN] Cumulative renewal: Old expiry {user.premium_expiry}, New expiry {new_expiry}")
+                else:
+                    # Otherwise, set expiry from now
+                    new_expiry = timezone.now() + timedelta(days=PREMIUM_DURATION_DAYS)
+                    print(f"[PREMIUM RETURN] Fresh activation: New expiry {new_expiry}")
+                    
+                premium_transaction.expires_at = new_expiry
                 premium_transaction.save()
                 
                 # Cập nhật user
-                user = premium_transaction.user
                 user.is_premium = True
-                user.premium_activated_at = timezone.now()
-                user.premium_expiry = timezone.now() + timedelta(days=PREMIUM_DURATION_DAYS)
+                user.premium_activated_at = timezone.now() # Update activation time to now
+                user.premium_expiry = new_expiry
                 user.save()
             
             logger.info(f'Premium activated for user {user.id} until {user.premium_expiry}')
