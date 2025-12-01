@@ -2037,7 +2037,7 @@ def verify_google_token(token):
         return None
 
 # Gemini API configuration
-GEMINI_API_KEY = "AIzaSyBXMgXlIapfgHJn3cvW0guMbMZ2hpfxgf4"
+GEMINI_API_KEY = "AIzaSyAK_FEeBSpDQq5P6THmj1fp89jRPNVPX7E"
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 # Supported file types
 SUPPORTED_FILE_TYPES = {
